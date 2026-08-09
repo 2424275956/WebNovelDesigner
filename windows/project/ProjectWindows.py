@@ -40,8 +40,6 @@ def review_page(self):
                 """安全销毁旧控件"""
                 widget.deleteLater()
 
-    """获取数据来判断下部分界面渲染"""
-    projects = query_all_project()
     """顶部标题栏"""
     header_layout = QHBoxLayout()
     """我的项目文案"""
@@ -75,6 +73,8 @@ def review_page(self):
     """顶部状态栏加入主分区"""
     self.project_win_layout.addLayout(header_layout)
 
+    """获取数据来判断下部分界面渲染"""
+    projects = query_all_project()
     """数据不为空"""
     if not projects:
         # 如果没有项目，显示空状态

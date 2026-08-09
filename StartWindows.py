@@ -4,7 +4,7 @@ from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QFrame, QPushButton, QApplication, QLabel, \
     QButtonGroup
-from windows.project.ProjectWindows import project_open_windows
+from windows.project.ProjectWindows import project_open_windows, review_page
 
 
 def create_button(text, icon_path):
@@ -132,6 +132,7 @@ class MainWindows(QMainWindow):
         """按钮状态管理"""
         self.button_group_parse(0)
         """内容展示"""
+        review_page(self)
         self.right_project_windows.show()
         self.right_prompt_windows.hide()
         self.right_model_windows.hide()
@@ -166,6 +167,16 @@ class MainWindows(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setStyleSheet("""
+        QWidget {
+            background-color: #ffffff;
+            color: #333333;
+        }
+        QLineEdit, QTextEdit {
+            border: 1px solid #cccccc;
+            padding: 4px;
+        }
+    """)
     window = MainWindows()
     window.show()
     sys.exit(app.exec())
