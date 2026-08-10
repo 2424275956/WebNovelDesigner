@@ -72,4 +72,5 @@ def insert_prompt_conf(name):
 
 # 查询全部场景提示词
 def query_all_scene_prompt():
-    data_list = SqlDB.SqliteDB.execute("")
+    data_list = SqlDB.SqliteDB.execute("SELECT * FROM prompt_rules WHERE type = 3")
+    return data_list.fetchall()
