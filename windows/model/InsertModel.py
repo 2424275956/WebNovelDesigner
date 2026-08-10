@@ -10,8 +10,6 @@ class InsertModel(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("模型配置")
-        # 窗口大小
-        self.resize(500, 350)
 
         # 主体窗口
         main_layout = QVBoxLayout()
@@ -222,16 +220,22 @@ class InsertModel(QDialog):
     def update_ui_visibility(self, text:str):
         # 判断是否选择了 Ollama (忽略大小写)
         is_ollama = "ollama" in text.lower()
+        is_o_mlx = "oMLX" in text.lower()
 
         # 2. 设置可见性
         # 如果是 Ollama，则隐藏（False），否则显示（True）
         self.layout_row2.setVisible(not is_ollama)
         self.layout_row3.setVisible(not is_ollama)
 
+        # 窗口大小
+        if is_ollama:
+            self.setFixedSize(500, 500)
+        else:
+            self.setFixedSize(500, 560)
+
         # 可选：如果是 Ollama，自动填入默认地址
         if is_ollama:
             self.layout_row5.setText("http://localhost:11434/v1")
 
-        is_o_mlx = "oMLX" in text.lower()
         if is_o_mlx:
             self.layout_row5.setText("http://localhost:8080/v1")
