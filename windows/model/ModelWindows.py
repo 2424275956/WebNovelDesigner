@@ -63,6 +63,7 @@ def review_page(self):
     # 设置大小
     self.model_list.setFixedWidth(200)
     self.model_list.setItemAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+    self.model_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
     # 渲染列表
     review_model_list(self.model_list)
     self.model_lower_layout.addWidget(self.model_list)
