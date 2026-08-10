@@ -44,16 +44,16 @@ class InsertModel(QDialog):
         layout_row1_col1 = QVBoxLayout()
         layout_row1_col1.setAlignment(Qt.AlignmentFlag.AlignLeft)
         # 模型名称
-        self.name_title = QLabel("模型名称")
-        self.name_title.setStyleSheet(title_style_sheet())
-        self.name_title.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        layout_row1_col1.addWidget(self.name_title)
+        name_title = QLabel("模型名称")
+        name_title.setStyleSheet(title_style_sheet())
+        name_title.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        layout_row1_col1.addWidget(name_title)
         # 模型名称输入框
-        name_edit = QLineEdit()
-        name_edit.setFixedSize(220, 40)
-        name_edit.setStyleSheet(line_edit_style_sheet())
-        name_edit.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        layout_row1_col1.addWidget(name_edit)
+        self.name_edit = QLineEdit()
+        self.name_edit.setFixedSize(220, 40)
+        self.name_edit.setStyleSheet(line_edit_style_sheet())
+        self.name_edit.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        layout_row1_col1.addWidget(self.name_edit)
         layout_row1.addLayout(layout_row1_col1)
 
         # 第一行第二列
@@ -263,7 +263,7 @@ class InsertModel(QDialog):
     "确认模型配置"
     def confirm_model(self):
         # 模型名称
-        name = self.name_title.text()
+        name = self.name_edit.text()
         if len(name) < 1:
             self.status_bar.showMessage("❌ 模型名称为空")
             return False
