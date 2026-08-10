@@ -46,6 +46,17 @@ def create_button(text, icon_path):
             background-color: #f9f9f9;
             border-radius: 10px;
         }
+        QToolTip {
+            color: #000000;              /* 字体颜色：黑色 */
+            background-color: #FFFFE0;   /* 背景颜色：浅黄色 */
+            border: 1px solid #CCCCCC;   /* 边框 */
+            border-radius: 4px;          /* 圆角 */
+            font-family: "Microsoft YaHei";
+            font-size: 12px;
+            font-weight: normal;
+            padding: 4px 8px;
+            opacity: 200;                /* 透明度 (100-255) */
+        }
     """)
     return btn
 
