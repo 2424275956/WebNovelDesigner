@@ -1,5 +1,9 @@
+import time
+
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QHBoxLayout, QLineEdit, QComboBox, QFrame, QPushButton
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QHBoxLayout, QLineEdit, QComboBox, QFrame, QPushButton, \
+    QMessageBox, QStatusBar
+from openai import OpenAI
 
 from style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet
 from utils.DoubleLineEdit import DoubleLineEdit
@@ -16,6 +20,20 @@ class InsertModel(QDialog):
         main_layout.setContentsMargins(20, 20, 20, 20)
         main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(main_layout)
+
+        # 状态栏
+        status_layout = QHBoxLayout()
+        status_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        # 状态提示title
+        status_title = QLabel("状态提示：")
+        status_title.setStyleSheet(title_style_sheet())
+        status_title.setFixedSize(80, 20)
+        status_layout.addWidget(status_title)
+        # 状态提示
+        self.status_bar = QStatusBar()
+        self.status_bar.setFixedSize(360, 20)
+        status_layout.addWidget(self.status_bar)
+        main_layout.addLayout(status_layout)
 
         # 第一行信息
         layout_row1 = QHBoxLayout()
@@ -46,15 +64,15 @@ class InsertModel(QDialog):
         type_title.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout_row1_col2.addWidget(type_title)
         # 模型类型下拉框
-        type_combo = QComboBox()
-        type_combo.addItem("Custom(网络模型)", 1)
-        type_combo.addItem("Local(本地Ollama)", 2)
-        type_combo.addItem("Local(本地oMLX)", 3)
-        type_combo.setFixedSize(220, 40)
-        type_combo.setStyleSheet(line_edit_style_sheet())
-        type_combo.setCurrentIndex(0)
-        type_combo.currentTextChanged.connect(lambda : self.update_ui_visibility(type_combo.currentText()))
-        layout_row1_col2.addWidget(type_combo)
+        self.type_combo = QComboBox()
+        self.type_combo.addItem("Custom(网络模型)", 1)
+        self.type_combo.addItem("Local(本地Ollama)", 2)
+        self.type_combo.addItem("Local(本地oMLX)", 3)
+        self.type_combo.setFixedSize(220, 40)
+        self.type_combo.setStyleSheet(line_edit_style_sheet())
+        self.type_combo.setCurrentIndex(0)
+        self.type_combo.currentTextChanged.connect(lambda : self.update_ui_visibility(self.type_combo.currentText()))
+        layout_row1_col2.addWidget(self.type_combo)
         layout_row1.addLayout(layout_row1_col2)
         main_layout.addLayout(layout_row1)
 
@@ -91,11 +109,11 @@ class InsertModel(QDialog):
         main_layout.addWidget(layout_row6)
 
         # 第七行
-        layout_row7 = QLineEdit()
-        layout_row7.setFixedSize(460, 40)
-        layout_row7.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        layout_row7.setStyleSheet(line_edit_style_sheet())
-        main_layout.addWidget(layout_row7)
+        self.layout_row7 = QLineEdit()
+        self.layout_row7.setFixedSize(460, 40)
+        self.layout_row7.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.layout_row7.setStyleSheet(line_edit_style_sheet())
+        main_layout.addWidget(self.layout_row7)
 
         # 第八行
         layout_row8 = QFrame()
@@ -204,13 +222,39 @@ class InsertModel(QDialog):
         confirm_btn.setStyleSheet(button_style_sheet())
         confirm_btn.clicked.connect(lambda : self.confirm_model())
         layout_row12.addWidget(confirm_btn)
-
         main_layout.addLayout(layout_row12)
+
         self.accept()
 
     """测试模型连接"""
     def test_connection(self):
-        123
+        try:
+            start_time = time.time()
+            if len(self.layout_row5.text()) < 1:
+                self.status_bar.showMessage("❌ Base URL连接地址为空")
+                return False
+
+            # 是否 ollama
+            is_custom = "custom" in self.type_combo.currentText().lower()
+            if is_custom and len(self.layout_row3.text()) < 1:
+                self.status_bar.showMessage("❌ API Key密匙为空")
+
+            client = OpenAI(
+                base_url = self.layout_row5.text(),
+                api_key= self.layout_row3.text()
+            )
+
+            # 发送一个极短的请求来测试连通性
+            models = client.models.list()
+
+            end_time = time.time()
+            elapsed = (end_time - start_time) * 1000
+            self.status_bar.showMessage(f"✅ 连接成功！耗时:{elapsed:.2f}ms")
+            return True
+        except Exception as e:
+            print(e)
+            self.status_bar.showMessage("❌ 连接失败")
+            return False
 
     "确认模型配置"
     def confirm_model(self):
