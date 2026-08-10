@@ -270,6 +270,7 @@ def model_conf_info(self, model_conf):
         self.conf_page_max_token.setText(str(model_conf['max_token']))
         self.conf_page_time_out.setText(str(model_conf['time_out']))
         self.conf_page_api_key = model_conf['api_key']
+        self.conf_page_id = model_conf['id']
 
 
 """测试模型连接"""

@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QStatusBa
     QPushButton
 from openai import OpenAI
 
-from sqlite.Sqlite3Utils import insert_model_conf
+from sqlite.Sqlite3Utils import insert_model_conf, modify_model_conf
 from style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet
 from utils.DoubleLineEdit import DoubleLineEdit
 
@@ -20,6 +20,8 @@ class ModifyModel(QDialog):
         main_layout.setContentsMargins(20, 20, 20, 20)
         main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(main_layout)
+
+        self.id = model.conf_page_id
 
         # 状态栏
         status_layout = QHBoxLayout()
@@ -297,6 +299,7 @@ class ModifyModel(QDialog):
 
         # 保存配置信息
         req_json = {
+            "id": self.id,
             "name": name,
             "type": model_type,
             "url": url,
@@ -307,7 +310,7 @@ class ModifyModel(QDialog):
             "max_token": self.token_edit.text(),
             "time_out": self.time_out_edit.text()
         }
-        insert_model_conf(req_json)
+        modify_model_conf(req_json)
         return self.accept()
 
     """根据选择的提供商动态显示或隐藏控件"""
