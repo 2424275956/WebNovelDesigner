@@ -31,3 +31,8 @@ def remove_novel_info(project_id):
     SqlDB.SqliteDB.execute("DELETE FROM chapter WHERE project_id = ?", (project_id,))
     # 删除项目信息
     SqlDB.SqliteDB.execute("DELETE FROM project WHERE id = ?", (project_id,))
+
+# 查询全部模型配置信息
+def query_all_model():
+    data_list = SqlDB.SqliteDB.execute("SELECT * FROM model_info")
+    return data_list.fetchall()

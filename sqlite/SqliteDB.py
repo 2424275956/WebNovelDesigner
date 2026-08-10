@@ -59,7 +59,23 @@ class SqliteDB:
                 CREATE INDEX IF NOT EXISTS idx_project_id ON chapter(project_id);
             """)
 
-        # 章节规则匹配项
+        # 模型配置表
+        if not db_exists or cls._is_database_empty("model_info"):
+            cursor = cls._conn.cursor()
+            cursor.executescript("""
+                CREATE TABLE IF NOT EXISTS model_info (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,           -- 模型配置ID
+                    name TEXT NOT NULL,                             -- 模型名称
+                    type INTEGER NOT NULL DEFAULT 1,                -- 配置类型（1：网络模型，2：本地Ollama模型，3：本地oMLX模型）
+                    api_key TEXT DEFAULT NULL,                      -- 模型API KEY
+                    url TEXT NOT NULL,                              -- 模型地址
+                    model_id TEXT NOT NULL,                         -- 模型ID
+                    temperature REAL NOT NULL DEFAULT '0.7',        -- 模型温度
+                    top_p REAL NOT NULL DEFAULT '0.9',              -- Top-P选择
+                    max_token INTEGER NOT NULL DEFAULT 32769,       -- token长度
+                    time_out INTEGER NOT NULL DEFAULT 300           -- 超时时间
+                );
+            """)
 
 
 

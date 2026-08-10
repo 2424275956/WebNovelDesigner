@@ -5,6 +5,8 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QScrollArea, QGridLayout, QFrame, \
     QFileDialog, QDialog
+
+from style.StyleSheet import button_style_sheet
 from . import ImportNovel
 from . import RemoveNovel
 from . import ClickableFrame
@@ -14,24 +16,24 @@ from . import ClickableFrame
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from sqlite.Sqlite3Utils import query_all_project
 
+"""项目窗口"""
 def project_open_windows(self):
-    """项目窗口"""
-    """中心部件"""
+    # 中心部件
     central_widget = QWidget()
 
-    """垂直布局"""
+    # 垂直布局
     self.project_win_layout = QVBoxLayout(central_widget)
     self.project_win_layout.setContentsMargins(20, 20, 20, 20)
     self.project_win_layout.setSpacing(10)
 
-
-
+    # 内容渲染
     review_page(self)
 
     return central_widget
 
+"""页面渲染"""
 def review_page(self):
-    """存在数据则销毁"""
+    # 存在数据则销毁
     if self.project_win_layout is not None:
         while self.project_win_layout.count():
             item = self.project_win_layout.takeAt(0)
@@ -54,18 +56,7 @@ def review_page(self):
     """导入按钮大小"""
     import_btn.setFixedSize(120, 40)
     """导入按钮样式"""
-    import_btn.setStyleSheet("""
-                QPushButton { 
-                    background-color: #3498db; 
-                    color: white; 
-                    border-radius: 6px; 
-                    border: none; 
-                    font-weight: bold;
-                }
-                QPushButton:hover { 
-                    background-color: #2980b9; 
-                }
-            """)
+    import_btn.setStyleSheet(button_style_sheet())
     """导入按钮触发函数"""
     import_btn.clicked.connect(lambda: import_file(self))
     """加入顶部状态栏"""

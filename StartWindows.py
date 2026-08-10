@@ -4,6 +4,8 @@ from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QFrame, QPushButton, QApplication, QLabel, \
     QButtonGroup
+
+from windows.model.ModelWindows import model_open_windows
 from windows.project.ProjectWindows import project_open_windows, review_page
 
 
@@ -99,7 +101,7 @@ class MainWindows(QMainWindow):
         """项目管理页面"""
         self.right_project_windows = project_open_windows(self)
         """模型管理页面"""
-        self.right_model_windows = QLabel("这是 页面2 的内容")
+        self.right_model_windows = model_open_windows(self)
         """提示词管理页面"""
         self.right_prompt_windows = QLabel("这是 页面3 的内容")
 

@@ -4,6 +4,7 @@ from pathlib import Path
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QFrame, QHBoxLayout, QPushButton, QLineEdit, QGridLayout, QTableWidget, QHeaderView, QTableWidgetItem
 from sqlite.Sqlite3Utils import insert_project_info, insert_project_chapter
+from style.StyleSheet import title_style_sheet, line_edit_style_sheet
 
 
 def split_list_generator(lst, chunk_size):
@@ -45,37 +46,21 @@ class ImportDialog(QDialog):
         layout = QVBoxLayout()
         self.setLayout(layout)
 
-        # 编辑框格式
-        edit_style = """
-            QLineEdit {
-                font-size: 18px;
-                font-weight: bold;
-                color: #2c3e50;
-                border: 2px solid #bdc3c7;
-                border-radius: 5px;
-                padding: 8px 12px;
-                background-color: white;
-            }
-            QLineEdit:focus {
-                border: 2px solid #3498db;
-            }
-        """
-
         # 文件名称
         # 创建网格布局
         grid_layout = QGridLayout()
         # 标题
         label = QLabel("文件名:")
-        label.setStyleSheet("font-size: 16px; font-weight: bold; color: white;")
+        label.setStyleSheet(title_style_sheet())
         grid_layout.addWidget(label, 0, 0)
-        self.title.setStyleSheet(edit_style)
+        self.title.setStyleSheet(line_edit_style_sheet())
         grid_layout.addWidget(self.title, 0, 1)
 
         # 作者
         author_label = QLabel("作 者：")
-        author_label.setStyleSheet("font-size: 16px; font-weight: bold; color: white;")
+        author_label.setStyleSheet(title_style_sheet())
         grid_layout.addWidget(author_label, 1, 0)
-        self.author.setStyleSheet(edit_style)
+        self.author.setStyleSheet(line_edit_style_sheet())
         grid_layout.addWidget(self.author, 1, 1)
         layout.addLayout(grid_layout)
 
@@ -93,7 +78,7 @@ class ImportDialog(QDialog):
         chapter_layout = QGridLayout()
         # 正则规则
         chapter_repex_label = QLabel("章节正则规则：")
-        chapter_repex_label.setStyleSheet("font-size: 16px; font-weight: bold; color: white;")
+        chapter_repex_label.setStyleSheet(title_style_sheet())
         chapter_layout.addWidget(chapter_repex_label, 0, 0)
         self.chapter_regex.setStyleSheet("""
             QLineEdit {
@@ -124,7 +109,7 @@ class ImportDialog(QDialog):
             QLabel {
                 font-size: 20px;
                 font-weight: bold;
-                color: white;
+                color: black;
             }
         """)
         chapter_review_txt.setAlignment(Qt.AlignmentFlag.AlignLeft)
