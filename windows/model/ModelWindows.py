@@ -208,6 +208,27 @@ def review_page(self):
     if len(all_models) > 0:
         model_conf_info(self, all_models[0])
 
+    # 分割线
+    conf_page_fream3 = QFrame()
+    conf_page_fream3.setFrameShape(QFrame.Shape.HLine)
+    conf_page_fream3.setFrameShadow(QFrame.Shadow.Sunken)
+    self.conf_page.addWidget(conf_page_fream3)
+
+    # 状态栏
+    conf_page_status_bar = QHBoxLayout()
+    conf_page_status_bar.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+
+    # 状态
+    conf_page_status_bar_title = QLabel("状态提示：")
+    conf_page_status_bar_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    conf_page_status_bar_title.setStyleSheet(title_style_sheet())
+    conf_page_status_bar.addWidget(conf_page_status_bar_title)
+
+    # 状态
+    self.status_bar = QStatusBar()
+    conf_page_status_bar.addWidget(self.status_bar)
+    self.conf_page.addLayout(conf_page_status_bar)
+
     # 尾部插入配置页面
     self.model_lower_layout.addLayout(self.conf_page)
     # 尾部插入
@@ -229,7 +250,6 @@ def modify_model_conf(self):
 """模型详情"""
 def model_conf_info(self, model_conf):
     if model_conf:
-        print(123)
         self.conf_page_model_name.setText(model_conf['name'])
         if model_conf['type'] == 1:
             self.conf_page_model_type.setText("Custom")
@@ -243,25 +263,26 @@ def model_conf_info(self, model_conf):
         self.conf_page_top_p.setText(str(model_conf['top_p']))
         self.conf_page_max_token.setText(str(model_conf['max_token']))
         self.conf_page_time_out.setText(str(model_conf['time_out']))
+        self.conf_page_api_key = model_conf['api_key']
 
 
 """测试模型连接"""
 def test_connection(self):
     try:
         start_time = time.time()
-        if len(self.base_url.text()) < 1:
+        if len(self.conf_page_base_url.text()) < 1 or self.conf_page_base_url.text() == "-":
             self.status_bar.showMessage("❌ Base URL连接地址为空")
             return False
 
         # 是否 ollama
-        is_ollama = "ollama" in self.type_combo.currentText().lower()
-        if not is_ollama and len(self.api_key.text()) < 1:
+        is_ollama = "ollama" in self.conf_page_api_key.lower()
+        if not is_ollama and len(self.conf_page_api_key) < 1:
             self.status_bar.showMessage("❌ API Key密匙为空")
             return False
 
         client = OpenAI(
-            base_url = self.base_url.text(),
-            api_key= self.api_key.text()
+            base_url = self.conf_page_base_url.text(),
+            api_key= self.conf_page_api_key
         )
 
         # 发送一个极短的请求来测试连通性
