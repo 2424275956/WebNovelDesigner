@@ -1,9 +1,9 @@
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QListWidget, \
-    QListWidgetItem, QDialog
+    QListWidgetItem, QDialog, QTextEdit, QPlainTextEdit, QScrollArea
 
-from sqlite.Sqlite3Utils import query_all_prompt
-from style.StyleSheet import button_style_sheet, title_style_sheet
+from sqlite.Sqlite3Utils import query_all_prompt, query_all_scene_prompt
+from style.StyleSheet import button_style_sheet, title_style_sheet, line_edit_style_sheet
 from windows.prompt.InsertPrompt import InsertModel
 
 """触发事件"""
@@ -142,12 +142,96 @@ def review_page(self):
     conf_page_fream1.setFrameShadow(QFrame.Shadow.Sunken)
     self.conf_page.addWidget(conf_page_fream1)
 
+    # 创建滚动区域
+    scroll_area = QScrollArea(self)
+    # 【关键】允许内容自适应宽度
+    scroll_area.setWidgetResizable(True)
+    # 隐藏水平滚动条
+    scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+    # 创建内容容器
+    prompt_widget = QWidget()
+    scroll_area.setWidget(prompt_widget)
+
+    # 创建水平内部布局
+    prompt_inner_layout = QVBoxLayout(prompt_widget)
+    prompt_inner_layout.setSpacing(10)
+
+    # 系统提示词
+    system_prompt_title = QLabel("系统提示词（最好1000字以内，过长会导致遗忘设定）")
+    system_prompt_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    system_prompt_title.setStyleSheet(title_style_sheet())
+    prompt_inner_layout.addWidget(system_prompt_title)
+    # 系统提示词框
+    self.system_prompt = QPlainTextEdit()
+    self.system_prompt.setStyleSheet(line_edit_style_sheet())
+    self.system_prompt.setFixedHeight(200)
+    prompt_inner_layout.addWidget(self.system_prompt)
+
+    # 分割线
+    fream_row1 = QFrame()
+    fream_row1.setFrameShape(QFrame.Shape.HLine)
+    fream_row1.setFrameShadow(QFrame.Shadow.Sunken)
+    prompt_inner_layout.addWidget(fream_row1)
+
+    # 用户提示词
+    user_prompt_title = QLabel("用户提示词（主要为改写规则）")
+    user_prompt_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    user_prompt_title.setStyleSheet(title_style_sheet())
+    prompt_inner_layout.addWidget(user_prompt_title)
+    # 用户提示词框
+
+    self.user_prompt = QPlainTextEdit()
+    self.user_prompt.setStyleSheet(line_edit_style_sheet())
+    self.user_prompt.setFixedHeight(350)
+    prompt_inner_layout.addWidget(self.user_prompt)
+
+    # 分割线
+    fream_row2 = QFrame()
+    fream_row2.setFrameShape(QFrame.Shape.HLine)
+    fream_row2.setFrameShadow(QFrame.Shadow.Sunken)
+    prompt_inner_layout.addWidget(fream_row2)
+
+
+    # 场景提示词顶部
+    scene_prompt_top = QHBoxLayout()
+    scene_prompt_top.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    # 场景提示词内容
+    scene_prompt_title = QLabel("场景提示词")
+    scene_prompt_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    scene_prompt_title.setStyleSheet(title_style_sheet())
+    scene_prompt_top.addWidget(scene_prompt_title)
+    # 弹开
+    scene_prompt_top.addStretch()
+    # 增加场景规则
+    insert_scene_prompt_btn = QPushButton("+ 新增场景规则")
+    insert_scene_prompt_btn.setFixedSize(120, 30)
+    insert_scene_prompt_btn.setStyleSheet(button_style_sheet())
+    insert_scene_prompt_btn.clicked.connect(lambda : 123)
+    scene_prompt_top.addWidget(insert_scene_prompt_btn)
+    prompt_inner_layout.addLayout(scene_prompt_top)
+
+    # 场景提示词列表
+    self.scene_prompt_list = QListWidget()
+    self.scene_prompt_list.setContentsMargins(10, 10, 10, 10)
+    # 设置大小
+    self.scene_prompt_list.setFixedHeight(300)
+    self.scene_prompt_list.setItemAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+    self.scene_prompt_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    # 渲染列表
+    review_scene_prompt_list(self.model_list)
+
+    self.conf_page.addWidget(scroll_area)
 
     # 尾部插入配置页面
     self.model_lower_layout.addLayout(self.conf_page)
     # 尾部插入
     self.model_win_layout.addLayout(self.model_lower_layout)
 
+"""场景规则渲染列表"""
+def review_scene_prompt_list(model_list):
+    # 场景规则查询
+    all_scene_prompt = query_all_scene_prompt()
 
 """更新模型列表"""
 def review_prompt_list(model_list):

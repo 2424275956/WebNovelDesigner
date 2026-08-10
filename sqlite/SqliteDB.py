@@ -87,6 +87,19 @@ class SqliteDB:
                 );
             """)
 
+        # 提示词规则配置
+        if not db_exists or cls._is_database_empty("prompt_rules"):
+            cursor = cls._conn.cursor()
+            cursor.executescript("""
+                CREATE TABLE IF NOT EXISTS prompt_rules (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,           -- 提示词规则ID
+                    prompt_id INTEGER NOT NULL,                     -- 提示词配置ID
+                    context TEXT DEFAULT NULL,                      -- 提示词规则    
+                    type INTEGER NOT NULL DEFAULT 1                 -- 提示词类型（1：系统提示词，2：用户提示词，3：场景提示词）
+                );
+                CREATE INDEX IF NOT EXISTS idx_prompt_id ON prompt_rules(prompt_id);
+            """)
+
 
 
     @classmethod

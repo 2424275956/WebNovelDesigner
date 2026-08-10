@@ -69,3 +69,7 @@ def query_all_prompt():
 def insert_prompt_conf(name):
     cursor = SqlDB.SqliteDB.execute("INSERT INTO prompt_info (name) VALUES (?)", (name,))
     return cursor.lastrowid
+
+# 查询全部场景提示词
+def query_all_scene_prompt():
+    data_list = SqlDB.SqliteDB.execute("")
