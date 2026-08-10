@@ -8,6 +8,7 @@ from openai import OpenAI
 from sqlite.Sqlite3Utils import query_all_model
 from style.StyleSheet import button_style_sheet, title_style_sheet
 from . import InsertModel
+from . import ModifyModel
 
 """模型窗口"""
 def model_open_windows(self):
@@ -245,12 +246,17 @@ def remove_model_conf(self):
 
 """编辑模型"""
 def modify_model_conf(self):
-    123
+    dialog = ModifyModel.ModifyModel(self)
+    if dialog.exec() == QDialog.DialogCode.Accepted:
+        # 对话框成功保存并关闭同时刷新页面
+        review_model_list(self.model_list)
+
 
 """模型详情"""
 def model_conf_info(self, model_conf):
     if model_conf:
         self.conf_page_model_name.setText(model_conf['name'])
+        self.conf_page_model_type_int = model_conf['type']
         if model_conf['type'] == 1:
             self.conf_page_model_type.setText("Custom")
         if model_conf['type'] == 2:
