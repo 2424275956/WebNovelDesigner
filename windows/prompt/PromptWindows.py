@@ -6,6 +6,15 @@ from sqlite.Sqlite3Utils import query_all_prompt
 from style.StyleSheet import button_style_sheet, title_style_sheet
 from windows.prompt.InsertPrompt import InsertModel
 
+"""触发事件"""
+def on_item_clicked(self, item: QListWidgetItem):
+    model = item.data(Qt.ItemDataRole.UserRole)
+    prompt_page_info(self, model)
+
+"""页面信息"""
+def prompt_page_info(self, model):
+    123
+
 """提示词窗口"""
 def prompt_open_windows(self):
     # 中心部件
@@ -81,7 +90,7 @@ def review_page(self):
     self.model_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
     # 渲染列表
     self.all_models = review_prompt_list(self.model_list)
-    self.model_list.itemClicked.connect(lambda item: 123)
+    self.model_list.itemClicked.connect(lambda item: on_item_clicked(self, item))
     # 配置不为空
     if self.model_list.count() > 0:
         self.model_list.setCurrentRow(0)
