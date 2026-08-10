@@ -1,6 +1,9 @@
+import time
+
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QListWidget, QDialog, \
-    QListWidgetItem
+    QListWidgetItem, QStatusBar
+from openai import OpenAI
 
 from sqlite.Sqlite3Utils import query_all_model
 from style.StyleSheet import button_style_sheet, title_style_sheet
@@ -65,7 +68,11 @@ def review_page(self):
     self.model_list.setItemAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
     self.model_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
     # 渲染列表
-    review_model_list(self.model_list)
+    all_models = review_model_list(self.model_list)
+    self.model_list.itemClicked.connect(lambda item: on_item_clicked(self, item))
+    # 配置不为空
+    if self.model_list.count() > 0:
+        self.model_list.setCurrentRow(0)
     self.model_lower_layout.addWidget(self.model_list)
 
     # 垂直分割线
@@ -74,11 +81,200 @@ def review_page(self):
     vqf.setFrameShadow(QFrame.Shadow.Sunken)
     self.model_lower_layout.addWidget(vqf)
 
-    # 配置
+    # 配置页面
+    self.conf_page = QVBoxLayout()
+    self.conf_page.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
 
+    # 菜单栏
+    conf_page_row1 = QHBoxLayout()
+    conf_page_row1.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    # 第一列
+    self.conf_page_model_name = QLabel("-")
+    self.conf_page_model_name.setAlignment(Qt.AlignmentFlag.AlignLeft)
+    self.conf_page_model_name.setStyleSheet(title_style_sheet())
+    conf_page_row1.addWidget(self.conf_page_model_name)
+    # 弹开
+    conf_page_row1.addStretch()
+    # 按钮
+    conf_page_row1_col2 = QPushButton("⚡️测试连接")
+    conf_page_row1_col2.setStyleSheet(button_style_sheet())
+    conf_page_row1_col2.setFixedSize(100, 30)
+    conf_page_row1_col2.clicked.connect(lambda : test_connection(self))
+    conf_page_row1.addWidget(conf_page_row1_col2)
+    # 编辑
+    conf_page_row1_col3 = QPushButton("🖊️编辑")
+    conf_page_row1_col3.setStyleSheet(button_style_sheet())
+    conf_page_row1_col3.setFixedSize(80, 30)
+    conf_page_row1_col3.clicked.connect(lambda : modify_model_conf(self))
+    conf_page_row1.addWidget(conf_page_row1_col3)
+    # 删除
+    conf_page_row1_col4 = QPushButton("🗑️删除")
+    conf_page_row1_col4.setStyleSheet(button_style_sheet())
+    conf_page_row1_col4.setFixedSize(80, 30)
+    conf_page_row1_col4.clicked.connect(lambda : remove_model_conf(self))
+    conf_page_row1.addWidget(conf_page_row1_col4)
+    self.conf_page.addLayout(conf_page_row1)
 
+    # 插入分割线
+    conf_page_fream1 = QFrame()
+    conf_page_fream1.setFrameShape(QFrame.Shape.HLine)
+    conf_page_fream1.setFrameShadow(QFrame.Shadow.Sunken)
+    self.conf_page.addWidget(conf_page_fream1)
+
+    # title
+    conf_page_model_type_title = QLabel("模型类型")
+    conf_page_model_type_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    conf_page_model_type_title.setStyleSheet(title_style_sheet())
+    self.conf_page.addWidget(conf_page_model_type_title)
+    # 类型
+    self.conf_page_model_type = QLabel("-")
+    self.conf_page_model_type.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    self.conf_page_model_type.setStyleSheet(title_style_sheet())
+    self.conf_page.addWidget(self.conf_page_model_type)
+
+    # 模型ID title
+    conf_page_model_id_title = QLabel("模型 ID")
+    conf_page_model_id_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    conf_page_model_id_title.setStyleSheet(title_style_sheet())
+    self.conf_page.addWidget(conf_page_model_id_title)
+    # 模型ID
+    self.conf_page_model_id = QLabel("-")
+    self.conf_page_model_id.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    self.conf_page_model_id.setStyleSheet(title_style_sheet())
+    self.conf_page.addWidget(self.conf_page_model_id)
+
+    # API端点
+    conf_page_base_url_title = QLabel("API端点")
+    conf_page_base_url_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    conf_page_base_url_title.setStyleSheet(title_style_sheet())
+    self.conf_page.addWidget(conf_page_base_url_title)
+    # 端点
+    self.conf_page_base_url = QLabel("-")
+    self.conf_page_base_url.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    self.conf_page_base_url.setStyleSheet(title_style_sheet())
+    self.conf_page.addWidget(self.conf_page_base_url)
+
+    # 插入分割线
+    conf_page_fream2 = QFrame()
+    conf_page_fream2.setFrameShape(QFrame.Shape.HLine)
+    conf_page_fream2.setFrameShadow(QFrame.Shadow.Sunken)
+    self.conf_page.addWidget(conf_page_fream2)
+
+    # 温度
+    conf_page_temperature_title = QLabel("温度（Temperature）")
+    conf_page_temperature_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    conf_page_temperature_title.setStyleSheet(title_style_sheet())
+    self.conf_page.addWidget(conf_page_temperature_title)
+    # 温度类型
+    self.conf_page_temperature = QLabel("-")
+    self.conf_page_temperature.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    self.conf_page_temperature.setStyleSheet(title_style_sheet())
+    self.conf_page.addWidget(self.conf_page_temperature)
+
+    # Top-P
+    conf_page_top_p_title = QLabel("Top-P")
+    conf_page_top_p_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    conf_page_top_p_title.setStyleSheet(title_style_sheet())
+    self.conf_page.addWidget(conf_page_top_p_title)
+    # top-p
+    self.conf_page_top_p = QLabel("-")
+    self.conf_page_top_p.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    self.conf_page_top_p.setStyleSheet(title_style_sheet())
+    self.conf_page.addWidget(self.conf_page_top_p)
+
+    # Max Token
+    conf_page_max_token_title = QLabel("Max Tokens")
+    conf_page_max_token_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    conf_page_max_token_title.setStyleSheet(title_style_sheet())
+    self.conf_page.addWidget(conf_page_max_token_title)
+    # max
+    self.conf_page_max_token = QLabel("-")
+    self.conf_page_max_token.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    self.conf_page_max_token.setStyleSheet(title_style_sheet())
+    self.conf_page.addWidget(self.conf_page_max_token)
+
+    # timeOut
+    conf_page_time_out_title = QLabel("TimeOut(单位秒：s)")
+    conf_page_time_out_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    conf_page_time_out_title.setStyleSheet(title_style_sheet())
+    self.conf_page.addWidget(conf_page_time_out_title)
+    # time
+    self.conf_page_time_out = QLabel("-")
+    self.conf_page_time_out.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    self.conf_page_time_out.setStyleSheet(title_style_sheet())
+    self.conf_page.addWidget(self.conf_page_time_out)
+
+    # 数据填充
+    if len(all_models) > 0:
+        model_conf_info(self, all_models[0])
+
+    # 尾部插入配置页面
+    self.model_lower_layout.addLayout(self.conf_page)
     # 尾部插入
     self.model_win_layout.addLayout(self.model_lower_layout)
+
+"""触发事件"""
+def on_item_clicked(self, item: QListWidgetItem):
+    model = item.data(Qt.ItemDataRole.UserRole)
+    model_conf_info(self, model)
+
+"""删除模型"""
+def remove_model_conf(self):
+    123
+
+"""编辑模型"""
+def modify_model_conf(self):
+    123
+
+"""模型详情"""
+def model_conf_info(self, model_conf):
+    if model_conf:
+        print(123)
+        self.conf_page_model_name.setText(model_conf['name'])
+        if model_conf['type'] == 1:
+            self.conf_page_model_type.setText("Custom")
+        if model_conf['type'] == 2:
+            self.conf_page_model_type.setText("Ollama")
+        if model_conf['type'] == 3:
+            self.conf_page_model_type.setText("oMLX")
+        self.conf_page_model_id.setText(model_conf['model_id'])
+        self.conf_page_base_url.setText(model_conf['url'])
+        self.conf_page_temperature.setText(str(model_conf['temperature']))
+        self.conf_page_top_p.setText(str(model_conf['top_p']))
+        self.conf_page_max_token.setText(str(model_conf['max_token']))
+        self.conf_page_time_out.setText(str(model_conf['time_out']))
+
+
+"""测试模型连接"""
+def test_connection(self):
+    try:
+        start_time = time.time()
+        if len(self.base_url.text()) < 1:
+            self.status_bar.showMessage("❌ Base URL连接地址为空")
+            return False
+
+        # 是否 ollama
+        is_ollama = "ollama" in self.type_combo.currentText().lower()
+        if not is_ollama and len(self.api_key.text()) < 1:
+            self.status_bar.showMessage("❌ API Key密匙为空")
+            return False
+
+        client = OpenAI(
+            base_url = self.base_url.text(),
+            api_key= self.api_key.text()
+        )
+
+        # 发送一个极短的请求来测试连通性
+        client.models.list()
+
+        end_time = time.time()
+        elapsed = (end_time - start_time) * 1000
+        self.status_bar.showMessage(f"✅ 连接成功！耗时:{elapsed:.2f}ms")
+        return True
+    except Exception as e:
+        print(e)
+        self.status_bar.showMessage("❌ 连接失败")
+        return False
 
 """更新模型列表"""
 def review_model_list(model_list):
@@ -94,6 +290,7 @@ def review_model_list(model_list):
             model_item = QListWidgetItem()
             # 设置高度（宽度由列表控制）
             model_item.setSizeHint(QSize(200, 80))  # 高度比卡片稍高
+            model_item.setData(Qt.ItemDataRole.UserRole, model)
             model_list.addItem(model_item)
 
             # ===== 关键：创建一个居中容器 =====
@@ -146,6 +343,8 @@ def review_model_list(model_list):
 
             # 将容器设置为列表项
             model_list.setItemWidget(model_item, container)
+
+    return all_model
 
 
 

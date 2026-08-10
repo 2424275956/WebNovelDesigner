@@ -249,7 +249,7 @@ class InsertModel(QDialog):
             )
 
             # 发送一个极短的请求来测试连通性
-            models = client.models.list()
+            client.models.list()
 
             end_time = time.time()
             elapsed = (end_time - start_time) * 1000
