@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QFra
 
 from windows.model.ModelWindows import model_open_windows
 from windows.project.ProjectWindows import project_open_windows, review_page
+from windows.prompt.PromptWindows import prompt_open_windows
 
 
 def create_button(text, icon_path):
@@ -114,8 +115,7 @@ class MainWindows(QMainWindow):
         """模型管理页面"""
         self.right_model_windows = model_open_windows(self)
         """提示词管理页面"""
-        self.right_prompt_windows = QLabel("这是 页面3 的内容")
-
+        self.right_prompt_windows = prompt_open_windows(self)
 
 
         """绑定页面与按钮（必须两者创建后）"""

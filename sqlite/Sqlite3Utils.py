@@ -59,3 +59,8 @@ def modify_model_conf(req_json):
 # 删除模型配置
 def remove_model_conf(conf_id):
     SqlDB.SqliteDB.execute("DELETE FROM model_info WHERE id = ?", (conf_id,))
+
+# 查询全部提示词
+def query_all_prompt():
+    data_list = SqlDB.SqliteDB.execute("SELECT * FROM prompt_info")
+    return data_list.fetchall()

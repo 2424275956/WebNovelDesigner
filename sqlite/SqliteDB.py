@@ -77,6 +77,16 @@ class SqliteDB:
                 );
             """)
 
+        # 提示词配置
+        if not db_exists or cls._is_database_empty("prompt_info"):
+            cursor = cls._conn.cursor()
+            cursor.executescript("""
+                CREATE TABLE IF NOT EXISTS prompt_info (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,           -- 提示词配置ID
+                    name TEXT NOT NULL                              -- 提示词配置名称
+                );
+            """)
+
 
 
     @classmethod
