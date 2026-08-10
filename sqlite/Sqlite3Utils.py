@@ -55,3 +55,7 @@ def modify_model_conf(req_json):
                             req_json['max_token'] if req_json['max_token'] is not None else 32768,
                             req_json['time_out'] if req_json['time_out'] is not None else 300,
                             req_json['id']))
+
+# 删除模型配置
+def remove_model_conf(conf_id):
+    SqlDB.SqliteDB.execute("DELETE FROM model_info WHERE id = ?", (conf_id,))

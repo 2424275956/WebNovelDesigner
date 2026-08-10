@@ -5,7 +5,8 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButt
     QListWidgetItem, QStatusBar
 from openai import OpenAI
 
-from sqlite.Sqlite3Utils import query_all_model
+from sqlite.Sqlite3Utils import query_all_model, remove_model_conf
+from sqlite.SqliteDB import SqliteDB
 from style.StyleSheet import button_style_sheet, title_style_sheet
 from . import InsertModel
 from . import ModifyModel
@@ -69,7 +70,7 @@ def review_page(self):
     self.model_list.setItemAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
     self.model_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
     # 渲染列表
-    all_models = review_model_list(self.model_list)
+    self.all_models = review_model_list(self.model_list)
     self.model_list.itemClicked.connect(lambda item: on_item_clicked(self, item))
     # 配置不为空
     if self.model_list.count() > 0:
@@ -112,7 +113,7 @@ def review_page(self):
     conf_page_row1_col4 = QPushButton("🗑️删除")
     conf_page_row1_col4.setStyleSheet(button_style_sheet())
     conf_page_row1_col4.setFixedSize(80, 30)
-    conf_page_row1_col4.clicked.connect(lambda : remove_model_conf(self))
+    conf_page_row1_col4.clicked.connect(lambda : delete_model_conf(self))
     conf_page_row1.addWidget(conf_page_row1_col4)
     self.conf_page.addLayout(conf_page_row1)
 
@@ -206,8 +207,8 @@ def review_page(self):
     self.conf_page.addWidget(self.conf_page_time_out)
 
     # 数据填充
-    if len(all_models) > 0:
-        model_conf_info(self, all_models[0])
+    if len(self.all_models) > 0:
+        model_conf_info(self, self.all_models[0])
 
     # 分割线
     conf_page_fream3 = QFrame()
@@ -241,8 +242,16 @@ def on_item_clicked(self, item: QListWidgetItem):
     model_conf_info(self, model)
 
 """删除模型"""
-def remove_model_conf(self):
-    123
+def delete_model_conf(self):
+    remove_model_conf(self.conf_page_id)
+    review_model_list(self.model_list)
+    # 配置不为空
+    if self.model_list.count() > 0:
+        self.model_list.setCurrentRow(0)
+    # 数据填充
+    if len(self.all_models) > 0:
+        model_conf_info(self, self.all_models[0])
+
 
 """编辑模型"""
 def modify_model_conf(self):
