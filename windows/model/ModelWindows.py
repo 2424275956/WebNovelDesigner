@@ -88,6 +88,6 @@ def insert_model(self):
     dialog = InsertModel.InsertModel(self)
     if dialog.exec() == QDialog.DialogCode.Accepted:
         # 对话框成功保存并关闭同时刷新页面
-        print(123)
+        123
 
 """模型配置"""

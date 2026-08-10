@@ -36,3 +36,12 @@ def remove_novel_info(project_id):
 def query_all_model():
     data_list = SqlDB.SqliteDB.execute("SELECT * FROM model_info")
     return data_list.fetchall()
+
+# 保存模型配置信息
+def insert_model_conf(req_json):
+    SqlDB.SqliteDB.execute("INSERT INTO model_info (name, type, api_key, url, model_id, temperature, top_p, max_token, time_out) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                           (req_json['name'], req_json['type'], req_json['api_key'], req_json['url'], req_json['model_id'],
+                            req_json['temperature'] if req_json['temperature'] is not None else 0.7,
+                            req_json['top_p'] if req_json['top_p'] is not None else 0.9,
+                            req_json['max_token'] if req_json['max_token'] is not None else 32768,
+                            req_json['time_out'] if req_json['time_out'] is not None else 300))

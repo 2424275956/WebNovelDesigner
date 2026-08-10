@@ -72,7 +72,7 @@ class SqliteDB:
                     model_id TEXT NOT NULL,                         -- 模型ID
                     temperature REAL NOT NULL DEFAULT '0.7',        -- 模型温度
                     top_p REAL NOT NULL DEFAULT '0.9',              -- Top-P选择
-                    max_token INTEGER NOT NULL DEFAULT 32769,       -- token长度
+                    max_token INTEGER NOT NULL DEFAULT 32768,       -- token长度
                     time_out INTEGER NOT NULL DEFAULT 300           -- 超时时间
                 );
             """)

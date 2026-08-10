@@ -2,11 +2,12 @@ import time
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QHBoxLayout, QLineEdit, QComboBox, QFrame, QPushButton, \
-    QMessageBox, QStatusBar
+    QStatusBar
 from openai import OpenAI
 
 from style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet
 from utils.DoubleLineEdit import DoubleLineEdit
+from sqlite.Sqlite3Utils import insert_model_conf
 
 """新增模型"""
 class InsertModel(QDialog):
@@ -43,10 +44,10 @@ class InsertModel(QDialog):
         layout_row1_col1 = QVBoxLayout()
         layout_row1_col1.setAlignment(Qt.AlignmentFlag.AlignLeft)
         # 模型名称
-        name_title = QLabel("模型名称")
-        name_title.setStyleSheet(title_style_sheet())
-        name_title.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        layout_row1_col1.addWidget(name_title)
+        self.name_title = QLabel("模型名称")
+        self.name_title.setStyleSheet(title_style_sheet())
+        self.name_title.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        layout_row1_col1.addWidget(self.name_title)
         # 模型名称输入框
         name_edit = QLineEdit()
         name_edit.setFixedSize(220, 40)
@@ -83,11 +84,11 @@ class InsertModel(QDialog):
         main_layout.addWidget(self.layout_row2)
 
         # 第三行
-        self.layout_row3 = QLineEdit()
-        self.layout_row3.setFixedSize(460, 40)
-        self.layout_row3.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.layout_row3.setStyleSheet(line_edit_style_sheet())
-        main_layout.addWidget(self.layout_row3)
+        self.api_key = QLineEdit()
+        self.api_key.setFixedSize(460, 40)
+        self.api_key.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.api_key.setStyleSheet(line_edit_style_sheet())
+        main_layout.addWidget(self.api_key)
 
         # 第四行
         layout_row4 = QLabel("Base URL")
@@ -96,11 +97,11 @@ class InsertModel(QDialog):
         main_layout.addWidget(layout_row4)
 
         # 第五行
-        self.layout_row5 = QLineEdit()
-        self.layout_row5.setFixedSize(460, 40)
-        self.layout_row5.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.layout_row5.setStyleSheet(line_edit_style_sheet())
-        main_layout.addWidget(self.layout_row5)
+        self.base_url = QLineEdit()
+        self.base_url.setFixedSize(460, 40)
+        self.base_url.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.base_url.setStyleSheet(line_edit_style_sheet())
+        main_layout.addWidget(self.base_url)
 
         # 第六行
         layout_row6 = QLabel("模型ID（示例：Qwen3.6-35B...）")
@@ -109,11 +110,11 @@ class InsertModel(QDialog):
         main_layout.addWidget(layout_row6)
 
         # 第七行
-        self.layout_row7 = QLineEdit()
-        self.layout_row7.setFixedSize(460, 40)
-        self.layout_row7.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.layout_row7.setStyleSheet(line_edit_style_sheet())
-        main_layout.addWidget(self.layout_row7)
+        self.model_id = QLineEdit()
+        self.model_id.setFixedSize(460, 40)
+        self.model_id.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.model_id.setStyleSheet(line_edit_style_sheet())
+        main_layout.addWidget(self.model_id)
 
         # 第八行
         layout_row8 = QFrame()
@@ -133,11 +134,12 @@ class InsertModel(QDialog):
         temperature_title.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout_row9_col1.addWidget(temperature_title)
         # 温度输入
-        temperature_edit = DoubleLineEdit(0.1, 2.0, 1)
-        temperature_edit.setFixedSize(220, 40)
-        temperature_edit.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        temperature_edit.setStyleSheet(line_edit_style_sheet())
-        layout_row9_col1.addWidget(temperature_edit)
+        self.temperature_edit = DoubleLineEdit(0.1, 2.0, 1)
+        self.temperature_edit.setText(str(0.7))
+        self.temperature_edit.setFixedSize(220, 40)
+        self.temperature_edit.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.temperature_edit.setStyleSheet(line_edit_style_sheet())
+        layout_row9_col1.addWidget(self.temperature_edit)
         layout_row9.addLayout(layout_row9_col1)
 
         # 第九行第2列
@@ -149,11 +151,12 @@ class InsertModel(QDialog):
         top_p_title.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout_row9_col2.addWidget(top_p_title)
         # Top-P输入
-        top_p_edit = DoubleLineEdit(0.10, 1.00, 2)
-        top_p_edit.setFixedSize(220, 40)
-        top_p_edit.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        top_p_edit.setStyleSheet(line_edit_style_sheet())
-        layout_row9_col2.addWidget(top_p_edit)
+        self.top_p_edit = DoubleLineEdit(0.10, 1.00, 2)
+        self.top_p_edit.setFixedSize(220, 40)
+        self.top_p_edit.setText(str(0.9))
+        self.top_p_edit.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.top_p_edit.setStyleSheet(line_edit_style_sheet())
+        layout_row9_col2.addWidget(self.top_p_edit)
         layout_row9.addLayout(layout_row9_col2)
         main_layout.addLayout(layout_row9)
 
@@ -169,11 +172,12 @@ class InsertModel(QDialog):
         token_title.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout_row10_col1.addWidget(token_title)
         # token输入
-        token_edit = DoubleLineEdit(8000, 256000, 0)
-        token_edit.setFixedSize(220, 40)
-        token_edit.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        token_edit.setStyleSheet(line_edit_style_sheet())
-        layout_row10_col1.addWidget(token_edit)
+        self.token_edit = DoubleLineEdit(8000, 256000, 0)
+        self.token_edit.setFixedSize(220, 40)
+        self.token_edit.setText(str(32768))
+        self.token_edit.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.token_edit.setStyleSheet(line_edit_style_sheet())
+        layout_row10_col1.addWidget(self.token_edit)
         layout_row10.addLayout(layout_row10_col1)
 
         # 第10行第2列
@@ -185,11 +189,12 @@ class InsertModel(QDialog):
         time_out_title.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout_row10_col2.addWidget(time_out_title)
         # timeOut输入
-        time_out_edit = DoubleLineEdit(300, 3600, 0)
-        time_out_edit.setFixedSize(220, 40)
-        time_out_edit.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        time_out_edit.setStyleSheet(line_edit_style_sheet())
-        layout_row10_col2.addWidget(time_out_edit)
+        self.time_out_edit = DoubleLineEdit(300, 3600, 0)
+        self.time_out_edit.setFixedSize(220, 40)
+        self.time_out_edit.setText(str(300))
+        self.time_out_edit.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.time_out_edit.setStyleSheet(line_edit_style_sheet())
+        layout_row10_col2.addWidget(self.time_out_edit)
         layout_row10.addLayout(layout_row10_col2)
         main_layout.addLayout(layout_row10)
 
@@ -224,24 +229,23 @@ class InsertModel(QDialog):
         layout_row12.addWidget(confirm_btn)
         main_layout.addLayout(layout_row12)
 
-        self.accept()
-
     """测试模型连接"""
     def test_connection(self):
         try:
             start_time = time.time()
-            if len(self.layout_row5.text()) < 1:
+            if len(self.base_url.text()) < 1:
                 self.status_bar.showMessage("❌ Base URL连接地址为空")
                 return False
 
             # 是否 ollama
-            is_custom = "custom" in self.type_combo.currentText().lower()
-            if is_custom and len(self.layout_row3.text()) < 1:
+            is_ollama = "ollama" in self.type_combo.currentText().lower()
+            if not is_ollama and len(self.api_key.text()) < 1:
                 self.status_bar.showMessage("❌ API Key密匙为空")
+                return False
 
             client = OpenAI(
-                base_url = self.layout_row5.text(),
-                api_key= self.layout_row3.text()
+                base_url = self.base_url.text(),
+                api_key= self.api_key.text()
             )
 
             # 发送一个极短的请求来测试连通性
@@ -258,7 +262,50 @@ class InsertModel(QDialog):
 
     "确认模型配置"
     def confirm_model(self):
-        123
+        # 模型名称
+        name = self.name_title.text()
+        if len(name) < 1:
+            self.status_bar.showMessage("❌ 模型名称为空")
+            return False
+
+        # 配置类型
+        model_type = self.type_combo.currentData()
+        if model_type is None:
+            self.status_bar.showMessage("❌ 模型类型为空")
+            return False
+        
+        # baseUrl
+        url = self.base_url.text()
+        if url is None:
+            self.status_bar.showMessage("❌ BaseURL地址为空")
+            return False
+
+        # api_key
+        api_key = self.api_key.text()
+        if api_key is None:
+            self.status_bar.showMessage("❌ API Key密匙为空")
+            return False
+            
+        # model_id
+        model_id = self.model_id.text()
+        if model_id is None:
+            self.status_bar.showMessage("❌ 模型ID为空")
+            return False
+        
+        # 保存配置信息
+        req_json = {
+            "name": name,
+            "type": model_type,
+            "url": url,
+            "api_key": api_key,
+            "model_id": model_id,
+            "temperature": self.temperature_edit.text(),
+            "top_p": self.top_p_edit.text(),
+            "max_token": self.token_edit.text(),
+            "time_out": self.time_out_edit.text()
+        }
+        insert_model_conf(req_json)
+        return self.accept()
 
     """根据选择的提供商动态显示或隐藏控件"""
     def update_ui_visibility(self, text:str):
@@ -269,7 +316,7 @@ class InsertModel(QDialog):
         # 2. 设置可见性
         # 如果是 Ollama，则隐藏（False），否则显示（True）
         self.layout_row2.setVisible(not is_ollama)
-        self.layout_row3.setVisible(not is_ollama)
+        self.api_key.setVisible(not is_ollama)
 
         # 窗口大小
         if is_ollama:
@@ -279,7 +326,7 @@ class InsertModel(QDialog):
 
         # 可选：如果是 Ollama，自动填入默认地址
         if is_ollama:
-            self.layout_row5.setText("http://localhost:11434/v1")
+            self.base_url.setText("http://localhost:11434/v1")
 
         if is_o_mlx:
-            self.layout_row5.setText("http://localhost:8080/v1")
+            self.base_url.setText("http://localhost:8080/v1")
