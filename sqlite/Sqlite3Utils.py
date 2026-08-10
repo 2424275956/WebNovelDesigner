@@ -64,3 +64,8 @@ def remove_model_conf(conf_id):
 def query_all_prompt():
     data_list = SqlDB.SqliteDB.execute("SELECT * FROM prompt_info")
     return data_list.fetchall()
+
+# 新增提示词配置
+def insert_prompt_conf(name):
+    cursor = SqlDB.SqliteDB.execute("INSERT INTO prompt_info (name) VALUES (?)", (name,))
+    return cursor.lastrowid

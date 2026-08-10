@@ -1,8 +1,10 @@
 from PyQt6.QtCore import Qt, QSize
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QListWidget, QListWidgetItem
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QListWidget, \
+    QListWidgetItem, QDialog
 
 from sqlite.Sqlite3Utils import query_all_prompt
 from style.StyleSheet import button_style_sheet, title_style_sheet
+from windows.prompt.InsertPrompt import InsertModel
 
 """提示词窗口"""
 def prompt_open_windows(self):
@@ -18,6 +20,11 @@ def prompt_open_windows(self):
     review_page(self)
 
     return central_widget
+
+def show_insert_dialog(self):
+    dialog = InsertModel(self)
+    if dialog.exec() == QDialog.DialogCode.Accepted:
+        review_prompt_list(self.model_list)
 
 """页面渲染"""
 def review_page(self):
@@ -39,7 +46,7 @@ def review_page(self):
     # 按钮样式
     insert_model_btn.setStyleSheet(button_style_sheet())
     # 按钮触发函数
-    insert_model_btn.clicked.connect(lambda: 123)
+    insert_model_btn.clicked.connect(lambda: show_insert_dialog(self))
     header_layout.addWidget(insert_model_btn)
 
     # 新增导入按钮
@@ -73,7 +80,7 @@ def review_page(self):
     self.model_list.setItemAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
     self.model_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
     # 渲染列表
-    self.all_models = review_model_list(self.model_list)
+    self.all_models = review_prompt_list(self.model_list)
     self.model_list.itemClicked.connect(lambda item: 123)
     # 配置不为空
     if self.model_list.count() > 0:
@@ -134,7 +141,7 @@ def review_page(self):
 
 
 """更新模型列表"""
-def review_model_list(model_list):
+def review_prompt_list(model_list):
     # 清空item
     model_list.clear()
 
@@ -183,17 +190,6 @@ def review_model_list(model_list):
             label = QLabel(model['name'])
             label.setStyleSheet("color: white;border: none; padding: 0; margin: 0; background: transparent;")
             frame_layout.addWidget(label)
-
-            # 模型类型
-            model_type = "Custom"
-            if "2" == model['type']:
-                model_type = "Ollama"
-            if "3" == model['type']:
-                model_type = "oMLX"
-            type_label = QLabel(model_type)
-            type_label.setStyleSheet("color: white;border: none; padding: 0; margin: 0; background: transparent;")
-            frame_layout.addWidget(type_label)
-
 
             # 将卡片添加到容器（居中）
             container_layout.addWidget(model_frame)
