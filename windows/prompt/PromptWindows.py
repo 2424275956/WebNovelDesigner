@@ -1,9 +1,12 @@
+import os
+
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QListWidget, \
-    QListWidgetItem, QDialog, QPlainTextEdit, QScrollArea, QLineEdit, QStatusBar
+    QListWidgetItem, QDialog, QPlainTextEdit, QScrollArea, QLineEdit, QStatusBar, QFileDialog
+import json as std_json
 
 from sqlite.Sqlite3Utils import query_all_prompt, query_scene_prompt, save_prompt_info, query_system_prompt, \
-    query_user_prompt, remove_prompt
+    query_user_prompt, remove_prompt, query_prompt_info_by_id
 from style.StyleSheet import button_style_sheet, title_style_sheet, line_edit_style_sheet
 from windows.prompt.InsertPrompt import InsertModel
 
@@ -128,6 +131,63 @@ def save_prompt_conf(self):
     self.prompt_status_bar.showMessage(f"✅ 提示词模版保存成功")
     return True
 
+"""导出模版"""
+def export_prompt(self):
+    if self.prompt_id is None:
+        self.prompt_status_bar.showMessage(f"❌ 提示词模版ID获取失败")
+        return False
+    model = query_prompt_info_by_id(self.prompt_id)
+    if len(model) <= 0:
+        self.prompt_status_bar.showMessage(f"❌ 提示词模版信息获取失败")
+        return False
+    system = query_system_prompt(model[0]['id'])
+    if len(system[0]['context']) <= 0:
+        self.prompt_status_bar.showMessage("❌ 系统提示词规则为空")
+        return False
+    # 用户提示词
+    user = query_user_prompt(model[0]['id'])
+    if len(user[0]['context']) <= 0:
+        self.prompt_status_bar.showMessage("❌ 用户提示词规则为空")
+        return False
+    # 场景规则查询
+    all_scene_prompt = query_scene_prompt(self.prompt_id)
+    if len(all_scene_prompt) <= 0:
+        self.prompt_status_bar.showMessage("❌ 场景提示词规则为空")
+        return False
+    # 场景提示词组装
+    scene_data = []
+    for scene in all_scene_prompt:
+        scene_data.append({
+            "scene_name": scene['scene_name'],
+            "scene_identify": scene['scene_identify'],
+            "scene_rules": scene['context']
+        })
+    export_json = {
+        "prompt_name": model[0]['name'],
+        "system_prompt": system[0]['context'],
+        "user_prompt": user[0]['context'],
+        "scene_prompt": scene_data
+    }
+
+    # 弹出文件夹选择对话框，让用户选择保存位置
+    folder_path = QFileDialog.getExistingDirectory(self, "请选择导出文件夹")
+    # 4. 检查用户是否选择了文件夹（防止用户直接点击取消）
+    if folder_path:
+        # 拼接完整的文件路径
+        file_path = os.path.join(folder_path, f"{model[0]['name']}.json")
+
+        # 5. 将数据写入 JSON 文件
+        try:
+            with open(file_path, "w", encoding="utf-8") as file:
+                # indent=4 用于格式化输出，ensure_ascii=False 用于正确保存中文
+                std_json.dump(export_json, file, indent=4, ensure_ascii=False)
+            self.prompt_status_bar.showMessage("✅ 文件导出成功")
+        except Exception as e:
+            self.prompt_status_bar.showMessage("❌ 导出失败")
+            print(f"导出失败: {e}")
+            return False
+    return True
+
 
 """提示词窗口"""
 def prompt_open_windows(self):
@@ -244,7 +304,7 @@ def review_page(self):
     conf_page_row1_col2 = QPushButton("⏬导出模版")
     conf_page_row1_col2.setStyleSheet(button_style_sheet())
     conf_page_row1_col2.setFixedSize(100, 30)
-    conf_page_row1_col2.clicked.connect(lambda : 123)
+    conf_page_row1_col2.clicked.connect(lambda : export_prompt(self))
     conf_page_row1.addWidget(conf_page_row1_col2)
     # 编辑
     conf_page_row1_col3 = QPushButton("🖊保存")

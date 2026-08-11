@@ -65,6 +65,11 @@ def query_all_prompt():
     data_list = SqlDB.SqliteDB.execute("SELECT * FROM prompt_info")
     return data_list.fetchall()
 
+# 根据id获取模版提示词项目
+def query_prompt_info_by_id(prompt_id):
+    data_list = SqlDB.SqliteDB.execute("SELECT * FROM prompt_info WHERE id = ?", (prompt_id,))
+    return data_list.fetchall()
+
 # 新增提示词配置
 def insert_prompt_conf(name):
     cursor = SqlDB.SqliteDB.execute("INSERT INTO prompt_info (name) VALUES (?)", (name,))
