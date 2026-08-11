@@ -287,7 +287,7 @@ def create_scene_prompt_text(self):
     scene_delete = QPushButton("🗑️删除")
     scene_delete.setFixedSize(80, 30)
     scene_delete.setStyleSheet(button_style_sheet())
-    scene_delete.clicked.connect(lambda : 123)
+    scene_delete.clicked.connect(lambda : remove_scene_prompt(self, model_item))
     top_layout.addWidget(scene_delete)
     frame_layout.addLayout(top_layout)
 
@@ -331,14 +331,26 @@ def create_scene_prompt_text(self):
 
     frame_layout.addLayout(low_layout)
 
-
-
     # 将卡片添加到容器（居中）
     container_layout.addWidget(model_frame)
 
     # 将容器设置为列表项
     self.scene_prompt_list.setItemWidget(model_item, container)
 
+"""删除卡片"""
+def remove_scene_prompt(self, item):
+    if item is None:
+        return
+
+    # 1. 获取该 item 在列表中的行号
+    row = self.scene_prompt_list.row(item)
+
+    # 2. 从列表中移除该 item（takeItem 会解除它与列表的绑定）
+    taken_item = self.scene_prompt_list.takeItem(row)
+
+    # 3. 【关键】手动删除 item 释放内存（takeItem 不会自动释放内存）
+    if taken_item:
+        del taken_item
 
 """场景规则渲染列表"""
 def review_scene_prompt_list(model_list):
@@ -382,22 +394,6 @@ def review_scene_prompt_list(model_list):
             frame_layout = QVBoxLayout(model_frame)
             frame_layout.setContentsMargins(10, 5, 10, 5)
             frame_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
-
-            # 模型名称
-            # label = QLabel(model['name'])
-            # label.setStyleSheet("color: white;border: none; padding: 0; margin: 0; background: transparent;")
-            # frame_layout.addWidget(label)
-            #
-            # # 模型类型
-            # model_type = "Custom"
-            # if "2" == model['type']:
-            #     model_type = "Ollama"
-            # if "3" == model['type']:
-            #     model_type = "oMLX"
-            # type_label = QLabel(model_type)
-            # type_label.setStyleSheet("color: white;border: none; padding: 0; margin: 0; background: transparent;")
-            # frame_layout.addWidget(type_label)
-
 
             # 将卡片添加到容器（居中）
             container_layout.addWidget(model_frame)
