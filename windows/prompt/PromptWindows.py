@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButt
 import json as std_json
 
 from sqlite.Sqlite3Utils import query_all_prompt, query_scene_prompt, save_prompt_info, query_system_prompt, \
-    query_user_prompt, remove_prompt, query_prompt_info_by_id
+    query_user_prompt, remove_prompt, query_prompt_info_by_id, import_prompt_template
 from style.StyleSheet import button_style_sheet, title_style_sheet, line_edit_style_sheet
 from windows.prompt.InsertPrompt import InsertModel
 
@@ -44,6 +44,77 @@ def delete_prompt(self):
     if len(self.all_models) > 0:
         prompt_page_info(self, self.all_models[0])
 
+"""导入配置"""
+def import_prompt(self):
+    """使用文件对话框选择文件"""
+    file_path, _ = QFileDialog.getOpenFileName(
+        self,
+        "选择文件",
+        "",
+        "文本文件 (*.json)"
+    )
+    if file_path:
+        with open(file_path, "r", encoding="utf-8") as file:
+            json_data = std_json.load(file)
+            # 长度校验
+            if len(json_data) <= 0:
+                self.prompt_status_bar.showMessage(f"❌ json数据解析为空")
+                return False
+            # 名称
+            name = json_data['prompt_name']
+            if len(name) <= 0:
+                self.prompt_status_bar.showMessage(f"❌ 提示词模版名称为空")
+                return False
+            # 系统提示词
+            system = json_data['system_prompt']
+            if len(system) <= 0:
+                self.prompt_status_bar.showMessage(f"❌ 系统提示词规则为空")
+                return False
+            # 用户提示词
+            user = json_data['user_prompt']
+            if len(user) <= 0:
+                self.prompt_status_bar.showMessage(f"❌ 用户提示词规则为空")
+                return False
+            # 场景提示词
+            scene = json_data['scene_prompt']
+            scene_data = []
+            if len(scene) <= 0:
+                self.prompt_status_bar.showMessage(f"❌ 场景提示词规则为空")
+                return False
+            for i, item in enumerate(scene):
+                scene_name = item['scene_name']
+                if len(scene_name) <= 0:
+                    self.prompt_status_bar.showMessage(f"❌ 第{i + 1}条场景提示词场景名称为空")
+                    return False
+                scene_identify = item['scene_identify']
+                if len(scene_identify) <= 0:
+                    self.prompt_status_bar.showMessage(f"❌ 第{i + 1}条场景提示词识别规则为空")
+                    return False
+                scene_rules = item['scene_rules']
+                if len(scene_rules) <= 0:
+                    self.prompt_status_bar.showMessage(f"❌ 第{i + 1}条场景提示词改写规则为空")
+                    return False
+                scene_data.append({
+                    "name": scene_name,
+                    "identify_text": scene_identify,
+                    "rules_text": scene_rules
+                })
+            # 请求组装
+            req_json = {
+                "name": name,
+                "system": system,
+                "user": user,
+                "scene": scene_data
+            }
+            # 保存
+            import_prompt_template(req_json)
+            # 渲染左侧列表
+            self.all_models = review_prompt_list(self.model_list)
+            self.prompt_status_bar.showMessage(f"✅ 导入模版成功")
+            return True
+    else:
+        self.prompt_status_bar.showMessage(f"❌ 未获取到文件地址")
+        return False
 
 """保存模版"""
 def save_prompt_conf(self):
@@ -245,7 +316,7 @@ def review_page(self):
     # 按钮样式
     import_model_btn.setStyleSheet(button_style_sheet())
     # 按钮触发函数
-    import_model_btn.clicked.connect(lambda: 123)
+    import_model_btn.clicked.connect(lambda: import_prompt(self))
     header_layout.addWidget(import_model_btn)
 
     # 加入主架构

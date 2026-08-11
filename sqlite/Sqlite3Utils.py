@@ -110,6 +110,18 @@ def save_prompt_info(req_json):
     SqlDB.SqliteDB.execute_batch("INSERT INTO prompt_rules (prompt_id, scene_name, scene_identify, context, type) VALUES (?, ?, ?, ?, ?)"
                                  , scene_data)
 
+# 导入提示词信息
+def import_prompt_template(req_json):
+    # 获取名称
+    prompt_id = insert_prompt_conf(req_json['name'])
+    save_req_json = {
+        "id": prompt_id,
+        "system": req_json['system'],
+        "user": req_json['user'],
+        "scene": req_json['scene']
+    }
+    save_prompt_info(save_req_json)
+
 # 删除提示词模版
 def remove_prompt(prompt_id):
     # 删除提示词规则
