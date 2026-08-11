@@ -70,10 +70,21 @@ def insert_prompt_conf(name):
     cursor = SqlDB.SqliteDB.execute("INSERT INTO prompt_info (name) VALUES (?)", (name,))
     return cursor.lastrowid
 
-# 查询全部场景提示词
-def query_all_scene_prompt():
-    data_list = SqlDB.SqliteDB.execute("SELECT * FROM prompt_rules WHERE type = 3")
+# 查询场景提示词
+def query_scene_prompt(prompt_id):
+    data_list = SqlDB.SqliteDB.execute("SELECT * FROM prompt_rules WHERE type = 3 and prompt_id = ?", (prompt_id,))
     return data_list.fetchall()
+
+# 查询系统提示词
+def query_system_prompt(prompt_id):
+    data_list = SqlDB.SqliteDB.execute("SELECT * FROM prompt_rules WHERE type = 1 and prompt_id = ?", (prompt_id,))
+    return data_list.fetchall()
+
+# 查询用户提示词
+def query_user_prompt(prompt_id):
+    data_list = SqlDB.SqliteDB.execute("SELECT * FROM prompt_rules WHERE type = 2 and prompt_id = ?", (prompt_id,))
+    return data_list.fetchall()
+
 
 # 保存提示词信息
 def save_prompt_info(req_json):
@@ -91,4 +102,5 @@ def save_prompt_info(req_json):
     scene_list = req_json['scene']
     for scene in scene_list:
         scene_data.append((prompt_id, scene['name'], scene['identify_text'], scene['rules_text'], 3))
-    SqlDB.SqliteDB.execute_batch("INSERT INTO prompt_rules (prompt_id, scene_name, scene_identify, context, type) VALUES (?, ?, ?, ?, ?)", scene_data)
+    SqlDB.SqliteDB.execute_batch("INSERT INTO prompt_rules (prompt_id, scene_name, scene_identify, context, type) VALUES (?, ?, ?, ?, ?)"
+                                 , scene_data)

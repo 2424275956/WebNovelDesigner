@@ -2,7 +2,8 @@ from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QListWidget, \
     QListWidgetItem, QDialog, QPlainTextEdit, QScrollArea, QLineEdit, QStatusBar
 
-from sqlite.Sqlite3Utils import query_all_prompt, query_all_scene_prompt, save_prompt_info
+from sqlite.Sqlite3Utils import query_all_prompt, query_scene_prompt, save_prompt_info, query_system_prompt, \
+    query_user_prompt
 from style.StyleSheet import button_style_sheet, title_style_sheet, line_edit_style_sheet
 from windows.prompt.InsertPrompt import InsertModel
 
@@ -16,7 +17,22 @@ def on_item_clicked(self, item: QListWidgetItem):
 
 """页面信息"""
 def prompt_page_info(self, model):
-    123
+    # 系统提示词
+    system = query_system_prompt(model['id'])
+    if system:
+        self.system_prompt.setPlainText(system[0]['context'])
+    # 标题
+    self.conf_page_model_name.setText(model['name'])
+    # 用户提示词
+    user = query_user_prompt(model['id'])
+    if user:
+        self.user_prompt.setPlainText(user[0]['context'])
+    # 场景提示词
+    # 清空场景提示词
+    self.scene_prompt_list.clear()
+    # 渲染
+    review_scene_prompt_list(self.scene_prompt_list, model['id'])
+
 
 """保存模版"""
 def save_prompt_conf(self):
@@ -41,6 +57,10 @@ def save_prompt_conf(self):
         self.prompt_status_bar.showMessage("❌ 未选择提示词模版")
         return False
     # 场景规则 循环获取
+    if len(self.scene_prompt_list) <= 0:
+        self.prompt_status_bar.showMessage("❌ 场景提示词模版为空")
+        return False
+
     scene = []
     for index in range(self.scene_prompt_list.count()):
         # 获取到item并循环处理
@@ -56,30 +76,30 @@ def save_prompt_conf(self):
                 # 场景名称
                 scene_name = custom_widget.findChild(QLineEdit, "scene_name")
                 if scene_name is None:
-                    self.prompt_status_bar.showMessage(f"❌ 第{index + 1}行场景规则，场景名称对象获取失败")
+                    self.prompt_status_bar.showMessage(f"❌ 序号：{index + 1} ,场景名称对象获取失败")
                     return False
                 else:
                     if len(scene_name.text()) <= 0:
-                        self.prompt_status_bar.showMessage("❌ 第{index + 1}行场景规则，场景名称为空")
+                        self.prompt_status_bar.showMessage(f"❌ 序号：{index + 1} ,场景名称为空")
                         return False
                 # 识别点
                 identify_text = custom_widget.findChild(QPlainTextEdit, "identify_text")
                 if identify_text is None:
-                    self.prompt_status_bar.showMessage(f"❌ 第{index + 1}行场景规则，场景识别规则对象获取失败")
+                    self.prompt_status_bar.showMessage(f"❌ 序号：{index + 1} ,场景识别规则对象获取失败")
                     return False
                 else:
                     if len(identify_text.toPlainText()) <= 0:
-                        self.prompt_status_bar.showMessage("❌ 第{index + 1}行场景规则，场景识别规则为空")
+                        self.prompt_status_bar.showMessage(f"❌ 序号：{index + 1} ,场景识别规则为空")
                         return False
 
                 # 改写规则
                 rules_text = custom_widget.findChild(QPlainTextEdit, "rules_text")
                 if rules_text is None:
-                    self.prompt_status_bar.showMessage(f"❌ 第{index + 1}行场景规则，场景改写规则对象获取失败")
+                    self.prompt_status_bar.showMessage(f"❌ 序号：{index + 1} ,场景改写规则对象获取失败")
                     return False
                 else:
                     if len(rules_text.toPlainText()) <= 0:
-                        self.prompt_status_bar.showMessage("❌ 第{index + 1}行场景规则，场景改写规则为空")
+                        self.prompt_status_bar.showMessage(f"❌ 序号：{index + 1} ,场景改写规则为空")
                         return False
                 # json组装
                 scene.append({
@@ -132,13 +152,6 @@ def review_page(self):
     title_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #333;")
     header_layout.addWidget(title_label)
 
-    header_layout.addStretch()
-
-    # 状态栏标题
-    status_bar_title = QLabel("状态提示：")
-    status_bar_title.setAlignment(Qt.AlignmentFlag.AlignLeft)
-    status_bar_title.setStyleSheet("font-size: 24px; font-weight: bold; color: #333;")
-    header_layout.addWidget(status_bar_title)
     # 状态栏
     self.prompt_status_bar = QStatusBar()
     header_layout.addWidget(self.prompt_status_bar)
@@ -189,6 +202,10 @@ def review_page(self):
     # 渲染列表
     self.all_models = review_prompt_list(self.model_list)
     self.model_list.itemClicked.connect(lambda item: on_item_clicked(self, item))
+    # 设置prompt_id
+    if self.all_models and len(self.all_models) > 0:
+        model = self.all_models[0]
+        self.prompt_id = model['id']
     # 配置不为空
     if self.model_list.count() > 0:
         self.model_list.setCurrentRow(0)
@@ -317,10 +334,14 @@ def review_page(self):
     self.scene_prompt_list.setItemAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
     self.scene_prompt_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
     # 渲染列表
-    review_scene_prompt_list(self.scene_prompt_list)
+    review_scene_prompt_list(self.scene_prompt_list, self.prompt_id)
     prompt_inner_layout.addWidget(self.scene_prompt_list)
 
     self.conf_page.addWidget(scroll_area)
+
+    # 渲染默认页面
+    if self.all_models:
+        prompt_page_info(self, self.all_models[0])
 
     # 尾部插入配置页面
     self.model_lower_layout.addLayout(self.conf_page)
@@ -382,6 +403,11 @@ def create_scene_prompt_text(self):
     top_layout.addWidget(scene_name)
     # 弹开按钮
     top_layout.addStretch()
+    # 序号
+    sort = QLabel("序号：1")
+    sort.setObjectName("sort")
+    sort.setStyleSheet(title_style_sheet(color='white'))
+    top_layout.addWidget(sort)
     # 按钮
     scene_delete = QPushButton("🗑️删除")
     scene_delete.setFixedSize(80, 30)
@@ -437,6 +463,8 @@ def create_scene_prompt_text(self):
 
     # 将容器设置为列表项
     self.scene_prompt_list.setItemWidget(model_item, container)
+    # 重排序
+    sort_scene_rules(self.scene_prompt_list)
 
 """删除卡片"""
 def remove_scene_prompt(scene_prompt_list, item):
@@ -452,14 +480,36 @@ def remove_scene_prompt(scene_prompt_list, item):
     # 3. 【关键】手动删除 item 释放内存（takeItem 不会自动释放内存）
     if taken_item:
         del taken_item
+    # 重排序
+    sort_scene_rules(scene_prompt_list)
+
+
+"""场景规则重排序"""
+def sort_scene_rules(scene_prompt_list):
+    # 重新排序
+    for index in range(scene_prompt_list.count()):
+        # 获取到item并循环处理
+        item = scene_prompt_list.item(index)
+
+        # item不可以为空
+        if item:
+            # 通过 QListWidget 的 itemWidget() 方法，取出绑定到该 item 上的真实 QWidget
+            custom_widget = scene_prompt_list.itemWidget(item)
+
+            # 容器不为空
+            if custom_widget:
+                # 场景名称
+                sort = custom_widget.findChild(QLabel, "sort")
+                if sort:
+                    sort.setText(f"序号：{index + 1}")
 
 """场景规则渲染列表"""
-def review_scene_prompt_list(model_list):
+def review_scene_prompt_list(model_list, prompt_id):
     # 场景规则查询
-    all_scene_prompt = query_all_scene_prompt()
+    all_scene_prompt = query_scene_prompt(prompt_id)
     # 内容不为空
     if all_scene_prompt:
-        for prompt in all_scene_prompt:
+        for row, prompt in enumerate(all_scene_prompt):
             # 创建item占位
             model_item = QListWidgetItem()
             # 设置高度（宽度由列表控制）
@@ -514,6 +564,11 @@ def review_scene_prompt_list(model_list):
             top_layout.addWidget(scene_name)
             # 弹开按钮
             top_layout.addStretch()
+            # 序号
+            sort = QLabel(f"序号：{row + 1}")
+            sort.setObjectName("sort")
+            sort.setStyleSheet(title_style_sheet(color='white'))
+            top_layout.addWidget(sort)
             # 按钮
             scene_delete = QPushButton("🗑️删除")
             scene_delete.setFixedSize(80, 30)
