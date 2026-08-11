@@ -1,6 +1,6 @@
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QListWidget, \
-    QListWidgetItem, QDialog, QTextEdit, QPlainTextEdit, QScrollArea
+    QListWidgetItem, QDialog, QTextEdit, QPlainTextEdit, QScrollArea, QLineEdit
 
 from sqlite.Sqlite3Utils import query_all_prompt, query_all_scene_prompt
 from style.StyleSheet import button_style_sheet, title_style_sheet, line_edit_style_sheet
@@ -207,7 +207,7 @@ def review_page(self):
     insert_scene_prompt_btn = QPushButton("+ 新增场景规则")
     insert_scene_prompt_btn.setFixedSize(120, 30)
     insert_scene_prompt_btn.setStyleSheet(button_style_sheet())
-    insert_scene_prompt_btn.clicked.connect(lambda : 123)
+    insert_scene_prompt_btn.clicked.connect(lambda : create_scene_prompt_text(self))
     scene_prompt_top.addWidget(insert_scene_prompt_btn)
     prompt_inner_layout.addLayout(scene_prompt_top)
 
@@ -228,6 +228,117 @@ def review_page(self):
     self.model_lower_layout.addLayout(self.conf_page)
     # 尾部插入
     self.model_win_layout.addLayout(self.model_lower_layout)
+
+"""增加场景规则"""
+def create_scene_prompt_text(self):
+    # 新创卡片
+    model_item = QListWidgetItem()
+    # 设置高度（宽度由列表控制）
+    model_item.setSizeHint(QSize(680, 200))
+    self.scene_prompt_list.insertItem(0, model_item)
+
+    # ===== 关键：创建一个居中容器 =====
+    container = QWidget()
+    container.setFixedSize(680, 200)
+
+    # 容器内部使用水平布局，让卡片居中
+    container_layout = QHBoxLayout(container)
+    container_layout.setContentsMargins(10, 10, 10, 10)
+    container_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+    # 创建卡片
+    model_frame = QFrame()
+    model_frame.setFixedSize(670, 200)
+    model_frame.setStyleSheet("""
+                QFrame {
+                    background-color: #2D3436;
+                    border-radius: 12px;
+                    border: 1px solid #3D4447;
+                }
+                QFrame:hover {
+                    border: 1px solid #4A90D9;
+                    background-color: #353D3F;
+                }
+            """)
+
+    # 卡片内部布局
+    frame_layout = QVBoxLayout(model_frame)
+    frame_layout.setContentsMargins(10, 5, 10, 5)
+    frame_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+
+    # 顶部
+    top_layout = QHBoxLayout()
+    top_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    # 场景名称
+    scene_name_title = QLabel("场景名称：")
+    scene_name_title.setFixedSize(80, 30)
+    scene_name_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    scene_name_title.setStyleSheet(title_style_sheet(color='white'))
+    top_layout.addWidget(scene_name_title)
+    # 场景名称修改
+    scene_name = QLineEdit()
+    scene_name.setFixedSize(300, 30)
+    scene_name.setAlignment(Qt.AlignmentFlag.AlignLeft)
+    scene_name.setStyleSheet(line_edit_style_sheet(15))
+    top_layout.addWidget(scene_name)
+    # 弹开按钮
+    top_layout.addStretch()
+    # 按钮
+    scene_delete = QPushButton("🗑️删除")
+    scene_delete.setFixedSize(80, 30)
+    scene_delete.setStyleSheet(button_style_sheet())
+    scene_delete.clicked.connect(lambda : 123)
+    top_layout.addWidget(scene_delete)
+    frame_layout.addLayout(top_layout)
+
+    # 底部框
+    low_layout = QHBoxLayout()
+    low_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    # 左侧布局
+    low_col1 = QVBoxLayout()
+    low_col1.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    # 识别框标题
+    identify_title = QLabel("场景识别匹配规则")
+    identify_title.setFixedHeight(30)
+    identify_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    identify_title.setStyleSheet(title_style_sheet(color='white'))
+    low_col1.addWidget(identify_title)
+    # 识别框
+    identify_text = QPlainTextEdit()
+    identify_text.setFixedSize(200, 100)
+    identify_text.setStyleSheet(line_edit_style_sheet())
+    low_col1.addWidget(identify_text)
+    low_layout.addLayout(low_col1)
+
+    # 弹开距离
+    low_layout.addStretch()
+
+    # 右侧布局
+    low_col2 = QVBoxLayout()
+    low_col2.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    # 规则框标题
+    rules_title = QLabel("场景改写规则")
+    rules_title.setFixedHeight(30)
+    rules_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    rules_title.setStyleSheet(title_style_sheet(color='white'))
+    low_col2.addWidget(rules_title)
+    # 规则框
+    rules_text = QPlainTextEdit()
+    rules_text.setFixedSize(440, 100)
+    rules_text.setStyleSheet(line_edit_style_sheet())
+    low_col2.addWidget(rules_text)
+    low_layout.addLayout(low_col2)
+
+    frame_layout.addLayout(low_layout)
+
+
+
+    # 将卡片添加到容器（居中）
+    container_layout.addWidget(model_frame)
+
+    # 将容器设置为列表项
+    self.scene_prompt_list.setItemWidget(model_item, container)
+
 
 """场景规则渲染列表"""
 def review_scene_prompt_list(model_list):

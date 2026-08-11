@@ -1,5 +1,8 @@
 
 """按钮样式"""
+from shutil import which
+
+
 def button_style_sheet():
     return """
                 QPushButton { 
@@ -15,22 +18,32 @@ def button_style_sheet():
             """
 
 """标题样式"""
-def title_style_sheet():
-    return "font-size: 16px; font-weight: bold; color: black;"
+def title_style_sheet(color='black'):
+    return f"font-size: 16px; font-weight: bold; color: {color};"
 
 """输入框样式"""
-def line_edit_style_sheet():
-    return """
-                QLineEdit {
-                    font-size: 18px;
-                    font-weight: bold;
-                    color: #2c3e50;
-                    border: 2px solid #bdc3c7;
-                    border-radius: 5px;
-                    padding: 8px 12px;
-                    background-color: white;
-                }
-                QLineEdit:focus {
+def line_edit_style_sheet(font_size= 18, color = '#2c3e50', back_color='white'):
+    return f"""
+                QLineEdit {{
+                        font-size: {font_size}px;
+                        font-weight: bold;
+                        color: {color};
+                        border: 2px solid #bdc3c7;
+                        border-radius: 5px;
+                        padding: 5px;
+                        background-color: {back_color};
+                    }}
+                QLineEdit:focus {{
                     border: 2px solid #3498db;
-                }
-        """
+                }}
+                QPlainTextEdit {{
+                    color: {color};                /* 文字颜色 */
+                    background-color: {back_color};     /* 深色背景，避免纯黑刺眼 */
+                    border: 1px solid #444;        /* 边框可选 */
+                    padding: 8px;                  /* 内边距提升可读性 */
+                    font-size: 14px;               /* 字体大小 */
+                }}
+                QPlainTextEdit:focus {{
+                    border-color: #007acc;         /* 聚焦时边框高亮 */
+                }}
+            """
