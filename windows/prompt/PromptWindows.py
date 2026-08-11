@@ -117,6 +117,7 @@ def save_prompt_conf(self):
     }
     # 新增
     save_prompt_info(req_json)
+    self.prompt_status_bar.showMessage(f"✅ 提示词模版保存成功")
     return True
 
 
