@@ -412,14 +412,15 @@ def review_page(self):
     prompt_inner_layout.setSpacing(10)
 
     # 系统提示词
-    system_prompt_title = QLabel("系统提示词（最好1000字以内，过长会导致遗忘设定）")
-    system_prompt_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    system_prompt_title.setStyleSheet(title_style_sheet())
-    prompt_inner_layout.addWidget(system_prompt_title)
+    self.system_prompt_title = QLabel("系统提示词（最好1000字以内，过长会导致遗忘设定）,已输入：0 字符")
+    self.system_prompt_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    self.system_prompt_title.setStyleSheet(title_style_sheet())
+    prompt_inner_layout.addWidget(self.system_prompt_title)
     # 系统提示词框
     self.system_prompt = QPlainTextEdit()
     self.system_prompt.setStyleSheet(line_edit_style_sheet())
     self.system_prompt.setFixedHeight(200)
+    self.system_prompt.textChanged.connect(lambda : system_prompt_count(self))
     prompt_inner_layout.addWidget(self.system_prompt)
 
     # 分割线
@@ -429,15 +430,16 @@ def review_page(self):
     prompt_inner_layout.addWidget(fream_row1)
 
     # 用户提示词
-    user_prompt_title = QLabel("用户提示词（主要为改写规则）")
-    user_prompt_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    user_prompt_title.setStyleSheet(title_style_sheet())
-    prompt_inner_layout.addWidget(user_prompt_title)
+    self.user_prompt_title = QLabel("用户提示词（主要为改写规则）,已输入：0 字符")
+    self.user_prompt_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    self.user_prompt_title.setStyleSheet(title_style_sheet())
+    prompt_inner_layout.addWidget(self.user_prompt_title)
     # 用户提示词框
 
     self.user_prompt = QPlainTextEdit()
     self.user_prompt.setStyleSheet(line_edit_style_sheet())
     self.user_prompt.setFixedHeight(350)
+    self.user_prompt.textChanged.connect(lambda : user_prompt_count(self))
     prompt_inner_layout.addWidget(self.user_prompt)
 
     # 分割线
@@ -604,6 +606,21 @@ def create_scene_prompt_text(self):
     self.scene_prompt_list.setItemWidget(model_item, container)
     # 重排序
     sort_scene_rules(self.scene_prompt_list)
+
+"""用户提示词计数"""
+def system_prompt_count(self):
+    # 获取文字
+    text = self.system_prompt.toPlainText()
+    char_count = len(text)
+    self.system_prompt_title.setText(f"系统提示词（最好1000字以内，过长会导致遗忘设定）,已输入：{char_count} 字符")
+
+"""用户提示词计数"""
+def user_prompt_count(self):
+    # 获取文字
+    text = self.user_prompt.toPlainText()
+    char_count = len(text)
+    self.user_prompt_title.setText(f"用户提示词（主要为改写规则）,已输入：{char_count} 字符")
+
 
 """删除卡片"""
 def remove_scene_prompt(scene_prompt_list, item):
