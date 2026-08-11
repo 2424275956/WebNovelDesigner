@@ -74,3 +74,21 @@ def insert_prompt_conf(name):
 def query_all_scene_prompt():
     data_list = SqlDB.SqliteDB.execute("SELECT * FROM prompt_rules WHERE type = 3")
     return data_list.fetchall()
+
+# 保存提示词信息
+def save_prompt_info(req_json):
+    prompt_id = req_json['id']
+    # 清除提示词配置
+    SqlDB.SqliteDB.execute("DELETE FROM prompt_rules WHERE prompt_id = ?", (prompt_id,))
+    # 保存系统提示词
+    system = req_json['system']
+    SqlDB.SqliteDB.execute("INSERT INTO prompt_rules (prompt_id, context, type) VALUES (?, ?, ?)", (prompt_id, system, 1))
+    # 用户提示词
+    user = req_json['user']
+    SqlDB.SqliteDB.execute("INSERT INTO prompt_rules (prompt_id, context, type) VALUES (?, ?, ?)", (prompt_id, user, 2))
+    # 场景提示词
+    scene_data = []
+    scene_list = req_json['scene']
+    for scene in scene_list:
+        scene_data.append((prompt_id, scene['name'], scene['identify_text'], scene['rules_text'], 3))
+    SqlDB.SqliteDB.execute_batch("INSERT INTO prompt_rules (prompt_id, scene_name, scene_identify, context, type) VALUES (?, ?, ?, ?, ?)", scene_data)

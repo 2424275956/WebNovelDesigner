@@ -1,19 +1,104 @@
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QListWidget, \
-    QListWidgetItem, QDialog, QPlainTextEdit, QScrollArea, QLineEdit
+    QListWidgetItem, QDialog, QPlainTextEdit, QScrollArea, QLineEdit, QStatusBar
 
-from sqlite.Sqlite3Utils import query_all_prompt, query_all_scene_prompt
+from sqlite.Sqlite3Utils import query_all_prompt, query_all_scene_prompt, save_prompt_info
 from style.StyleSheet import button_style_sheet, title_style_sheet, line_edit_style_sheet
 from windows.prompt.InsertPrompt import InsertModel
+
 
 """触发事件"""
 def on_item_clicked(self, item: QListWidgetItem):
     model = item.data(Qt.ItemDataRole.UserRole)
+    # 设置配置ID
+    self.prompt_id = model['id']
     prompt_page_info(self, model)
 
 """页面信息"""
 def prompt_page_info(self, model):
     123
+
+"""保存模版"""
+def save_prompt_conf(self):
+    # 系统提示词
+    if self.system_prompt is None:
+        self.prompt_status_bar.showMessage("❌ 未获取到系统提示词模版")
+        return False
+    else:
+        if len(self.system_prompt.toPlainText()) <= 0:
+            self.prompt_status_bar.showMessage("❌ 系统提示词规则为空")
+            return False
+    # 用户提示词
+    if self.user_prompt.toPlainText() is None:
+        self.prompt_status_bar.showMessage("❌ 未获取到用户提示词模版")
+        return False
+    else:
+        if len(self.user_prompt.toPlainText()) <= 0:
+            self.prompt_status_bar.showMessage("❌ 用户提示词规则为空")
+            return False
+    # 模版ID
+    if self.prompt_id is None:
+        self.prompt_status_bar.showMessage("❌ 未选择提示词模版")
+        return False
+    # 场景规则 循环获取
+    scene = []
+    for index in range(self.scene_prompt_list.count()):
+        # 获取到item并循环处理
+        item = self.scene_prompt_list.item(index)
+
+        # item不可以为空
+        if item:
+            # 通过 QListWidget 的 itemWidget() 方法，取出绑定到该 item 上的真实 QWidget
+            custom_widget = self.scene_prompt_list.itemWidget(item)
+
+            # 容器不为空
+            if custom_widget:
+                # 场景名称
+                scene_name = custom_widget.findChild(QLineEdit, "scene_name")
+                if scene_name is None:
+                    self.prompt_status_bar.showMessage(f"❌ 第{index + 1}行场景规则，场景名称对象获取失败")
+                    return False
+                else:
+                    if len(scene_name.text()) <= 0:
+                        self.prompt_status_bar.showMessage("❌ 第{index + 1}行场景规则，场景名称为空")
+                        return False
+                # 识别点
+                identify_text = custom_widget.findChild(QPlainTextEdit, "identify_text")
+                if identify_text is None:
+                    self.prompt_status_bar.showMessage(f"❌ 第{index + 1}行场景规则，场景识别规则对象获取失败")
+                    return False
+                else:
+                    if len(identify_text.toPlainText()) <= 0:
+                        self.prompt_status_bar.showMessage("❌ 第{index + 1}行场景规则，场景识别规则为空")
+                        return False
+
+                # 改写规则
+                rules_text = custom_widget.findChild(QPlainTextEdit, "rules_text")
+                if rules_text is None:
+                    self.prompt_status_bar.showMessage(f"❌ 第{index + 1}行场景规则，场景改写规则对象获取失败")
+                    return False
+                else:
+                    if len(rules_text.toPlainText()) <= 0:
+                        self.prompt_status_bar.showMessage("❌ 第{index + 1}行场景规则，场景改写规则为空")
+                        return False
+                # json组装
+                scene.append({
+                    "name": scene_name.text(),
+                    "identify_text": identify_text.toPlainText(),
+                    "rules_text": rules_text.toPlainText()
+                })
+
+    # 请求组装
+    req_json = {
+        "id": self.prompt_id,
+        "system": self.system_prompt.toPlainText(),
+        "user": self.user_prompt.toPlainText(),
+        "scene":scene
+    }
+    # 新增
+    save_prompt_info(req_json)
+    return True
+
 
 """提示词窗口"""
 def prompt_open_windows(self):
@@ -24,6 +109,8 @@ def prompt_open_windows(self):
     self.model_win_layout = QVBoxLayout(central_widget)
     self.model_win_layout.setContentsMargins(20, 20, 20, 20)
     self.model_win_layout.setSpacing(5)
+    # 默认值定义
+    self.prompt_id = None
 
     # 页面渲染
     review_page(self)
@@ -44,6 +131,17 @@ def review_page(self):
     title_label = QLabel("提示词配置")
     title_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #333;")
     header_layout.addWidget(title_label)
+
+    header_layout.addStretch()
+
+    # 状态栏标题
+    status_bar_title = QLabel("状态提示：")
+    status_bar_title.setAlignment(Qt.AlignmentFlag.AlignLeft)
+    status_bar_title.setStyleSheet("font-size: 24px; font-weight: bold; color: #333;")
+    header_layout.addWidget(status_bar_title)
+    # 状态栏
+    self.prompt_status_bar = QStatusBar()
+    header_layout.addWidget(self.prompt_status_bar)
 
     # 弹到另一端
     header_layout.addStretch()
@@ -126,7 +224,7 @@ def review_page(self):
     conf_page_row1_col3 = QPushButton("🖊保存")
     conf_page_row1_col3.setStyleSheet(button_style_sheet())
     conf_page_row1_col3.setFixedSize(80, 30)
-    conf_page_row1_col3.clicked.connect(lambda : 123)
+    conf_page_row1_col3.clicked.connect(lambda : save_prompt_conf(self))
     conf_page_row1.addWidget(conf_page_row1_col3)
     # 删除
     conf_page_row1_col4 = QPushButton("🗑️删除")
@@ -277,6 +375,7 @@ def create_scene_prompt_text(self):
     top_layout.addWidget(scene_name_title)
     # 场景名称修改
     scene_name = QLineEdit()
+    scene_name.setObjectName("scene_name")
     scene_name.setFixedSize(300, 30)
     scene_name.setAlignment(Qt.AlignmentFlag.AlignLeft)
     scene_name.setStyleSheet(line_edit_style_sheet(15))
@@ -305,6 +404,7 @@ def create_scene_prompt_text(self):
     low_col1.addWidget(identify_title)
     # 识别框
     identify_text = QPlainTextEdit()
+    identify_text.setObjectName("identify_text")
     identify_text.setFixedSize(200, 100)
     identify_text.setStyleSheet(line_edit_style_sheet())
     low_col1.addWidget(identify_text)
@@ -324,6 +424,7 @@ def create_scene_prompt_text(self):
     low_col2.addWidget(rules_title)
     # 规则框
     rules_text = QPlainTextEdit()
+    rules_text.setObjectName("rules_text")
     rules_text.setFixedSize(440, 100)
     rules_text.setStyleSheet(line_edit_style_sheet())
     low_col2.addWidget(rules_text)
@@ -406,6 +507,7 @@ def review_scene_prompt_list(model_list):
             # 场景名称修改
             scene_name = QLineEdit()
             scene_name.setText(prompt['scene_name'])
+            scene_name.setObjectName("scene_name")
             scene_name.setFixedSize(300, 30)
             scene_name.setAlignment(Qt.AlignmentFlag.AlignLeft)
             scene_name.setStyleSheet(line_edit_style_sheet(15))
@@ -434,6 +536,7 @@ def review_scene_prompt_list(model_list):
             low_col1.addWidget(identify_title)
             # 识别框
             identify_text = QPlainTextEdit()
+            identify_text.setObjectName("identify_text")
             identify_text.setPlainText(prompt['scene_identify'])
             identify_text.setFixedSize(200, 100)
             identify_text.setStyleSheet(line_edit_style_sheet())
@@ -454,6 +557,7 @@ def review_scene_prompt_list(model_list):
             low_col2.addWidget(rules_title)
             # 规则框
             rules_text = QPlainTextEdit()
+            rules_text.setObjectName("rules_text")
             rules_text.setPlainText(prompt['context'])
             rules_text.setFixedSize(440, 100)
             rules_text.setStyleSheet(line_edit_style_sheet())
