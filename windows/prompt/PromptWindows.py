@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButt
     QListWidgetItem, QDialog, QPlainTextEdit, QScrollArea, QLineEdit, QStatusBar
 
 from sqlite.Sqlite3Utils import query_all_prompt, query_scene_prompt, save_prompt_info, query_system_prompt, \
-    query_user_prompt
+    query_user_prompt, remove_prompt
 from style.StyleSheet import button_style_sheet, title_style_sheet, line_edit_style_sheet
 from windows.prompt.InsertPrompt import InsertModel
 
@@ -32,6 +32,14 @@ def prompt_page_info(self, model):
     self.scene_prompt_list.clear()
     # 渲染
     review_scene_prompt_list(self.scene_prompt_list, model['id'])
+
+"""删除提示词模版"""
+def delete_prompt(self):
+    remove_prompt(self.prompt_id)
+    # 渲染左侧列表
+    self.all_models = review_prompt_list(self.model_list)
+    if len(self.all_models) > 0:
+        prompt_page_info(self, self.all_models[0])
 
 
 """保存模版"""
@@ -248,10 +256,9 @@ def review_page(self):
     conf_page_row1_col4 = QPushButton("🗑️删除")
     conf_page_row1_col4.setStyleSheet(button_style_sheet())
     conf_page_row1_col4.setFixedSize(80, 30)
-    conf_page_row1_col4.clicked.connect(lambda : 123)
+    conf_page_row1_col4.clicked.connect(lambda : delete_prompt(self))
     conf_page_row1.addWidget(conf_page_row1_col4)
     self.conf_page.addLayout(conf_page_row1)
-
     # 插入分割线
     conf_page_fream1 = QFrame()
     conf_page_fream1.setFrameShape(QFrame.Shape.HLine)

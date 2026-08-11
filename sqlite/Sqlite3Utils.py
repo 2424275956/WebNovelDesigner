@@ -104,3 +104,10 @@ def save_prompt_info(req_json):
         scene_data.append((prompt_id, scene['name'], scene['identify_text'], scene['rules_text'], 3))
     SqlDB.SqliteDB.execute_batch("INSERT INTO prompt_rules (prompt_id, scene_name, scene_identify, context, type) VALUES (?, ?, ?, ?, ?)"
                                  , scene_data)
+
+# 删除提示词模版
+def remove_prompt(prompt_id):
+    # 删除提示词规则
+    SqlDB.SqliteDB.execute("DELETE FROM prompt_rules WHERE prompt_id = ?", (prompt_id,))
+    # 提示词信息
+    SqlDB.SqliteDB.execute("DELETE FROM prompt_info WHERE id = ?", (prompt_id,))
