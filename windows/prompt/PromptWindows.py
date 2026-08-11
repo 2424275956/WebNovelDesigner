@@ -1,6 +1,6 @@
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QListWidget, \
-    QListWidgetItem, QDialog, QTextEdit, QPlainTextEdit, QScrollArea, QLineEdit
+    QListWidgetItem, QDialog, QPlainTextEdit, QScrollArea, QLineEdit
 
 from sqlite.Sqlite3Utils import query_all_prompt, query_all_scene_prompt
 from style.StyleSheet import button_style_sheet, title_style_sheet, line_edit_style_sheet
@@ -287,7 +287,7 @@ def create_scene_prompt_text(self):
     scene_delete = QPushButton("🗑️删除")
     scene_delete.setFixedSize(80, 30)
     scene_delete.setStyleSheet(button_style_sheet())
-    scene_delete.clicked.connect(lambda : remove_scene_prompt(self, model_item))
+    scene_delete.clicked.connect(lambda : remove_scene_prompt(self.scene_prompt_list, model_item))
     top_layout.addWidget(scene_delete)
     frame_layout.addLayout(top_layout)
 
@@ -338,15 +338,15 @@ def create_scene_prompt_text(self):
     self.scene_prompt_list.setItemWidget(model_item, container)
 
 """删除卡片"""
-def remove_scene_prompt(self, item):
+def remove_scene_prompt(scene_prompt_list, item):
     if item is None:
         return
 
     # 1. 获取该 item 在列表中的行号
-    row = self.scene_prompt_list.row(item)
+    row = scene_prompt_list.row(item)
 
     # 2. 从列表中移除该 item（takeItem 会解除它与列表的绑定）
-    taken_item = self.scene_prompt_list.takeItem(row)
+    taken_item = scene_prompt_list.takeItem(row)
 
     # 3. 【关键】手动删除 item 释放内存（takeItem 不会自动释放内存）
     if taken_item:
@@ -362,22 +362,21 @@ def review_scene_prompt_list(model_list):
             # 创建item占位
             model_item = QListWidgetItem()
             # 设置高度（宽度由列表控制）
-            model_item.setSizeHint(QSize(200, 80))  # 高度比卡片稍高
-            model_item.setData(Qt.ItemDataRole.UserRole, prompt)
+            model_item.setSizeHint(QSize(680, 200))
             model_list.addItem(model_item)
 
             # ===== 关键：创建一个居中容器 =====
             container = QWidget()
-            container.setFixedWidth(200)  # 与列表宽度一致
+            container.setFixedSize(680, 200)
 
             # 容器内部使用水平布局，让卡片居中
             container_layout = QHBoxLayout(container)
-            container_layout.setContentsMargins(0, 10, 0, 10)  # 上下各10px边距
+            container_layout.setContentsMargins(10, 10, 10, 10)  # 上下各10px边距
             container_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
             # 创建卡片
             model_frame = QFrame()
-            model_frame.setFixedSize(180, 100)
+            model_frame.setFixedSize(670, 200)
             model_frame.setStyleSheet("""
                 QFrame {
                     background-color: #2D3436;
@@ -394,6 +393,74 @@ def review_scene_prompt_list(model_list):
             frame_layout = QVBoxLayout(model_frame)
             frame_layout.setContentsMargins(10, 5, 10, 5)
             frame_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+
+            # 顶部
+            top_layout = QHBoxLayout()
+            top_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+            # 场景名称
+            scene_name_title = QLabel("场景名称：")
+            scene_name_title.setFixedSize(80, 30)
+            scene_name_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+            scene_name_title.setStyleSheet(title_style_sheet(color='white'))
+            top_layout.addWidget(scene_name_title)
+            # 场景名称修改
+            scene_name = QLineEdit()
+            scene_name.setText(prompt['scene_name'])
+            scene_name.setFixedSize(300, 30)
+            scene_name.setAlignment(Qt.AlignmentFlag.AlignLeft)
+            scene_name.setStyleSheet(line_edit_style_sheet(15))
+            top_layout.addWidget(scene_name)
+            # 弹开按钮
+            top_layout.addStretch()
+            # 按钮
+            scene_delete = QPushButton("🗑️删除")
+            scene_delete.setFixedSize(80, 30)
+            scene_delete.setStyleSheet(button_style_sheet())
+            scene_delete.clicked.connect(lambda : remove_scene_prompt(model_list, model_item))
+            top_layout.addWidget(scene_delete)
+            frame_layout.addLayout(top_layout)
+
+            # 底部框
+            low_layout = QHBoxLayout()
+            low_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+            # 左侧布局
+            low_col1 = QVBoxLayout()
+            low_col1.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+            # 识别框标题
+            identify_title = QLabel("场景识别匹配规则")
+            identify_title.setFixedHeight(30)
+            identify_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+            identify_title.setStyleSheet(title_style_sheet(color='white'))
+            low_col1.addWidget(identify_title)
+            # 识别框
+            identify_text = QPlainTextEdit()
+            identify_text.setPlainText(prompt['scene_identify'])
+            identify_text.setFixedSize(200, 100)
+            identify_text.setStyleSheet(line_edit_style_sheet())
+            low_col1.addWidget(identify_text)
+            low_layout.addLayout(low_col1)
+
+            # 弹开距离
+            low_layout.addStretch()
+
+            # 右侧布局
+            low_col2 = QVBoxLayout()
+            low_col2.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+            # 规则框标题
+            rules_title = QLabel("场景改写规则")
+            rules_title.setFixedHeight(30)
+            rules_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+            rules_title.setStyleSheet(title_style_sheet(color='white'))
+            low_col2.addWidget(rules_title)
+            # 规则框
+            rules_text = QPlainTextEdit()
+            rules_text.setPlainText(prompt['context'])
+            rules_text.setFixedSize(440, 100)
+            rules_text.setStyleSheet(line_edit_style_sheet())
+            low_col2.addWidget(rules_text)
+            low_layout.addLayout(low_col2)
+
+            frame_layout.addLayout(low_layout)
 
             # 将卡片添加到容器（居中）
             container_layout.addWidget(model_frame)

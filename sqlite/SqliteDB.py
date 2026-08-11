@@ -94,6 +94,8 @@ class SqliteDB:
                 CREATE TABLE IF NOT EXISTS prompt_rules (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,           -- 提示词规则ID
                     prompt_id INTEGER NOT NULL,                     -- 提示词配置ID
+                    scene_name TEXT DEFAULT NULL,                   -- 场景提示词名称
+                    scene_identify TEXT DEFAULT NULL,               -- 场景提示词识别规则
                     context TEXT DEFAULT NULL,                      -- 提示词规则    
                     type INTEGER NOT NULL DEFAULT 1                 -- 提示词类型（1：系统提示词，2：用户提示词，3：场景提示词）
                 );
