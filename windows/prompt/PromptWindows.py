@@ -257,6 +257,18 @@ def save_prompt_conf(self):
     self.prompt_status_bar.showMessage(f"✅ 提示词模版保存成功")
     return True
 
+"""提示词校验"""
+def export_prompt_check(self, prompt_id, point_type, prompt_type, title, export_json, key):
+    prompt = query_prompt_template(prompt_id, point_type, prompt_type)
+    if not prompt:
+        self.prompt_status_bar.showMessage(f"❌ {title}提示词信息为空")
+        return False
+    if len(prompt[0]['context']) <= 0:
+        self.prompt_status_bar.showMessage(f"❌ {title}提示词规则为空")
+        return False
+    export_json[key] = prompt[0]['context']
+    return True
+
 """导出模版"""
 def export_prompt(self):
     if self.prompt_id is None:
@@ -266,17 +278,26 @@ def export_prompt(self):
     if len(model) <= 0:
         self.prompt_status_bar.showMessage(f"❌ 提示词模版信息获取失败")
         return False
-    system = query_prompt_template(model[0]['id'], 1, 1)
-    if len(system[0]['context']) <= 0:
-        self.prompt_status_bar.showMessage("❌ 系统提示词规则为空")
+    # 组装
+    export_json = {}
+    export_json['prompt_name'] = model[0]['name']
+    """角色分析"""
+    if not export_prompt_check(self, model[0]['id'], 1, 1, "角色分析", export_json, 'role_system'):
         return False
-    # 用户提示词
-    user = query_prompt_template(model[0]['id'], 1, 2)
-    if len(user[0]['context']) <= 0:
-        self.prompt_status_bar.showMessage("❌ 用户提示词规则为空")
+    if not export_prompt_check(self, model[0]['id'], 1, 2, "角色分析", export_json, 'role_user'):
+        return False
+    """关系分析"""
+    if not export_prompt_check(self, model[0]['id'], 2, 1, "关系分析", export_json, 'relation_system'):
+        return False
+    if not export_prompt_check(self, model[0]['id'], 2, 2, "关系分析", export_json, 'relation_user'):
+        return False
+    """场景分析"""
+    if not export_prompt_check(self, model[0]['id'], 3, 1, "场景规则", export_json, 'scene_system'):
+        return False
+    if not export_prompt_check(self, model[0]['id'], 3, 2, "场景规则", export_json, 'scene_user'):
         return False
     # 场景规则查询
-    all_scene_prompt = query_prompt_template(self.prompt_id, 1, 3)
+    all_scene_prompt = query_prompt_template(self.prompt_id, 3, 3)
     if len(all_scene_prompt) <= 0:
         self.prompt_status_bar.showMessage("❌ 场景提示词规则为空")
         return False
@@ -288,13 +309,17 @@ def export_prompt(self):
             "scene_identify": scene['scene_identify'],
             "scene_rules": scene['context']
         })
-    export_json = {
-        "prompt_name": model[0]['name'],
-        "system_prompt": system[0]['context'],
-        "user_prompt": user[0]['context'],
-        "scene_prompt": scene_data
-    }
-
+    export_json['scene'] = scene_data
+    """脉络改写"""
+    if not export_prompt_check(self, model[0]['id'], 4, 1, "脉络改写", export_json, 'framework_system'):
+        return False
+    if not export_prompt_check(self, model[0]['id'], 4, 2, "脉络改写", export_json, 'framework_user'):
+        return False
+    """结果润色"""
+    if not export_prompt_check(self, model[0]['id'], 5, 1, "结果润色", export_json, 'polish_system'):
+        return False
+    if not export_prompt_check(self, model[0]['id'], 5, 2, "结果润色", export_json, 'polish_user'):
+        return False
     # 弹出文件夹选择对话框，让用户选择保存位置
     folder_path = QFileDialog.getExistingDirectory(self, "请选择导出文件夹")
     # 4. 检查用户是否选择了文件夹（防止用户直接点击取消）
