@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButt
 from openai import OpenAI
 
 from sqlite.Sqlite3Utils import query_all_model, remove_model_conf
-from style.StyleSheet import button_style_sheet, title_style_sheet, list_widget_style_sheet
+from style.StyleSheet import button_style_sheet, title_style_sheet
 from . import InsertModel
 from . import ModifyModel
 
@@ -90,10 +90,10 @@ def review_page(self):
     conf_page_row1 = QHBoxLayout()
     conf_page_row1.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     # 第一列
-    self.conf_page_model_name = QLabel("-")
-    self.conf_page_model_name.setAlignment(Qt.AlignmentFlag.AlignLeft)
-    self.conf_page_model_name.setStyleSheet(title_style_sheet())
-    conf_page_row1.addWidget(self.conf_page_model_name)
+    self.conf_page_right_model_name = QLabel("-")
+    self.conf_page_right_model_name.setAlignment(Qt.AlignmentFlag.AlignLeft)
+    self.conf_page_right_model_name.setStyleSheet(title_style_sheet())
+    conf_page_row1.addWidget(self.conf_page_right_model_name)
     # 弹开
     conf_page_row1.addStretch()
     # 按钮
@@ -263,7 +263,7 @@ def modify_model_conf(self):
 """模型详情"""
 def model_conf_info(self, model_conf):
     if model_conf:
-        self.conf_page_model_name.setText(model_conf['name'])
+        self.conf_page_right_model_name.setText(model_conf['name'])
         self.conf_page_model_type_int = model_conf['type']
         if model_conf['type'] == 1:
             self.conf_page_model_type.setText("Custom")
@@ -365,9 +365,9 @@ def review_model_list(model_list):
 
             # 模型类型
             model_type = "Custom"
-            if "2" == model['type']:
+            if 2 == model['type']:
                 model_type = "Ollama"
-            if "3" == model['type']:
+            if 3 == model['type']:
                 model_type = "oMLX"
             type_label = QLabel(model_type)
             type_label.setStyleSheet("color: white;border: none; padding: 0; margin: 0; background: transparent;")
