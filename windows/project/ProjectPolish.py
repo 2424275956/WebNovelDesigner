@@ -569,6 +569,7 @@ def polist_page(self, project_id):
     elif 2 == project_status:
         self.start_stop_btn.setText("停止")
         self.start_stop_btn.setEnabled(True)
+        self.start_stop_btn.setStyleSheet(button_style_sheet(back_color='#FF0000'))
     else:
         self.start_stop_btn.setText("开始")
         self.start_stop_btn.setEnabled(False)
