@@ -15,20 +15,22 @@ def on_prompt_item_clicked(self, point_type, prompt_type):
     if choose_project_id is None:
         return
     prompt_list = query_prompt_template(choose_project_id, point_type, prompt_type)
+
+    """文本处理"""
+    prompt_text = ""
     if 3 == prompt_type:
-        prompt_text = ""
         if prompt_list:
             for prompt in prompt_list:
                 prompt_text = prompt_text + f"{prompt['scene_name']}\n"
                 prompt_text = prompt_text + f"{prompt['scene_identify']}\n"
                 prompt_text = prompt_text + f"{prompt['context']}\n\n"
-
-        self.text_content.setPlainText(prompt_text)
     else:
         if prompt_list:
             prompt = prompt_list[0]
             if prompt:
-                self.text_content.setPlainText(prompt['context'])
+                prompt_text = prompt['context']
+
+    self.text_content.setPlainText(prompt_text)
 
 
 def on_item_clicked(self, item: QListWidgetItem):
