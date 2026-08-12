@@ -38,6 +38,12 @@ class SqliteDB:
                     success_num INTEGER NOT NULL DEFAULT 0,         -- 已完成章节数
                     fail_num INTEGER NOT NULL DEFAULT 0,            -- 失败章节数
                     expansion_num INTEGER NOT NULL DEFAULT 0,       -- 新增扩写章节数
+                    prompt_id INTEGER DEFAULT NULL,                 -- 提示词模版ID
+                    role_model_id INTEGER DEFAULT NULL,             -- 角色分析模型ID
+                    relation_model_id INTEGER DEFAULT NULL,         -- 角色关系模型ID
+                    scene_model_id INTEGER DEFAULT NULL,            -- 场景规则模型ID
+                    framework_model_id INTEGER DEFAULT NULL,        -- 脉络改写模型ID
+                    polish_model_id INTEGER DEFAULT NULL,           -- 结果润色模型ID
                     word_count REAL NOT NULL,                       -- 字数（单位万）
                     status INTEGER NOT NULL DEFAULT 1               -- 状态（1：未开始，2：进行中，3：已完成）
                 );

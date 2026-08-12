@@ -66,8 +66,8 @@ def polist_page(self, project_id):
         clear_layout(self.project_win_layout)
 
     # 项目查询
-    project = query_project_by_id(project_id)
-    if project is None:
+    self.project_info = query_project_by_id(project_id)
+    if self.project_info is None:
         # 查询为空
         project_none = QLabel("无项目信息")
         self.project_win_layout.addWidget(project_none)
@@ -91,7 +91,7 @@ def polist_page(self, project_id):
     header_right.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop)
     header_layout.addLayout(header_right)
     """项目名称"""
-    project_name = QLabel(project['title'])
+    project_name = QLabel(self.project_info['title'])
     project_name.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop)
     project_name.setStyleSheet(title_style_sheet())
     header_right.addWidget(project_name)
@@ -147,19 +147,19 @@ def polist_page(self, project_id):
     chapter_title.setStyleSheet(title_style_sheet())
     chapter_top_layout.addWidget(chapter_title)
     """章节统计1"""
-    all_chapter = project['chapter_num']
+    all_chapter = self.project_info['chapter_num']
     self.chapter_count1 = QLabel(f"共 {all_chapter} 章节")
     self.chapter_count1.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     chapter_top_layout.addWidget(self.chapter_count1)
     """章节统计2"""
-    success_chapter = project['success_num']
-    fail_chapter = project['fail_num']
+    success_chapter = self.project_info['success_num']
+    fail_chapter = self.project_info['fail_num']
     self.chapter_count2 = QLabel(f"已完成 {success_chapter} 章节 · 已失败 {fail_chapter} 章节")
     self.chapter_count2.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     center_left_layout.addWidget(self.chapter_count2)
     """章节统计3"""
     wait_chapter = all_chapter - success_chapter
-    self.chapter_count3 = QLabel(f"待完成 {wait_chapter} 章节 · 新增 {project['expansion_num']} 章节")
+    self.chapter_count3 = QLabel(f"待完成 {wait_chapter} 章节 · 新增 {self.project_info['expansion_num']} 章节")
     self.chapter_count3.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     center_left_layout.addWidget(self.chapter_count3)
     """提示词布局"""
@@ -178,7 +178,11 @@ def polist_page(self, project_id):
         prompt_combo.addItem(prompt['name'], prompt['id'])
     prompt_combo.setFixedSize(180, 25)
     prompt_combo.setStyleSheet(line_edit_style_sheet())
-    prompt_combo.setCurrentIndex(0)
+    if self.project_info['prompt_id']:
+        prompt_combo_index = prompt_combo.findData(self.project_info['prompt_id'])
+        prompt_combo.setCurrentIndex(prompt_combo_index)
+    else:
+        prompt_combo.setCurrentIndex(0)
     prompt_low_layout.addWidget(prompt_combo)
 
     """分割线"""
@@ -314,6 +318,7 @@ def polist_page(self, project_id):
     tool1_system = QPushButton("系统提示词")
     tool1_system.setStyleSheet(button_style_sheet())
     tool1_system.setFixedSize(80, 30)
+    tool1_system.clicked.connect(lambda : 123)
     tool1.addWidget(tool1_system)
     """角色分析用户提示词"""
     tool1_user = QPushButton("用户提示词")
