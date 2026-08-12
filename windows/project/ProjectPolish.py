@@ -165,6 +165,10 @@ def polist_page(self, project_id):
     if project_status is None:
         project_status = 1
         APP_STATE.setdefault(project_id, project_status)
+        # 获取章节判断
+        if self.project_info['success_num'] >= self.project_info['chapter_num']:
+            project_status = 3
+            APP_STATE[project_id] = project_status
     """状态渲染"""
     if 1 == project_status:
         self.project_status_color = StatusDot("#9E9E9E")
