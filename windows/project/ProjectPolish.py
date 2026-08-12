@@ -9,10 +9,50 @@ from utils.ClearLayoutRecursive import clear_layout
 from utils.StatusDot import StatusDot
 from . import NovelChapterList
 
+def polish_btn_clicked(self):
+    """润色内容按钮触发"""
+    if self.chapter_info is None:
+        return
+    self.text_content.setPlainText(self.chapter_info['new_content'])
+
+def framework_btn_clicked(self):
+    """脉络内容按钮触发"""
+    if self.chapter_info is None:
+        return
+    self.text_content.setPlainText(self.chapter_info['framework_content'])
+
+def scene_btn_clicked(self):
+    """场景规则按钮触发"""
+    if self.chapter_info is None:
+        return
+    self.text_content.setPlainText(self.chapter_info['scene_content'])
+
+def relation_btn_clicked(self):
+    """关系分析按钮触发"""
+    if self.chapter_info is None:
+        return
+    self.text_content.setPlainText(self.chapter_info['relation_content'])
+
+def role_btn_clicked(self):
+    """角色分析按钮触发"""
+    if self.chapter_info is None:
+        return
+    self.text_content.setPlainText(self.chapter_info['role_content'])
+
+def original_btn_clicked(self):
+    """原文按钮触发"""
+    if self.chapter_info is None:
+        return
+    self.text_content.setPlainText(self.chapter_info['old_content'])
+
 def polist_page(self, project_id):
     """
     项目润色页面
     """
+
+    """章节信息"""
+    self.chapter_info = None
+
     # 存在数据则销毁
     if self.project_win_layout is not None:
         clear_layout(self.project_win_layout)
@@ -153,42 +193,42 @@ def polist_page(self, project_id):
     original_btn.setFixedSize(100, 30)
     original_btn.setStyleSheet(button_style_sheet())
     original_btn.setToolTip("原文内容")
-    original_btn.clicked.connect(lambda : 123)
+    original_btn.clicked.connect(lambda : original_btn_clicked(self))
     center_right_row1_col1.addWidget(original_btn)
     """角色分析按钮"""
     role_btn = QPushButton("角色分析")
     role_btn.setFixedSize(100, 30)
     role_btn.setStyleSheet(button_style_sheet())
     role_btn.setToolTip("原文中出场角色信息内容")
-    role_btn.clicked.connect(lambda : 123)
+    role_btn.clicked.connect(lambda : role_btn_clicked(self))
     center_right_row1_col1.addWidget(role_btn)
     """关系分析按钮"""
     relation_btn = QPushButton("关系分析")
     relation_btn.setFixedSize(100, 30)
     relation_btn.setStyleSheet(button_style_sheet())
     relation_btn.setToolTip("原文角色之间的关系内容")
-    relation_btn.clicked.connect(lambda : 123)
+    relation_btn.clicked.connect(lambda : relation_btn_clicked(self))
     center_right_row1_col1.addWidget(relation_btn)
     """场景规则按钮"""
     scene_btn = QPushButton("场景规则")
     scene_btn.setFixedSize(100, 30)
     scene_btn.setStyleSheet(button_style_sheet())
     scene_btn.setToolTip("原文匹配的全部场景规则进行融合内容")
-    scene_btn.clicked.connect(lambda : 123)
+    scene_btn.clicked.connect(lambda : scene_btn_clicked(self))
     center_right_row1_col1.addWidget(scene_btn)
     """脉络内容按钮"""
     framework_btn = QPushButton("脉络内容")
     framework_btn.setFixedSize(100, 30)
     framework_btn.setStyleSheet(button_style_sheet())
     framework_btn.setToolTip("原文润色主体脉络发展内容")
-    framework_btn.clicked.connect(lambda : 123)
+    framework_btn.clicked.connect(lambda : framework_btn_clicked(self))
     center_right_row1_col1.addWidget(framework_btn)
     """润色内容按钮"""
     polish_btn = QPushButton("润色内容")
     polish_btn.setFixedSize(100, 30)
     polish_btn.setStyleSheet(button_style_sheet())
     polish_btn.setToolTip("原文最终润色内容")
-    polish_btn.clicked.connect(lambda : 123)
+    polish_btn.clicked.connect(lambda : polish_btn_clicked(self))
     center_right_row1_col1.addWidget(polish_btn)
 
     """分割线"""

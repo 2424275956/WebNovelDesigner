@@ -6,7 +6,6 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButt
 from openai import OpenAI
 
 from sqlite.Sqlite3Utils import query_all_model, remove_model_conf
-from sqlite.SqliteDB import SqliteDB
 from style.StyleSheet import button_style_sheet, title_style_sheet
 from . import InsertModel
 from . import ModifyModel
