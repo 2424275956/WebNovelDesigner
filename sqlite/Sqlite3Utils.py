@@ -7,6 +7,11 @@ def query_all_project():
     # 返回查询结果
     return tables.fetchall()
 
+# 项目详情
+def query_project_by_id(project_id):
+    tables = SqlDB.SqliteDB.execute("SELECT * FROM project WHERE id = ?", (project_id,))
+    return tables.fetchone()
+
 # 保存新创建的项目信息
 def insert_project_info(project):
     title = project['title']
@@ -31,6 +36,11 @@ def remove_novel_info(project_id):
     SqlDB.SqliteDB.execute("DELETE FROM chapter WHERE project_id = ?", (project_id,))
     # 删除项目信息
     SqlDB.SqliteDB.execute("DELETE FROM project WHERE id = ?", (project_id,))
+
+# 获取项目所有章节列表 并根据sort排序
+def query_project_chapter_by_id(project_id):
+    data_list = SqlDB.SqliteDB.execute("SELECT * FROM chapter WHERE project_id = ? ORDER BY sort", (project_id,))
+    return data_list.fetchall()
 
 # 查询全部模型配置信息
 def query_all_model():

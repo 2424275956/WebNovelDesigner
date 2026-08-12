@@ -4,12 +4,14 @@ import sys
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QScrollArea, QGridLayout, QFrame, \
-    QFileDialog, QDialog
+    QFileDialog, QDialog, QApplication
 
 from style.StyleSheet import button_style_sheet
 from . import ImportNovel
 from . import RemoveNovel
+from . import ProjectPolish
 from . import ClickableFrame
+from utils.ClearLayoutRecursive import clear_layout
 
 
 """添加项目根目录到路径"""
@@ -35,12 +37,7 @@ def project_open_windows(self):
 def review_page(self):
     # 存在数据则销毁
     if self.project_win_layout is not None:
-        while self.project_win_layout.count():
-            item = self.project_win_layout.takeAt(0)
-            widget = item.widget()
-            if widget:
-                """安全销毁旧控件"""
-                widget.deleteLater()
+        clear_layout(self.project_win_layout)
 
     """顶部标题栏"""
     header_layout = QHBoxLayout()
@@ -114,8 +111,7 @@ def create_project_card(self, name, project_id):
     card.setFixedSize(180, 260)
     card.setStyleSheet("QFrame#projectCard { background-color: #ffffff; border-radius: 12px; border: 1px solid #f0f0f0; }")
     # 连接自定义的点击信号
-    card.clicked.connect(lambda: open_project(self, project_id))
-
+    card.clicked.connect(lambda: ProjectPolish.polist_page(self, project_id))
 
     # 1. 将 QVBoxLayout 替换为 QGridLayout
     grid_layout = QGridLayout(card)
@@ -193,6 +189,3 @@ def remove_novel(self, project_id):
     if dialog.exec() == QDialog.DialogCode.Accepted:
         # 对话框成功保存并关闭同时刷新页面
         review_page(self)
-
-def open_project(self, project_id):
-    123

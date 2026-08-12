@@ -3,23 +3,36 @@
 from shutil import which
 
 
-def button_style_sheet():
-    return """
-                QPushButton { 
-                    background-color: #3498db; 
-                    color: white; 
+def button_style_sheet(color='white', back_color='#3498db'):
+    return f"""
+                QPushButton {{
+                    background-color: {back_color}; 
+                    color: {color}; 
                     border-radius: 6px; 
                     border: none; 
                     font-weight: bold;
-                }
-                QPushButton:hover { 
+                }}
+                QPushButton:hover {{ 
                     background-color: #2980b9; 
-                }
+                }}
             """
 
 """标题样式"""
-def title_style_sheet(color='black'):
-    return f"font-size: 16px; font-weight: bold; color: {color};"
+def title_style_sheet(color='black', font_size = 16):
+    return f"font-size: {font_size}px; font-weight: bold; color: {color};"
+
+"""QLabel样式"""
+def label_style_sheet(color="black", font_size=16):
+    return f"""
+        QLabel {{
+            padding: 2px;              /* 增加内边距让效果更明显 */
+            font-size: {font_size}px;
+            color: {color};
+        }}
+        QLabel:hover {{
+            border: none;               /* 悬停状态：去掉边框 */
+        }}
+    """
 
 """输入框样式"""
 def line_edit_style_sheet(font_size= 18, color = '#2c3e50', back_color='white'):

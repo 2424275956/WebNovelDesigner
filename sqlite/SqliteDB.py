@@ -34,9 +34,12 @@ class SqliteDB:
                     id INTEGER PRIMARY KEY AUTOINCREMENT,           -- 项目ID
                     title TEXT NOT NULL,                            -- 小说名称
                     author TEXT NOT NULL,                           -- 作者
-                    chapter_num INTEGER NOT NULL,                   -- 章节数
+                    chapter_num INTEGER NOT NULL,                   -- 全部章节数
+                    success_num INTEGER NOT NULL DEFAULT 0,         -- 已完成章节数
+                    fail_num INTEGER NOT NULL DEFAULT 0,            -- 失败章节数
+                    expansion_num INTEGER NOT NULL DEFAULT 0,       -- 新增扩写章节数
                     word_count REAL NOT NULL,                       -- 字数（单位万）
-                    status INTEGER NOT NULL DEFAULT 1              -- 状态（1：未开始，2：进行中，3：已完成）
+                    status INTEGER NOT NULL DEFAULT 1               -- 状态（1：未开始，2：进行中，3：已完成）
                 );
             """)
 
@@ -50,10 +53,15 @@ class SqliteDB:
                     title TEXT NOT NULL,                            -- 章节名称
                     old_len INTEGER DEFAULT 0,                      -- 原始章节字数
                     old_content TEXT DEFAULT NULL,                  -- 原始章节内容
+                    role_content TEXT DEFAULT NULL,                 -- 角色分析内容
+                    relation_content TEXT DEFAULT NULL,             -- 角色关系内容
+                    scene_content TEXT DEFAULT NULL,                -- 场景规则内容
+                    framework_content TEXT DEFAULT NULL,            -- 框架脉络内容
                     new_len INTEGER DEFAULT 0,                      -- 新章节字数
                     new_content TEXT DEFAULT NULL,                  -- 新章节内容
                     type INTEGER NOT NULL DEFAULT 1,                -- 章节类型（1：润色改写，2：内容扩写）
-                    status INTEGER NOT NULL DEFAULT 1,              -- 状态（1：未开始，2：进行中，3：已完成）
+                    status INTEGER NOT NULL DEFAULT 1,              -- 状态（1：未开始，2：进行中，3：已完成，4：已失败）
+                    point INTEGER NOT NULL DEFAULT 1,               -- 节点（1：分析角色模型，2：分析角色关系，3：匹配场景规则，4：生成发展脉络，5：润色输出内容，6：已完成）
                     sort INTEGER NOT NULL DEFAULT 0                 -- 排序
                 );
                 CREATE INDEX IF NOT EXISTS idx_project_id ON chapter(project_id);
