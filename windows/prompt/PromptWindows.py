@@ -132,33 +132,50 @@ def import_prompt(self):
         self.prompt_status_bar.showMessage(f"❌ 未获取到文件地址")
         return False
 
-"""保存模版"""
-def save_prompt_conf(self):
+"""提示词校验"""
+def prompt_check(self, prompt, msg):
     # 系统提示词
-    if self.system_prompt is None:
-        self.prompt_status_bar.showMessage("❌ 未获取到系统提示词模版")
+    if prompt is None:
+        self.prompt_status_bar.showMessage(f"❌ 未获取到{msg}提示词模版")
         return False
     else:
-        if len(self.system_prompt.toPlainText()) <= 0:
-            self.prompt_status_bar.showMessage("❌ 系统提示词规则为空")
+        if len(prompt.toPlainText()) <= 0:
+            self.prompt_status_bar.showMessage(f"❌ {msg}提示词规则为空")
             return False
-    # 用户提示词
-    if self.user_prompt.toPlainText() is None:
-        self.prompt_status_bar.showMessage("❌ 未获取到用户提示词模版")
-        return False
-    else:
-        if len(self.user_prompt.toPlainText()) <= 0:
-            self.prompt_status_bar.showMessage("❌ 用户提示词规则为空")
-            return False
-    # 模版ID
+    return True
+
+
+def save_prompt_conf(self):
+    """保存模版"""
+    """模版ID"""
     if self.prompt_id is None:
         self.prompt_status_bar.showMessage("❌ 未选择提示词模版")
+        return False
+    """角色分析"""
+    # 系统提示词
+    if not prompt_check(self, self.role_system_prompt, "角色分析系统"):
+        return False
+    # 用户提示词
+    if not prompt_check(self, self.role_user_prompt, "角色分析用户"):
+        return False
+    """关系分析"""
+    # 系统提示词
+    if not prompt_check(self, self.relation_system_prompt, "关系分析系统"):
+        return False
+    # 用户提示词
+    if not prompt_check(self, self.relation_user_prompt, "关系分析用户"):
+        return False
+    """场景分析"""
+    # 系统提示词
+    if not prompt_check(self, self.scene_system_prompt, "场景分析系统"):
+        return False
+    # 用户提示词
+    if not prompt_check(self, self.scene_user_prompt, "场景分析用户"):
         return False
     # 场景规则 循环获取
     if len(self.scene_prompt_list) <= 0:
         self.prompt_status_bar.showMessage("❌ 场景提示词模版为空")
         return False
-
     scene = []
     for index in range(self.scene_prompt_list.count()):
         # 获取到item并循环处理
@@ -205,13 +222,35 @@ def save_prompt_conf(self):
                     "identify_text": identify_text.toPlainText(),
                     "rules_text": rules_text.toPlainText()
                 })
+    """脉络改写"""
+    # 系统提示词
+    if not prompt_check(self, self.framework_system_prompt, "脉络改写系统"):
+        return False
+    # 用户提示词
+    if not prompt_check(self, self.framework_user_prompt, "脉络改写用户"):
+        return False
+    """结果润色"""
+    # 系统提示词
+    if not prompt_check(self, self.polish_system_prompt, "关系分析系统"):
+        return False
+    # 用户提示词
+    if not prompt_check(self, self.polish_user_prompt, "关系分析用户"):
+        return False
 
     # 请求组装
     req_json = {
         "id": self.prompt_id,
-        "system": self.system_prompt.toPlainText(),
-        "user": self.user_prompt.toPlainText(),
-        "scene":scene
+        "role_system": self.role_system_prompt.toPlainText(),
+        "role_user": self.role_user_prompt.toPlainText(),
+        "relation_system": self.relation_system_prompt.toPlainText(),
+        "relation_user": self.relation_user_prompt.toPlainText(),
+        "scene_system": self.scene_system_prompt.toPlainText(),
+        "scene_user": self.scene_user_prompt.toPlainText(),
+        "scene":scene,
+        "framework_system": self.framework_system_prompt.toPlainText(),
+        "framework_user": self.framework_user_prompt.toPlainText(),
+        "polish_system": self.polish_system_prompt.toPlainText(),
+        "polish_user": self.polish_user_prompt.toPlainText()
     }
     # 新增
     save_prompt_info(req_json)
