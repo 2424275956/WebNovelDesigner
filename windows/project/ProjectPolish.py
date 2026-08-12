@@ -72,7 +72,10 @@ def original_btn_clicked(self):
     """原文按钮触发"""
     if self.chapter_info is None:
         return
-    self.text_content.setPlainText(self.chapter_info['old_content'])
+    self.text_content.setPlainText("")
+    for line in self.chapter_info['old_content'].split('\\n'):
+        self.text_content.appendPlainText(line)
+
 
 def polist_page(self, project_id):
     """
