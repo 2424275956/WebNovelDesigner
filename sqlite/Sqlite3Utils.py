@@ -12,6 +12,24 @@ def query_project_by_id(project_id):
     tables = SqlDB.SqliteDB.execute("SELECT * FROM project WHERE id = ?", (project_id,))
     return tables.fetchone()
 
+def edit_project_prompt_id(prompt_id, project_id):
+    SqlDB.SqliteDB.execute("UPDATE project SET prompt_id = ? WHERE id = ?", (prompt_id, project_id))
+
+def edit_project_role_model_id(role_model_id, project_id):
+    SqlDB.SqliteDB.execute("UPDATE project SET role_model_id = ? WHERE id = ?", (role_model_id, project_id))
+
+def edit_project_relation_model_id(relation_model_id, project_id):
+    SqlDB.SqliteDB.execute("UPDATE project SET relation_model_id = ? WHERE id = ?", (relation_model_id, project_id))
+
+def edit_project_scene_model_id(scene_model_id, project_id):
+    SqlDB.SqliteDB.execute("UPDATE project SET scene_model_id = ? WHERE id = ?", (scene_model_id, project_id))
+
+def edit_project_framework_model_id(framework_model_id, project_id):
+    SqlDB.SqliteDB.execute("UPDATE project SET framework_model_id = ? WHERE id = ?", (framework_model_id, project_id))
+
+def edit_project_polish_model_id(polish_model_id, project_id):
+    SqlDB.SqliteDB.execute("UPDATE project SET polish_model_id = ? WHERE id = ?", (polish_model_id, project_id))
+
 # 保存新创建的项目信息
 def insert_project_info(project):
     title = project['title']
@@ -89,7 +107,6 @@ def insert_prompt_conf(name):
 def query_prompt_template(prompt_id, point_type, prompt_type):
     data_list = SqlDB.SqliteDB.execute("SELECT * FROM prompt_rules WHERE prompt_id = ? and point_type = ? and type = ?", (prompt_id,point_type, prompt_type))
     return data_list.fetchall()
-
 
 # 保存提示词信息
 def save_prompt_info(req_json):

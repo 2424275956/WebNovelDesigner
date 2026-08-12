@@ -2,7 +2,9 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame, QListWidget, QPushButton, QPlainTextEdit, \
     QComboBox, QListWidgetItem
 
-from sqlite.Sqlite3Utils import query_project_by_id, query_all_model, query_all_prompt, query_prompt_template
+from sqlite.Sqlite3Utils import query_project_by_id, query_all_model, query_all_prompt, query_prompt_template, \
+    edit_project_prompt_id, edit_project_role_model_id, edit_project_relation_model_id, edit_project_scene_model_id, \
+    edit_project_framework_model_id, edit_project_polish_model_id
 from style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet, label_style_sheet, \
     list_widget_style_sheet
 from config.GlobalMap import APP_STATE
@@ -75,6 +77,42 @@ def original_btn_clicked(self):
     self.text_content.setPlainText("")
     for line in self.chapter_info['old_content'].split('\\n'):
         self.text_content.appendPlainText(line)
+
+def update_project_prompt_id(self, text):
+    """更新索引"""
+    prompt_id = self.prompt_combo.currentData()
+    if prompt_id:
+        edit_project_prompt_id(prompt_id, self.project_info['id'])
+
+def update_project_role_id(self, combo, text):
+    """更新索引"""
+    role_model_id = combo.currentData()
+    if role_model_id:
+        edit_project_role_model_id(role_model_id, self.project_info['id'])
+
+def update_project_relation_id(self, combo, text):
+    """更新索引"""
+    relation_model_id = combo.currentData()
+    if relation_model_id:
+        edit_project_relation_model_id(relation_model_id, self.project_info['id'])
+
+def update_project_scene_id(self, combo, text):
+    """更新索引"""
+    scene_model_id = combo.currentData()
+    if scene_model_id:
+        edit_project_scene_model_id(scene_model_id, self.project_info['id'])
+
+def update_project_framework_id(self, combo, text):
+    """更新索引"""
+    framework_model_id = combo.currentData()
+    if framework_model_id:
+        edit_project_framework_model_id(framework_model_id, self.project_info['id'])
+
+def update_project_polish_id(self, combo, text):
+    """更新索引"""
+    polish_model_id = combo.currentData()
+    if polish_model_id:
+        edit_project_polish_model_id(polish_model_id, self.project_info['id'])
 
 
 def polist_page(self, project_id):
@@ -207,6 +245,7 @@ def polist_page(self, project_id):
         self.prompt_combo.setCurrentIndex(prompt_combo_index)
     else:
         self.prompt_combo.setCurrentIndex(0)
+    self.prompt_combo.textActivated.connect(lambda text : update_project_prompt_id(self, text))
     prompt_low_layout.addWidget(self.prompt_combo)
 
     """分割线"""
@@ -342,6 +381,7 @@ def polist_page(self, project_id):
         tool1_model.setCurrentIndex(tool1_model_index)
     else:
         tool1_model.setCurrentIndex(0)
+    tool1_model.textActivated.connect(lambda text : update_project_role_id(self, tool1_model, text))
     tool1.addWidget(tool1_model)
     """角色分析系统提示词"""
     tool1_system = QPushButton("系统提示词")
@@ -376,6 +416,7 @@ def polist_page(self, project_id):
         tool2_model.setCurrentIndex(tool2_model_index)
     else:
         tool2_model.setCurrentIndex(0)
+    tool2_model.textActivated.connect(lambda text : update_project_relation_id(self, tool2_model, text))
     tool2.addWidget(tool2_model)
     """关系分析系统提示词"""
     tool2_system = QPushButton("系统提示词")
@@ -410,6 +451,7 @@ def polist_page(self, project_id):
         tool3_model.setCurrentIndex(tool3_model_index)
     else:
         tool3_model.setCurrentIndex(0)
+    tool3_model.textActivated.connect(lambda text : update_project_scene_id(self, tool3_model, text))
     tool3.addWidget(tool3_model)
     """场景分析提示词-系统提示词"""
     tool3_system = QPushButton("系统提示词")
@@ -461,6 +503,7 @@ def polist_page(self, project_id):
         tool4_col1_row1_model.setCurrentIndex(tool4_col1_row1_model_index)
     else:
         tool4_col1_row1_model.setCurrentIndex(0)
+    tool4_col1_row1_model.textActivated.connect(lambda text : update_project_framework_id(self, tool4_col1_row1_model, text))
     tool4_col1_row1.addWidget(tool4_col1_row1_model)
     """脉络改写提示词-系统提示词"""
     tool4_col1_row1_system = QPushButton("系统提示词")
@@ -495,6 +538,7 @@ def polist_page(self, project_id):
         tool4_col1_row2_model.setCurrentIndex(tool4_col1_row2_model_index)
     else:
         tool4_col1_row2_model.setCurrentIndex(0)
+    tool4_col1_row2_model.textActivated.connect(lambda text : update_project_polish_id(self, tool4_col1_row2_model, text))
     tool4_col1_row2.addWidget(tool4_col1_row2_model)
     """结果润色提示词-系统提示词"""
     tool4_col1_row2_system = QPushButton("系统提示词")
