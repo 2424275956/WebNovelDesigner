@@ -312,7 +312,11 @@ def polist_page(self, project_id):
         tool1_model.addItem(model['name'], model['id'])
     tool1_model.setFixedSize(200, 30)
     tool1_model.setStyleSheet(line_edit_style_sheet())
-    tool1_model.setCurrentIndex(0)
+    if self.project_info['role_model_id']:
+        tool1_model_index = tool1_model.findData(self.project_info['role_model_id'])
+        tool1_model.setCurrentIndex(tool1_model_index)
+    else:
+        tool1_model.setCurrentIndex(0)
     tool1.addWidget(tool1_model)
     """角色分析系统提示词"""
     tool1_system = QPushButton("系统提示词")
@@ -341,7 +345,11 @@ def polist_page(self, project_id):
         tool2_model.addItem(model['name'], model['id'])
     tool2_model.setFixedSize(200, 30)
     tool2_model.setStyleSheet(line_edit_style_sheet())
-    tool2_model.setCurrentIndex(0)
+    if self.project_info['relation_model_id']:
+        tool2_model_index = tool2_model.findData(self.project_info['relation_model_id'])
+        tool2_model.setCurrentIndex(tool2_model_index)
+    else:
+        tool2_model.setCurrentIndex(0)
     tool2.addWidget(tool2_model)
     """关系分析系统提示词"""
     tool2_system = QPushButton("系统提示词")
@@ -369,7 +377,11 @@ def polist_page(self, project_id):
         tool3_model.addItem(model['name'], model['id'])
     tool3_model.setFixedSize(200, 30)
     tool3_model.setStyleSheet(line_edit_style_sheet())
-    tool3_model.setCurrentIndex(0)
+    if self.project_info['scene_model_id']:
+        tool3_model_index = tool3_model.findData(self.project_info['scene_model_id'])
+        tool3_model.setCurrentIndex(tool3_model_index)
+    else:
+        tool3_model.setCurrentIndex(0)
     tool3.addWidget(tool3_model)
     """场景分析提示词-系统提示词"""
     tool3_system = QPushButton("系统提示词")
@@ -413,7 +425,11 @@ def polist_page(self, project_id):
         tool4_col1_row1_model.addItem(model['name'], model['id'])
     tool4_col1_row1_model.setFixedSize(200, 30)
     tool4_col1_row1_model.setStyleSheet(line_edit_style_sheet())
-    tool4_col1_row1_model.setCurrentIndex(0)
+    if self.project_info['framework_model_id']:
+        tool4_col1_row1_model_index = tool4_col1_row1_model.findData(self.project_info['framework_model_id'])
+        tool4_col1_row1_model.setCurrentIndex(tool4_col1_row1_model_index)
+    else:
+        tool4_col1_row1_model.setCurrentIndex(0)
     tool4_col1_row1.addWidget(tool4_col1_row1_model)
     """脉络改写提示词-系统提示词"""
     tool4_col1_row1_system = QPushButton("系统提示词")
@@ -441,7 +457,11 @@ def polist_page(self, project_id):
         tool4_col1_row2_model.addItem(model['name'], model['id'])
     tool4_col1_row2_model.setFixedSize(200, 30)
     tool4_col1_row2_model.setStyleSheet(line_edit_style_sheet())
-    tool4_col1_row2_model.setCurrentIndex(0)
+    if self.project_info['polish_model_id']:
+        tool4_col1_row2_model_index = tool4_col1_row2_model.findData(self.project_info['polish_model_id'])
+        tool4_col1_row2_model.setCurrentIndex(tool4_col1_row2_model_index)
+    else:
+        tool4_col1_row2_model.setCurrentIndex(0)
     tool4_col1_row2.addWidget(tool4_col1_row2_model)
     """结果润色提示词-系统提示词"""
     tool4_col1_row2_system = QPushButton("系统提示词")
