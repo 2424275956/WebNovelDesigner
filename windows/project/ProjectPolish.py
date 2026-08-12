@@ -557,8 +557,57 @@ def polist_page(self, project_id):
     tool4.addStretch()
 
     """开始按钮"""
-    self.start_stop_btn = QPushButton("开始")
+    self.start_stop_btn = QPushButton()
     self.start_stop_btn.setFixedSize(80, 80)
     self.start_stop_btn.setStyleSheet(button_style_sheet(back_color='#00C853'))
+    self.start_stop_btn.clicked.connect(lambda : start_stop_clicked(self, tool1_model, tool2_model, tool3_model, tool4_col1_row1_model, tool4_col1_row2_model))
     tool4.addWidget(self.start_stop_btn)
+    """开始按钮控制"""
+    if 1 == project_status:
+        self.start_stop_btn.setText("开始")
+        self.start_stop_btn.setEnabled(True)
+    elif 2 == project_status:
+        self.start_stop_btn.setText("停止")
+        self.start_stop_btn.setEnabled(True)
+    else:
+        self.start_stop_btn.setText("开始")
+        self.start_stop_btn.setEnabled(False)
+
+    """可选框初始化"""
+    disable_enable_prompt_model_conf(self.project_info['id'], self.prompt_combo, tool1_model, tool2_model, tool3_model, tool4_col1_row1_model, tool4_col1_row2_model)
+
+def start_stop_clicked(self, tool1_model, tool2_model, tool3_model, tool4_col1_row1_model, tool4_col1_row2_model):
+    # 获取状态
+    project_status = APP_STATE.get(self.project_info['id'])
+    if 1 == project_status:
+        APP_STATE[self.project_info['id']] = 2
+        self.start_stop_btn.setText("停止")
+        self.start_stop_btn.setStyleSheet(button_style_sheet(back_color='#FF0000'))
+    elif 2 == project_status:
+        APP_STATE[self.project_info['id']] = 1
+        self.start_stop_btn.setText("开始")
+        self.start_stop_btn.setStyleSheet(button_style_sheet(back_color='#00C853'))
+
+    disable_enable_prompt_model_conf(self.project_info['id'], self.prompt_combo, tool1_model, tool2_model, tool3_model, tool4_col1_row1_model, tool4_col1_row2_model)
+
+
+def disable_enable_prompt_model_conf(project_id, prompt_combo, tool1_model, tool2_model, tool3_model, tool4_col1_row1_model, tool4_col1_row2_model):
+    # 获取状态
+    project_status = APP_STATE.get(project_id)
+    if 1 == project_status:
+        # 可选
+        prompt_combo.setEnabled(True)
+        tool1_model.setEnabled(True)
+        tool2_model.setEnabled(True)
+        tool3_model.setEnabled(True)
+        tool4_col1_row1_model.setEnabled(True)
+        tool4_col1_row2_model.setEnabled(True)
+    else:
+        # 不可选
+        prompt_combo.setEnabled(False)
+        tool1_model.setEnabled(False)
+        tool2_model.setEnabled(False)
+        tool3_model.setEnabled(False)
+        tool4_col1_row1_model.setEnabled(False)
+        tool4_col1_row2_model.setEnabled(False)
 
