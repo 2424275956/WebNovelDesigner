@@ -1,8 +1,10 @@
+from cgitb import handler
+
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame, QListWidget, QPushButton, QPlainTextEdit, \
-    QComboBox, QListWidgetItem
+    QComboBox, QListWidgetItem, QStatusBar
 
-from sqlite.Sqlite3Utils import query_project_by_id, query_all_model
+from sqlite.Sqlite3Utils import query_project_by_id, query_all_model, query_all_prompt
 from style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet, label_style_sheet, \
     list_widget_style_sheet
 from config.GlobalMap import APP_STATE
@@ -134,27 +136,50 @@ def polist_page(self, project_id):
     center_left_layout = QVBoxLayout()
     center_left_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     center_layout.addLayout(center_left_layout)
+    """"顶部"""
+    chapter_top_layout = QHBoxLayout()
+    chapter_top_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    center_left_layout.addLayout(chapter_top_layout)
     """章节提示"""
     chapter_title = QLabel("章节导航")
+    chapter_title.setFixedWidth(100)
     chapter_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     chapter_title.setStyleSheet(title_style_sheet())
-    center_left_layout.addWidget(chapter_title)
+    chapter_top_layout.addWidget(chapter_title)
     """章节统计1"""
     all_chapter = project['chapter_num']
-    success_chapter = project['success_num']
-    self.chapter_count1 = QLabel(f"共 {all_chapter} 章节 · 已完成 {success_chapter} 章节 ")
+    self.chapter_count1 = QLabel(f"共 {all_chapter} 章节")
     self.chapter_count1.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    center_left_layout.addWidget(self.chapter_count1)
+    chapter_top_layout.addWidget(self.chapter_count1)
     """章节统计2"""
-    wait_chapter = all_chapter - success_chapter
+    success_chapter = project['success_num']
     fail_chapter = project['fail_num']
-    self.chapter_count2 = QLabel(f"待完成 {wait_chapter} 章节 · 已失败 {fail_chapter} 章节")
+    self.chapter_count2 = QLabel(f"已完成 {success_chapter} 章节 · 已失败 {fail_chapter} 章节")
     self.chapter_count2.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     center_left_layout.addWidget(self.chapter_count2)
     """章节统计3"""
-    self.chapter_count3 = QLabel(f"新增扩写 {project['expansion_num']} 章节")
+    wait_chapter = all_chapter - success_chapter
+    self.chapter_count3 = QLabel(f"待完成 {wait_chapter} 章节 · 新增 {project['expansion_num']} 章节")
     self.chapter_count3.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     center_left_layout.addWidget(self.chapter_count3)
+    """提示词布局"""
+    prompt_low_layout = QHBoxLayout()
+    prompt_low_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    center_left_layout.addLayout(prompt_low_layout)
+    """提示词标题"""
+    prompt_title = QLabel("Prompt：")
+    prompt_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    prompt_low_layout.addWidget(prompt_title)
+    """查询全部提示词模版"""
+    all_prompt = query_all_prompt()
+    """提示词选择列表"""
+    prompt_combo = QComboBox()
+    for prompt in all_prompt:
+        prompt_combo.addItem(prompt['name'], prompt['id'])
+    prompt_combo.setFixedSize(180, 25)
+    prompt_combo.setStyleSheet(line_edit_style_sheet())
+    prompt_combo.setCurrentIndex(0)
+    prompt_low_layout.addWidget(prompt_combo)
 
     """分割线"""
     frame2 = QFrame()
@@ -165,7 +190,7 @@ def polist_page(self, project_id):
     """章节列表"""
     self.chapter_list = QListWidget()
     self.chapter_list.setContentsMargins(10, 10, 10, 10)
-    self.chapter_list.setFixedSize(250, 570)
+    self.chapter_list.setFixedSize(250, 565)
     self.chapter_list.setStyleSheet(list_widget_style_sheet())
     self.chapter_list.setItemAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
     self.chapter_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)

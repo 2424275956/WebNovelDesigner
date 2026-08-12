@@ -105,6 +105,7 @@ class SqliteDB:
                     scene_name TEXT DEFAULT NULL,                   -- 场景提示词名称
                     scene_identify TEXT DEFAULT NULL,               -- 场景提示词识别规则
                     context TEXT DEFAULT NULL,                      -- 提示词规则    
+                    point_type INTEGER NOT NULL DEFAULT 1,          -- 节点类型（1：角色分析，2：关系分析，3：场景分析，4：脉络改写，5：结果润色）
                     type INTEGER NOT NULL DEFAULT 1                 -- 提示词类型（1：系统提示词，2：用户提示词，3：场景提示词）
                 );
                 CREATE INDEX IF NOT EXISTS idx_prompt_id ON prompt_rules(prompt_id);
