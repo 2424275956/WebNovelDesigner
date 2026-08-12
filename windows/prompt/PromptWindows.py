@@ -411,44 +411,23 @@ def review_page(self):
     prompt_inner_layout = QVBoxLayout(prompt_widget)
     prompt_inner_layout.setSpacing(10)
 
+    """角色分析"""
     # 系统提示词
-    self.system_prompt_title = QLabel("系统提示词（最好1000字以内，过长会导致遗忘设定）,已输入：0 字符")
-    self.system_prompt_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    self.system_prompt_title.setStyleSheet(title_style_sheet())
-    prompt_inner_layout.addWidget(self.system_prompt_title)
-    # 系统提示词框
-    self.system_prompt = QPlainTextEdit()
-    self.system_prompt.setStyleSheet(line_edit_style_sheet())
-    self.system_prompt.setFixedHeight(200)
-    self.system_prompt.textChanged.connect(lambda : system_prompt_count(self))
-    prompt_inner_layout.addWidget(self.system_prompt)
-
-    # 分割线
-    fream_row1 = QFrame()
-    fream_row1.setFrameShape(QFrame.Shape.HLine)
-    fream_row1.setFrameShadow(QFrame.Shadow.Sunken)
-    prompt_inner_layout.addWidget(fream_row1)
-
+    prompt_text_slide("角色分析系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
     # 用户提示词
-    self.user_prompt_title = QLabel("用户提示词（主要为改写规则）,已输入：0 字符")
-    self.user_prompt_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    self.user_prompt_title.setStyleSheet(title_style_sheet())
-    prompt_inner_layout.addWidget(self.user_prompt_title)
-    # 用户提示词框
+    prompt_text_slide("角色分析用户提示词（主要为改写规则）", prompt_inner_layout, 350)
 
-    self.user_prompt = QPlainTextEdit()
-    self.user_prompt.setStyleSheet(line_edit_style_sheet())
-    self.user_prompt.setFixedHeight(350)
-    self.user_prompt.textChanged.connect(lambda : user_prompt_count(self))
-    prompt_inner_layout.addWidget(self.user_prompt)
+    """关系分析"""
+    # 系统提示词
+    prompt_text_slide("关系分析系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    # 用户提示词
+    prompt_text_slide("关系分析用户提示词（主要为改写规则）", prompt_inner_layout, 350)
 
-    # 分割线
-    fream_row2 = QFrame()
-    fream_row2.setFrameShape(QFrame.Shape.HLine)
-    fream_row2.setFrameShadow(QFrame.Shadow.Sunken)
-    prompt_inner_layout.addWidget(fream_row2)
-
-
+    """场景分析"""
+    # 系统提示词
+    prompt_text_slide("场景分析系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    # 用户提示词
+    prompt_text_slide("场景分析用户提示词（主要为改写规则）", prompt_inner_layout, 350)
     # 场景提示词顶部
     scene_prompt_top = QHBoxLayout()
     scene_prompt_top.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
@@ -478,6 +457,18 @@ def review_page(self):
     review_scene_prompt_list(self.scene_prompt_list, self.prompt_id)
     prompt_inner_layout.addWidget(self.scene_prompt_list)
 
+    """脉络改写"""
+    # 系统提示词
+    prompt_text_slide("脉络改写系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    # 用户提示词
+    prompt_text_slide("脉络改写用户提示词（主要为改写规则）", prompt_inner_layout, 350)
+
+    """结果润色"""
+    # 系统提示词
+    prompt_text_slide("结果润色系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    # 用户提示词
+    prompt_text_slide("结果润色用户提示词（主要为改写规则）", prompt_inner_layout, 350)
+
     self.conf_page.addWidget(scroll_area)
 
     # 渲染默认页面
@@ -488,6 +479,24 @@ def review_page(self):
     self.model_lower_layout.addLayout(self.conf_page)
     # 尾部插入
     self.model_win_layout.addLayout(self.model_lower_layout)
+
+"""系统提示词滑动窗口"""
+def prompt_text_slide(title, layout, height):
+    prompt_title = QLabel(f"{title},已输入：0 字符")
+    prompt_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    prompt_title.setStyleSheet(title_style_sheet())
+    layout.addWidget(prompt_title)
+    # 系统提示词框
+    prompt = QPlainTextEdit()
+    prompt.setStyleSheet(line_edit_style_sheet())
+    prompt.setFixedHeight(height)
+    prompt.textChanged.connect(lambda : system_prompt_count(title, prompt_title, prompt))
+    layout.addWidget(prompt)
+    # 分割线
+    fream = QFrame()
+    fream.setFrameShape(QFrame.Shape.HLine)
+    fream.setFrameShadow(QFrame.Shadow.Sunken)
+    layout.addWidget(fream)
 
 """增加场景规则"""
 def create_scene_prompt_text(self):
@@ -608,11 +617,11 @@ def create_scene_prompt_text(self):
     sort_scene_rules(self.scene_prompt_list)
 
 """用户提示词计数"""
-def system_prompt_count(self):
+def system_prompt_count(title, prompt_title, prompt):
     # 获取文字
-    text = self.system_prompt.toPlainText()
+    text = prompt.toPlainText()
     char_count = len(text)
-    self.system_prompt_title.setText(f"系统提示词（最好1000字以内，过长会导致遗忘设定）,已输入：{char_count} 字符")
+    prompt_title.setText(f"{title},已输入：{char_count} 字符")
 
 """用户提示词计数"""
 def user_prompt_count(self):
