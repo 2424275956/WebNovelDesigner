@@ -260,7 +260,7 @@ class ImportDialog(QDialog):
                         # 当前存在内容
                         if len(context) > 0:
                             # 清理结尾 \\n
-                            context = context[:-3]
+                            context = context[:-2]
                             # 是正文章节
                             if len(chapter_title) > 0:
                                 chapter_context_data.append({"title": chapter_title,

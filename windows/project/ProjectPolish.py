@@ -300,6 +300,7 @@ def polist_page(self, project_id):
     self.text_content = QPlainTextEdit()
     self.text_content.setFixedSize(550, 420)
     self.text_content.setStyleSheet(line_edit_style_sheet())
+    self.text_content.setReadOnly(True)
     center_right_row1_col2.addWidget(self.text_content)
 
     """插入分割线"""
