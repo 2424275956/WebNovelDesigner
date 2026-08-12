@@ -1,16 +1,35 @@
-from cgitb import handler
-
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame, QListWidget, QPushButton, QPlainTextEdit, \
-    QComboBox, QListWidgetItem, QStatusBar
+    QComboBox, QListWidgetItem
 
-from sqlite.Sqlite3Utils import query_project_by_id, query_all_model, query_all_prompt
+from sqlite.Sqlite3Utils import query_project_by_id, query_all_model, query_all_prompt, query_prompt_template
 from style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet, label_style_sheet, \
     list_widget_style_sheet
 from config.GlobalMap import APP_STATE
 from utils.ClearLayoutRecursive import clear_layout
 from utils.StatusDot import StatusDot
 from . import NovelChapterList
+
+def on_prompt_item_clicked(self, point_type, prompt_type):
+    choose_project_id = self.prompt_combo.currentData()
+    if choose_project_id is None:
+        return
+    prompt_list = query_prompt_template(choose_project_id, point_type, prompt_type)
+    if 3 == prompt_type:
+        prompt_text = ""
+        if prompt_list:
+            for prompt in prompt_list:
+                prompt_text = prompt_text + f"{prompt['scene_name']}\n"
+                prompt_text = prompt_text + f"{prompt['scene_identify']}\n"
+                prompt_text = prompt_text + f"{prompt['context']}\n\n"
+
+        self.text_content.setPlainText(prompt_text)
+    else:
+        if prompt_list:
+            prompt = prompt_list[0]
+            if prompt:
+                self.text_content.setPlainText(prompt['context'])
+
 
 def on_item_clicked(self, item: QListWidgetItem):
     """触发事件"""
@@ -173,17 +192,17 @@ def polist_page(self, project_id):
     """查询全部提示词模版"""
     all_prompt = query_all_prompt()
     """提示词选择列表"""
-    prompt_combo = QComboBox()
+    self.prompt_combo = QComboBox()
     for prompt in all_prompt:
-        prompt_combo.addItem(prompt['name'], prompt['id'])
-    prompt_combo.setFixedSize(180, 25)
-    prompt_combo.setStyleSheet(line_edit_style_sheet())
+        self.prompt_combo.addItem(prompt['name'], prompt['id'])
+    self.prompt_combo.setFixedSize(180, 25)
+    self.prompt_combo.setStyleSheet(line_edit_style_sheet())
     if self.project_info['prompt_id']:
-        prompt_combo_index = prompt_combo.findData(self.project_info['prompt_id'])
-        prompt_combo.setCurrentIndex(prompt_combo_index)
+        prompt_combo_index = self.prompt_combo.findData(self.project_info['prompt_id'])
+        self.prompt_combo.setCurrentIndex(prompt_combo_index)
     else:
-        prompt_combo.setCurrentIndex(0)
-    prompt_low_layout.addWidget(prompt_combo)
+        self.prompt_combo.setCurrentIndex(0)
+    prompt_low_layout.addWidget(self.prompt_combo)
 
     """分割线"""
     frame2 = QFrame()
@@ -322,12 +341,13 @@ def polist_page(self, project_id):
     tool1_system = QPushButton("系统提示词")
     tool1_system.setStyleSheet(button_style_sheet())
     tool1_system.setFixedSize(80, 30)
-    tool1_system.clicked.connect(lambda : 123)
+    tool1_system.clicked.connect(lambda : on_prompt_item_clicked(self, 1, 1))
     tool1.addWidget(tool1_system)
     """角色分析用户提示词"""
     tool1_user = QPushButton("用户提示词")
     tool1_user.setStyleSheet(button_style_sheet())
     tool1_user.setFixedSize(80, 30)
+    tool1_user.clicked.connect(lambda : on_prompt_item_clicked(self, 1, 2))
     tool1.addWidget(tool1_user)
 
     """工具栏第二行"""
@@ -355,11 +375,13 @@ def polist_page(self, project_id):
     tool2_system = QPushButton("系统提示词")
     tool2_system.setStyleSheet(button_style_sheet())
     tool2_system.setFixedSize(80, 30)
+    tool2_system.clicked.connect(lambda : on_prompt_item_clicked(self, 2, 1))
     tool2.addWidget(tool2_system)
     """关系分析用户提示词"""
     tool2_user = QPushButton("用户提示词")
     tool2_user.setStyleSheet(button_style_sheet())
     tool2_user.setFixedSize(80, 30)
+    tool2_user.clicked.connect(lambda : on_prompt_item_clicked(self, 2, 2))
     tool2.addWidget(tool2_user)
 
     """工具栏第三行"""
@@ -387,16 +409,19 @@ def polist_page(self, project_id):
     tool3_system = QPushButton("系统提示词")
     tool3_system.setStyleSheet(button_style_sheet())
     tool3_system.setFixedSize(80, 30)
+    tool3_system.clicked.connect(lambda : on_prompt_item_clicked(self, 3, 1))
     tool3.addWidget(tool3_system)
     """场景分析提示词-用户提示词"""
     tool3_user = QPushButton("用户提示词")
     tool3_user.setStyleSheet(button_style_sheet())
     tool3_user.setFixedSize(80, 30)
+    tool3_user.clicked.connect(lambda : on_prompt_item_clicked(self, 3, 2))
     tool3.addWidget(tool3_user)
     """场景分析提示词-场景提示词"""
     tool3_scene = QPushButton("场景提示词")
     tool3_scene.setStyleSheet(button_style_sheet())
     tool3_scene.setFixedSize(80, 30)
+    tool3_scene.clicked.connect(lambda : on_prompt_item_clicked(self, 3, 3))
     tool3.addWidget(tool3_scene)
 
 
@@ -435,11 +460,13 @@ def polist_page(self, project_id):
     tool4_col1_row1_system = QPushButton("系统提示词")
     tool4_col1_row1_system.setStyleSheet(button_style_sheet())
     tool4_col1_row1_system.setFixedSize(80, 30)
+    tool4_col1_row1_system.clicked.connect(lambda : on_prompt_item_clicked(self, 4, 1))
     tool4_col1_row1.addWidget(tool4_col1_row1_system)
     """脉络改写提示词-用户提示词"""
     tool4_col1_row1_user = QPushButton("用户提示词")
     tool4_col1_row1_user.setStyleSheet(button_style_sheet())
     tool4_col1_row1_user.setFixedSize(80, 30)
+    tool4_col1_row1_user.clicked.connect(lambda : on_prompt_item_clicked(self, 4, 2))
     tool4_col1_row1.addWidget(tool4_col1_row1_user)
 
     """工具栏第四行第一列第二行"""
@@ -467,11 +494,13 @@ def polist_page(self, project_id):
     tool4_col1_row2_system = QPushButton("系统提示词")
     tool4_col1_row2_system.setStyleSheet(button_style_sheet())
     tool4_col1_row2_system.setFixedSize(80, 30)
+    tool4_col1_row2_system.clicked.connect(lambda : on_prompt_item_clicked(self, 5, 1))
     tool4_col1_row2.addWidget(tool4_col1_row2_system)
     """结果润色提示词-用户提示词"""
     tool4_col1_row2_user = QPushButton("用户提示词")
     tool4_col1_row2_user.setStyleSheet(button_style_sheet())
     tool4_col1_row2_user.setFixedSize(80, 30)
+    tool4_col1_row2_user.clicked.connect(lambda : on_prompt_item_clicked(self, 5, 2))
     tool4_col1_row2.addWidget(tool4_col1_row2_user)
 
     """弹开"""

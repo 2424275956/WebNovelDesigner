@@ -86,18 +86,8 @@ def insert_prompt_conf(name):
     return cursor.lastrowid
 
 # 查询场景提示词
-def query_scene_prompt(prompt_id):
-    data_list = SqlDB.SqliteDB.execute("SELECT * FROM prompt_rules WHERE type = 3 and prompt_id = ?", (prompt_id,))
-    return data_list.fetchall()
-
-# 查询系统提示词
-def query_system_prompt(prompt_id):
-    data_list = SqlDB.SqliteDB.execute("SELECT * FROM prompt_rules WHERE type = 1 and prompt_id = ?", (prompt_id,))
-    return data_list.fetchall()
-
-# 查询用户提示词
-def query_user_prompt(prompt_id):
-    data_list = SqlDB.SqliteDB.execute("SELECT * FROM prompt_rules WHERE type = 2 and prompt_id = ?", (prompt_id,))
+def query_prompt_template(prompt_id, point_type, prompt_type):
+    data_list = SqlDB.SqliteDB.execute("SELECT * FROM prompt_rules WHERE prompt_id = ? and point_type = ? and type = ?", (prompt_id,point_type, prompt_type))
     return data_list.fetchall()
 
 

@@ -5,8 +5,8 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButt
     QListWidgetItem, QDialog, QPlainTextEdit, QScrollArea, QLineEdit, QStatusBar, QFileDialog
 import json as std_json
 
-from sqlite.Sqlite3Utils import query_all_prompt, query_scene_prompt, save_prompt_info, query_system_prompt, \
-    query_user_prompt, remove_prompt, query_prompt_info_by_id, import_prompt_template
+from sqlite.Sqlite3Utils import query_all_prompt, save_prompt_info, remove_prompt, query_prompt_info_by_id, \
+    import_prompt_template, query_prompt_template
 from style.StyleSheet import button_style_sheet, title_style_sheet, line_edit_style_sheet
 from windows.prompt.InsertPrompt import InsertModel
 
@@ -21,13 +21,13 @@ def on_item_clicked(self, item: QListWidgetItem):
 """页面信息"""
 def prompt_page_info(self, model):
     # 系统提示词
-    system = query_system_prompt(model['id'])
+    system = query_prompt_template(model['id'], 1, 1)
     if system:
         self.system_prompt.setPlainText(system[0]['context'])
     # 标题
     self.conf_page_model_name.setText(model['name'])
     # 用户提示词
-    user = query_user_prompt(model['id'])
+    user = query_prompt_template(model['id'], 1, 2)
     if user:
         self.user_prompt.setPlainText(user[0]['context'])
     # 场景提示词
@@ -211,17 +211,17 @@ def export_prompt(self):
     if len(model) <= 0:
         self.prompt_status_bar.showMessage(f"❌ 提示词模版信息获取失败")
         return False
-    system = query_system_prompt(model[0]['id'])
+    system = query_prompt_template(model[0]['id'], 1, 1)
     if len(system[0]['context']) <= 0:
         self.prompt_status_bar.showMessage("❌ 系统提示词规则为空")
         return False
     # 用户提示词
-    user = query_user_prompt(model[0]['id'])
+    user = query_prompt_template(model[0]['id'], 1, 2)
     if len(user[0]['context']) <= 0:
         self.prompt_status_bar.showMessage("❌ 用户提示词规则为空")
         return False
     # 场景规则查询
-    all_scene_prompt = query_scene_prompt(self.prompt_id)
+    all_scene_prompt = query_prompt_template(self.prompt_id, 1, 3)
     if len(all_scene_prompt) <= 0:
         self.prompt_status_bar.showMessage("❌ 场景提示词规则为空")
         return False
@@ -662,7 +662,7 @@ def sort_scene_rules(scene_prompt_list):
 """场景规则渲染列表"""
 def review_scene_prompt_list(model_list, prompt_id):
     # 场景规则查询
-    all_scene_prompt = query_scene_prompt(prompt_id)
+    all_scene_prompt = query_prompt_template(prompt_id, 3, 3)
     # 内容不为空
     if all_scene_prompt:
         for row, prompt in enumerate(all_scene_prompt):
