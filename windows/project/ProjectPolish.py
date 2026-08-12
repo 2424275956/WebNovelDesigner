@@ -1,6 +1,6 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame, QListWidget, QPushButton, QPlainTextEdit, \
-    QComboBox
+    QComboBox, QListWidgetItem
 
 from sqlite.Sqlite3Utils import query_project_by_id, query_all_model
 from style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet, label_style_sheet
@@ -8,6 +8,11 @@ from config.GlobalMap import APP_STATE
 from utils.ClearLayoutRecursive import clear_layout
 from utils.StatusDot import StatusDot
 from . import NovelChapterList
+
+def on_item_clicked(self, item: QListWidgetItem):
+    """触发事件"""
+    chapter = item.data(Qt.ItemDataRole.UserRole)
+    self.chapter_info = chapter
 
 def polish_btn_clicked(self):
     """润色内容按钮触发"""
@@ -165,7 +170,7 @@ def polist_page(self, project_id):
     self.chapter_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
     # 渲染列表
     self.all_chapter = NovelChapterList.novel_chapter(self, project_id)
-    self.chapter_list.itemClicked.connect(lambda item: 123)
+    self.chapter_list.itemClicked.connect(lambda item: on_item_clicked(self, item))
     center_left_layout.addWidget(self.chapter_list)
 
     """垂直分割线"""
