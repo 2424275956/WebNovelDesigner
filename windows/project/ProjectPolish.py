@@ -62,7 +62,7 @@ def polist_page(self, project_id):
     self.chapter_info = None
 
     # 存在数据则销毁
-    if self.project_win_layout is not None:
+    if self.project_win_layout:
         clear_layout(self.project_win_layout)
 
     # 项目查询

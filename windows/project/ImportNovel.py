@@ -259,6 +259,8 @@ class ImportDialog(QDialog):
                     if regex_obj.search(line):
                         # 当前存在内容
                         if len(context) > 0:
+                            # 清理结尾 \\n
+                            context = context[:-3]
                             # 是正文章节
                             if len(chapter_title) > 0:
                                 chapter_context_data.append({"title": chapter_title,
@@ -278,7 +280,9 @@ class ImportDialog(QDialog):
                         # 正文内容置空
                         context = ""
                     else:
-                        context = context + line
+                        line = line.strip()
+                        if len(line) > 0:
+                            context = context + line + "\\n"
 
                     # 总字数
                     word_count = word_count + len(line.strip())

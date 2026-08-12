@@ -7,33 +7,26 @@ def clear_layout(layout):
         return
 
     """先清除子布局"""
-    for i in range(layout.count()):
-        item = layout.itemAt(i)
-        if item:
-            """如果是子布局，递归清除"""
-            sub_layout = item.layout()
-            if sub_layout:
-                clear_layout(sub_layout)
-
-            """如果是控件，直接删除"""
-            widget = item.widget()
-            if widget:
-                widget.setParent(None)
-                widget.deleteLater()
-
-    """清除当前布局"""
-    while layout.count():
+    while True:
         item = layout.takeAt(0)
-        if item:
+
+        if item is None:
+            break
+
+        """如果是子布局，递归清除"""
+        sub_layout = item.layout()
+        if sub_layout:
+            clear_layout(sub_layout)
+            """销毁子布局本身"""
+            sub_layout.deleteLater()
+        elif item.widget():
             widget = item.widget()
-            if widget:
-                widget.setParent(None)
-                widget.deleteLater()
-            else:
-                sub_layout = item.layout()
-                if sub_layout:
-                    sub_layout.setParent(None)
-                    sub_layout.deleteLater()
+            """解除父子关系，防止隐藏残留"""
+            widget.setParent(None)
+            """安排异步销毁，释放内存"""
+            widget.deleteLater()
+        else:
+            del item
 
     """立即生效"""
     QApplication.processEvents()

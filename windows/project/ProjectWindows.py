@@ -36,7 +36,7 @@ def project_open_windows(self):
 """页面渲染"""
 def review_page(self):
     # 存在数据则销毁
-    if self.project_win_layout is not None:
+    if self.project_win_layout:
         clear_layout(self.project_win_layout)
 
     """顶部标题栏"""
