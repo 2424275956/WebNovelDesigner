@@ -3,7 +3,8 @@ from PyQt6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame, QListWidge
     QComboBox, QListWidgetItem
 
 from sqlite.Sqlite3Utils import query_project_by_id, query_all_model
-from style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet, label_style_sheet
+from style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet, label_style_sheet, \
+    list_widget_style_sheet
 from config.GlobalMap import APP_STATE
 from utils.ClearLayoutRecursive import clear_layout
 from utils.StatusDot import StatusDot
@@ -165,7 +166,7 @@ def polist_page(self, project_id):
     self.chapter_list = QListWidget()
     self.chapter_list.setContentsMargins(10, 10, 10, 10)
     self.chapter_list.setFixedSize(250, 570)
-    self.chapter_list.setStyleSheet(line_edit_style_sheet())
+    self.chapter_list.setStyleSheet(list_widget_style_sheet())
     self.chapter_list.setItemAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
     self.chapter_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
     # 渲染列表

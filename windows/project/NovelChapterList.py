@@ -32,7 +32,7 @@ def novel_chapter(self, project_id):
 
             # 容器内部使用水平布局，让卡片居中
             container_layout = QHBoxLayout(container)
-            container_layout.setContentsMargins(0, 10, 0, 10)  # 上下各10px边距
+            container_layout.setContentsMargins(0, 0, 0, 0)  # 上下各10px边距
             container_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
             # 创建卡片
@@ -40,13 +40,14 @@ def novel_chapter(self, project_id):
             model_frame.setFixedSize(230, 100)
             model_frame.setStyleSheet("""
                 QFrame {
-                    background-color: #2D3436;
-                    border-radius: 12px;
-                    border: 1px solid #3D4447;
+                    background-color: #000000; /* 背景改为纯黑 */
+                    color: #FFFFFF;            /* 字体颜色改为白色 */
+                    border: 1px solid #333333; /* 边框改为深灰，避免在黑色背景下太突兀 */
                 }
+                
                 QFrame:hover {
-                    border: 1px solid #4A90D9;
-                    background-color: #353D3F;
+                    background-color: #1A1A1A; /* 悬停时变为深灰色，提供视觉反馈 */
+                    border: 1px solid #4A90D9; /* 保持悬停时的蓝色高亮边框 */
                 }
             """)
 
