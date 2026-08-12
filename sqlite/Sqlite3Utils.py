@@ -106,7 +106,7 @@ def save_prompt_info(req_json):
     scene_data = []
     scene_list = req_json['scene']
     for scene in scene_list:
-        scene_data.append((prompt_id, scene['name'], scene['identify_text'], scene['rules_text'], 3, 3))
+        scene_data.append((prompt_id, scene['scene_name'], scene['scene_identify'], scene['scene_rules'], 3, 3))
     SqlDB.SqliteDB.execute_batch("INSERT INTO prompt_rules (prompt_id, scene_name, scene_identify, context, point_type, type) VALUES (?, ?, ?, ?, ?, ?)"
                                  , scene_data)
     """脉络改写"""
@@ -125,13 +125,8 @@ def save_prompt(prompt_id, system, user, point_type):
 def import_prompt_template(req_json):
     # 获取名称
     prompt_id = insert_prompt_conf(req_json['name'])
-    save_req_json = {
-        "id": prompt_id,
-        "system": req_json['system'],
-        "user": req_json['user'],
-        "scene": req_json['scene']
-    }
-    save_prompt_info(save_req_json)
+    req_json['id'] = prompt_id
+    save_prompt_info(req_json)
 
 # 删除提示词模版
 def remove_prompt(prompt_id):

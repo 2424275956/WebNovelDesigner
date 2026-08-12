@@ -60,6 +60,13 @@ def delete_prompt(self):
     if len(self.all_models) > 0:
         prompt_page_info(self, self.all_models[0])
 
+"""导入配置校验"""
+def import_prompt_check(self, rules, msg):
+    if len(rules) <= 0:
+        self.prompt_status_bar.showMessage(msg)
+        return False
+    return True
+
 """导入配置"""
 def import_prompt(self):
     """使用文件对话框选择文件"""
@@ -77,22 +84,25 @@ def import_prompt(self):
                 self.prompt_status_bar.showMessage(f"❌ json数据解析为空")
                 return False
             # 名称
-            name = json_data['prompt_name']
-            if len(name) <= 0:
-                self.prompt_status_bar.showMessage(f"❌ 提示词模版名称为空")
+            if not import_prompt_check(self, json_data['prompt_name'], "❌ 提示词模版名称为空"):
                 return False
-            # 系统提示词
-            system = json_data['system_prompt']
-            if len(system) <= 0:
-                self.prompt_status_bar.showMessage(f"❌ 系统提示词规则为空")
+            """角色分析"""
+            if not import_prompt_check(self, json_data['role_system'], "❌ 角色分析系统提示词规则为空"):
                 return False
-            # 用户提示词
-            user = json_data['user_prompt']
-            if len(user) <= 0:
-                self.prompt_status_bar.showMessage(f"❌ 用户提示词规则为空")
+            if not import_prompt_check(self, json_data['role_user'], "❌ 角色分析用户提示词规则为空"):
+                return False
+            """关系分析"""
+            if not import_prompt_check(self, json_data['relation_system'], "❌ 关系分析系统提示词规则为空"):
+                return False
+            if not import_prompt_check(self, json_data['relation_user'], "❌ 关系分析用户提示词规则为空"):
+                return False
+            """场景分析"""
+            if not import_prompt_check(self, json_data['scene_system'], "❌ 场景分析系统提示词规则为空"):
+                return False
+            if not import_prompt_check(self, json_data['scene_user'], "❌ 场景分析用户提示词规则为空"):
                 return False
             # 场景提示词
-            scene = json_data['scene_prompt']
+            scene = json_data['scene']
             scene_data = []
             if len(scene) <= 0:
                 self.prompt_status_bar.showMessage(f"❌ 场景提示词规则为空")
@@ -111,16 +121,34 @@ def import_prompt(self):
                     self.prompt_status_bar.showMessage(f"❌ 第{i + 1}条场景提示词改写规则为空")
                     return False
                 scene_data.append({
-                    "name": scene_name,
-                    "identify_text": scene_identify,
-                    "rules_text": scene_rules
+                    "scene_name": scene_name,
+                    "scene_identify": scene_identify,
+                    "scene_rules": scene_rules
                 })
+            """脉络改写"""
+            if not import_prompt_check(self, json_data['framework_system'], "❌ 脉络改写系统提示词规则为空"):
+                return False
+            if not import_prompt_check(self, json_data['framework_user'], "❌ 脉络改写用户提示词规则为空"):
+                return False
+            """结果润色"""
+            if not import_prompt_check(self, json_data['polish_system'], "❌ 结果润色系统提示词规则为空"):
+                return False
+            if not import_prompt_check(self, json_data['polish_user'], "❌ 结果润色用户提示词规则为空"):
+                return False
             # 请求组装
             req_json = {
-                "name": name,
-                "system": system,
-                "user": user,
-                "scene": scene_data
+                "name": json_data['prompt_name'],
+                "role_system": json_data['role_system'],
+                "role_user": json_data['role_user'],
+                "relation_system": json_data['relation_system'],
+                "relation_user": json_data['relation_user'],
+                "scene_system": json_data['scene_system'],
+                "scene_user": json_data['scene_user'],
+                "scene": json_data['scene'],
+                "framework_system": json_data['framework_system'],
+                "framework_user": json_data['framework_user'],
+                "polish_system": json_data['polish_system'],
+                "polish_user": json_data['polish_user']
             }
             # 保存
             import_prompt_template(req_json)
@@ -218,9 +246,9 @@ def save_prompt_conf(self):
                         return False
                 # json组装
                 scene.append({
-                    "name": scene_name.text(),
-                    "identify_text": identify_text.toPlainText(),
-                    "rules_text": rules_text.toPlainText()
+                    "scene_name": scene_name.text(),
+                    "scene_identify": identify_text.toPlainText(),
+                    "scene_rules": rules_text.toPlainText()
                 })
     """脉络改写"""
     # 系统提示词
