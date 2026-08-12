@@ -18,23 +18,39 @@ def on_item_clicked(self, item: QListWidgetItem):
     self.prompt_id = model['id']
     prompt_page_info(self, model)
 
+"""提示词处理"""
+def prompt_page_review_info(model, system_prompt, user_prompt, point_type):
+    # 系统提示词
+    system = query_prompt_template(model['id'], point_type, 1)
+    if system:
+        system_prompt.setPlainText(system[0]['context'])
+    else:
+        system_prompt.setPlainText("")
+    # 用户提示词
+    user = query_prompt_template(model['id'], point_type, 2)
+    if user:
+        user_prompt.setPlainText(user[0]['context'])
+    else:
+        user_prompt.setPlainText("")
+
 """页面信息"""
 def prompt_page_info(self, model):
-    # 系统提示词
-    system = query_prompt_template(model['id'], 1, 1)
-    if system:
-        self.system_prompt.setPlainText(system[0]['context'])
     # 标题
     self.conf_page_model_name.setText(model['name'])
-    # 用户提示词
-    user = query_prompt_template(model['id'], 1, 2)
-    if user:
-        self.user_prompt.setPlainText(user[0]['context'])
-    # 场景提示词
+    """角色分析"""
+    prompt_page_review_info(model, self.role_system_prompt, self.role_user_prompt, 1)
+    """关系分析"""
+    prompt_page_review_info(model, self.relation_system_prompt, self.relation_user_prompt, 2)
+    """场景分析"""
+    prompt_page_review_info(model, self.scene_system_prompt, self.scene_user_prompt, 3)
     # 清空场景提示词
     self.scene_prompt_list.clear()
     # 渲染
     review_scene_prompt_list(self.scene_prompt_list, model['id'])
+    """脉络改写"""
+    prompt_page_review_info(model, self.framework_system_prompt, self.framework_user_prompt, 4)
+    """结果润色"""
+    prompt_page_review_info(model, self.polish_system_prompt, self.polish_user_prompt, 5)
 
 """删除提示词模版"""
 def delete_prompt(self):
@@ -413,21 +429,27 @@ def review_page(self):
 
     """角色分析"""
     # 系统提示词
-    prompt_text_slide("角色分析系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    self.role_system_prompt = QPlainTextEdit()
+    prompt_text_slide(self.role_system_prompt, "角色分析系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
     # 用户提示词
-    prompt_text_slide("角色分析用户提示词（主要为改写规则）", prompt_inner_layout, 350)
+    self.role_user_prompt = QPlainTextEdit()
+    prompt_text_slide(self.role_user_prompt, "角色分析用户提示词（主要为改写规则）", prompt_inner_layout, 350)
 
     """关系分析"""
     # 系统提示词
-    prompt_text_slide("关系分析系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    self.relation_system_prompt = QPlainTextEdit()
+    prompt_text_slide(self.relation_system_prompt, "关系分析系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
     # 用户提示词
-    prompt_text_slide("关系分析用户提示词（主要为改写规则）", prompt_inner_layout, 350)
+    self.relation_user_prompt = QPlainTextEdit()
+    prompt_text_slide(self.relation_user_prompt, "关系分析用户提示词（主要为改写规则）", prompt_inner_layout, 350)
 
     """场景分析"""
     # 系统提示词
-    prompt_text_slide("场景分析系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    self.scene_system_prompt = QPlainTextEdit()
+    prompt_text_slide(self.scene_system_prompt, "场景分析系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
     # 用户提示词
-    prompt_text_slide("场景分析用户提示词（主要为改写规则）", prompt_inner_layout, 350)
+    self.scene_user_prompt = QPlainTextEdit()
+    prompt_text_slide(self.scene_user_prompt, "场景分析用户提示词（主要为改写规则）", prompt_inner_layout, 350)
     # 场景提示词顶部
     scene_prompt_top = QHBoxLayout()
     scene_prompt_top.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
@@ -459,15 +481,19 @@ def review_page(self):
 
     """脉络改写"""
     # 系统提示词
-    prompt_text_slide("脉络改写系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    self.framework_system_prompt = QPlainTextEdit()
+    prompt_text_slide(self.framework_system_prompt, "脉络改写系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
     # 用户提示词
-    prompt_text_slide("脉络改写用户提示词（主要为改写规则）", prompt_inner_layout, 350)
+    self.framework_user_prompt = QPlainTextEdit()
+    prompt_text_slide(self.framework_user_prompt, "脉络改写用户提示词（主要为改写规则）", prompt_inner_layout, 350)
 
     """结果润色"""
     # 系统提示词
-    prompt_text_slide("结果润色系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    self.polish_system_prompt = QPlainTextEdit()
+    prompt_text_slide(self.polish_system_prompt, "结果润色系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
     # 用户提示词
-    prompt_text_slide("结果润色用户提示词（主要为改写规则）", prompt_inner_layout, 350)
+    self.polish_user_prompt = QPlainTextEdit()
+    prompt_text_slide(self.polish_user_prompt, "结果润色用户提示词（主要为改写规则）", prompt_inner_layout, 350)
 
     self.conf_page.addWidget(scroll_area)
 
@@ -481,17 +507,16 @@ def review_page(self):
     self.model_win_layout.addLayout(self.model_lower_layout)
 
 """系统提示词滑动窗口"""
-def prompt_text_slide(title, layout, height):
-    prompt_title = QLabel(f"{title},已输入：0 字符")
-    prompt_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    prompt_title.setStyleSheet(title_style_sheet())
-    layout.addWidget(prompt_title)
+def prompt_text_slide(plain, title, layout, height):
+    label = QLabel(f"{title},已输入：0 字符")
+    label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    label.setStyleSheet(title_style_sheet())
+    layout.addWidget(label)
     # 系统提示词框
-    prompt = QPlainTextEdit()
-    prompt.setStyleSheet(line_edit_style_sheet())
-    prompt.setFixedHeight(height)
-    prompt.textChanged.connect(lambda : system_prompt_count(title, prompt_title, prompt))
-    layout.addWidget(prompt)
+    plain.setStyleSheet(line_edit_style_sheet())
+    plain.setFixedHeight(height)
+    plain.textChanged.connect(lambda : system_prompt_count(title, label, plain))
+    layout.addWidget(plain)
     # 分割线
     fream = QFrame()
     fream.setFrameShape(QFrame.Shape.HLine)
