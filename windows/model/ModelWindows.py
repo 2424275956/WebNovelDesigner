@@ -2,7 +2,7 @@ import time
 
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QListWidget, QDialog, \
-    QListWidgetItem, QStatusBar
+    QListWidgetItem, QMessageBox
 from openai import OpenAI
 
 from sqlite.Sqlite3Utils import query_all_model, remove_model_conf
@@ -209,27 +209,6 @@ def review_page(self):
     if len(self.all_models) > 0:
         model_conf_info(self, self.all_models[0])
 
-    # 分割线
-    conf_page_fream3 = QFrame()
-    conf_page_fream3.setFrameShape(QFrame.Shape.HLine)
-    conf_page_fream3.setFrameShadow(QFrame.Shadow.Sunken)
-    self.conf_page.addWidget(conf_page_fream3)
-
-    # 状态栏
-    conf_page_status_bar = QHBoxLayout()
-    conf_page_status_bar.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-
-    # 状态
-    conf_page_status_bar_title = QLabel("状态提示：")
-    conf_page_status_bar_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    conf_page_status_bar_title.setStyleSheet(title_style_sheet())
-    conf_page_status_bar.addWidget(conf_page_status_bar_title)
-
-    # 状态
-    self.status_bar = QStatusBar()
-    conf_page_status_bar.addWidget(self.status_bar)
-    self.conf_page.addLayout(conf_page_status_bar)
-
     # 尾部插入配置页面
     self.model_lower_layout.addLayout(self.conf_page)
     # 尾部插入
@@ -286,13 +265,13 @@ def test_connection(self):
     try:
         start_time = time.time()
         if len(self.conf_page_base_url.text()) < 1 or self.conf_page_base_url.text() == "-":
-            self.status_bar.showMessage("❌ Base URL连接地址为空")
+            QMessageBox.warning(self, "错误", f"❌ Base URL连接地址为空")
             return False
 
         # 是否 ollama
         is_ollama = "ollama" in self.conf_page_api_key.lower()
         if not is_ollama and len(self.conf_page_api_key) < 1:
-            self.status_bar.showMessage("❌ API Key密匙为空")
+            QMessageBox.warning(self, "错误", f"❌ API Key密匙为空")
             return False
 
         client = OpenAI(
@@ -305,11 +284,11 @@ def test_connection(self):
 
         end_time = time.time()
         elapsed = (end_time - start_time) * 1000
-        self.status_bar.showMessage(f"✅ 连接成功！耗时:{elapsed:.2f}ms")
+        QMessageBox.warning(self, "错误", f"✅ 连接成功！耗时:{elapsed:.2f}ms")
         return True
     except Exception as e:
         print(e)
-        self.status_bar.showMessage("❌ 连接失败")
+        QMessageBox.warning(self, "错误", f"❌ 连接失败")
         return False
 
 """更新模型列表"""

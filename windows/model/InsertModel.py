@@ -2,7 +2,7 @@ import time
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QHBoxLayout, QLineEdit, QComboBox, QFrame, QPushButton, \
-    QStatusBar
+    QMessageBox
 from openai import OpenAI
 
 from style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet
@@ -21,20 +21,6 @@ class InsertModel(QDialog):
         main_layout.setContentsMargins(20, 20, 20, 20)
         main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(main_layout)
-
-        # 状态栏
-        status_layout = QHBoxLayout()
-        status_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-        # 状态提示title
-        status_title = QLabel("状态提示：")
-        status_title.setStyleSheet(title_style_sheet())
-        status_title.setFixedSize(80, 20)
-        status_layout.addWidget(status_title)
-        # 状态提示
-        self.status_bar = QStatusBar()
-        self.status_bar.setFixedSize(360, 20)
-        status_layout.addWidget(self.status_bar)
-        main_layout.addLayout(status_layout)
 
         # 第一行信息
         layout_row1 = QHBoxLayout()
@@ -234,13 +220,13 @@ class InsertModel(QDialog):
         try:
             start_time = time.time()
             if len(self.base_url.text()) < 1:
-                self.status_bar.showMessage("❌ Base URL连接地址为空")
+                QMessageBox.warning(self, "错误", "❌ Base URL连接地址为空")
                 return False
 
             # 是否 ollama
             is_ollama = "ollama" in self.type_combo.currentText().lower()
             if not is_ollama and len(self.api_key.text()) < 1:
-                self.status_bar.showMessage("❌ API Key密匙为空")
+                QMessageBox.warning(self, "错误", "❌ API Key密匙为空")
                 return False
 
             client = OpenAI(
@@ -253,11 +239,11 @@ class InsertModel(QDialog):
 
             end_time = time.time()
             elapsed = (end_time - start_time) * 1000
-            self.status_bar.showMessage(f"✅ 连接成功！耗时:{elapsed:.2f}ms")
+            QMessageBox.warning(self, "错误", f"✅ 连接成功！耗时:{elapsed:.2f}ms")
             return True
         except Exception as e:
             print(e)
-            self.status_bar.showMessage("❌ 连接失败")
+            QMessageBox.warning(self, "错误", f"❌ 连接失败")
             return False
 
     "确认模型配置"
@@ -265,31 +251,31 @@ class InsertModel(QDialog):
         # 模型名称
         name = self.name_edit.text()
         if len(name) < 1:
-            self.status_bar.showMessage("❌ 模型名称为空")
+            QMessageBox.warning(self, "错误", "❌ 模型名称为空")
             return False
 
         # 配置类型
         model_type = self.type_combo.currentData()
         if model_type is None:
-            self.status_bar.showMessage("❌ 模型类型为空")
+            QMessageBox.warning(self, "错误", "❌ 模型类型为空")
             return False
         
         # baseUrl
         url = self.base_url.text()
         if url is None:
-            self.status_bar.showMessage("❌ BaseURL地址为空")
+            QMessageBox.warning(self, "错误", "❌ BaseURL地址为空")
             return False
 
         # api_key
         api_key = self.api_key.text()
         if api_key is None:
-            self.status_bar.showMessage("❌ API Key密匙为空")
+            QMessageBox.warning(self, "错误", "❌ API Key密匙为空")
             return False
             
         # model_id
         model_id = self.model_id.text()
         if model_id is None:
-            self.status_bar.showMessage("❌ 模型ID为空")
+            QMessageBox.warning(self, "错误", "❌ 模型ID为空")
             return False
         
         # 保存配置信息

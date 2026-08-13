@@ -2,7 +2,7 @@ import os
 
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QListWidget, \
-    QListWidgetItem, QDialog, QPlainTextEdit, QScrollArea, QLineEdit, QStatusBar, QFileDialog
+    QListWidgetItem, QDialog, QPlainTextEdit, QScrollArea, QLineEdit, QFileDialog, QMessageBox
 import json as std_json
 
 from sqlite.Sqlite3Utils import query_all_prompt, save_prompt_info, remove_prompt, query_prompt_info_by_id, \
@@ -63,7 +63,7 @@ def delete_prompt(self):
 """导入配置校验"""
 def import_prompt_check(self, rules, msg):
     if len(rules) <= 0:
-        self.prompt_status_bar.showMessage(msg)
+        QMessageBox.warning(self, "错误", msg)
         return False
     return True
 
@@ -81,7 +81,7 @@ def import_prompt(self):
             json_data = std_json.load(file)
             # 长度校验
             if len(json_data) <= 0:
-                self.prompt_status_bar.showMessage(f"❌ json数据解析为空")
+                QMessageBox.warning(self, "错误", "❌ json数据解析为空")
                 return False
             # 名称
             if not import_prompt_check(self, json_data['prompt_name'], "❌ 提示词模版名称为空"):
@@ -105,20 +105,20 @@ def import_prompt(self):
             scene = json_data['scene']
             scene_data = []
             if len(scene) <= 0:
-                self.prompt_status_bar.showMessage(f"❌ 场景提示词规则为空")
+                QMessageBox.warning(self, "错误", f"❌ 场景提示词规则为空")
                 return False
             for i, item in enumerate(scene):
                 scene_name = item['scene_name']
                 if len(scene_name) <= 0:
-                    self.prompt_status_bar.showMessage(f"❌ 第{i + 1}条场景提示词场景名称为空")
+                    QMessageBox.warning(self, "错误", f"❌ 第{i + 1}条场景提示词场景名称为空")
                     return False
                 scene_identify = item['scene_identify']
                 if len(scene_identify) <= 0:
-                    self.prompt_status_bar.showMessage(f"❌ 第{i + 1}条场景提示词识别规则为空")
+                    QMessageBox.warning(self, "错误", f"❌ 第{i + 1}条场景提示词识别规则为空")
                     return False
                 scene_rules = item['scene_rules']
                 if len(scene_rules) <= 0:
-                    self.prompt_status_bar.showMessage(f"❌ 第{i + 1}条场景提示词改写规则为空")
+                    QMessageBox.warning(self, "错误", f"❌ 第{i + 1}条场景提示词改写规则为空")
                     return False
                 scene_data.append({
                     "scene_name": scene_name,
@@ -154,21 +154,21 @@ def import_prompt(self):
             import_prompt_template(req_json)
             # 渲染左侧列表
             self.all_models = review_prompt_list(self.model_list)
-            self.prompt_status_bar.showMessage(f"✅ 导入模版成功")
+            QMessageBox.warning(self, "错误", f"✅ 导入模版成功")
             return True
     else:
-        self.prompt_status_bar.showMessage(f"❌ 未获取到文件地址")
+        QMessageBox.warning(self, "错误", f"❌ 未获取到文件地址")
         return False
 
 """提示词校验"""
 def prompt_check(self, prompt, msg):
     # 系统提示词
     if prompt is None:
-        self.prompt_status_bar.showMessage(f"❌ 未获取到{msg}提示词模版")
+        QMessageBox.warning(self, "错误", f"❌ 未获取到{msg}提示词模版")
         return False
     else:
         if len(prompt.toPlainText()) <= 0:
-            self.prompt_status_bar.showMessage(f"❌ {msg}提示词规则为空")
+            QMessageBox.warning(self, "错误", f"❌ {msg}提示词规则为空")
             return False
     return True
 
@@ -177,7 +177,7 @@ def save_prompt_conf(self):
     """保存模版"""
     """模版ID"""
     if self.prompt_id is None:
-        self.prompt_status_bar.showMessage("❌ 未选择提示词模版")
+        QMessageBox.warning(self, "错误", f"❌ 未选择提示词模版")
         return False
     """角色分析"""
     # 系统提示词
@@ -202,7 +202,7 @@ def save_prompt_conf(self):
         return False
     # 场景规则 循环获取
     if len(self.scene_prompt_list) <= 0:
-        self.prompt_status_bar.showMessage("❌ 场景提示词模版为空")
+        QMessageBox.warning(self, "错误", f"❌ 场景提示词模版为空")
         return False
     scene = []
     for index in range(self.scene_prompt_list.count()):
@@ -219,30 +219,30 @@ def save_prompt_conf(self):
                 # 场景名称
                 scene_name = custom_widget.findChild(QLineEdit, "scene_name")
                 if scene_name is None:
-                    self.prompt_status_bar.showMessage(f"❌ 序号：{index + 1} ,场景名称对象获取失败")
+                    QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,场景名称对象获取失败")
                     return False
                 else:
                     if len(scene_name.text()) <= 0:
-                        self.prompt_status_bar.showMessage(f"❌ 序号：{index + 1} ,场景名称为空")
+                        QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,场景名称为空")
                         return False
                 # 识别点
                 identify_text = custom_widget.findChild(QPlainTextEdit, "identify_text")
                 if identify_text is None:
-                    self.prompt_status_bar.showMessage(f"❌ 序号：{index + 1} ,场景识别规则对象获取失败")
+                    QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,场景识别规则对象获取失败")
                     return False
                 else:
                     if len(identify_text.toPlainText()) <= 0:
-                        self.prompt_status_bar.showMessage(f"❌ 序号：{index + 1} ,场景识别规则为空")
+                        QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,场景识别规则为空")
                         return False
 
                 # 改写规则
                 rules_text = custom_widget.findChild(QPlainTextEdit, "rules_text")
                 if rules_text is None:
-                    self.prompt_status_bar.showMessage(f"❌ 序号：{index + 1} ,场景改写规则对象获取失败")
+                    QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,场景改写规则对象获取失败")
                     return False
                 else:
                     if len(rules_text.toPlainText()) <= 0:
-                        self.prompt_status_bar.showMessage(f"❌ 序号：{index + 1} ,场景改写规则为空")
+                        QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,场景改写规则为空")
                         return False
                 # json组装
                 scene.append({
@@ -282,17 +282,17 @@ def save_prompt_conf(self):
     }
     # 新增
     save_prompt_info(req_json)
-    self.prompt_status_bar.showMessage(f"✅ 提示词模版保存成功")
+    QMessageBox.warning(self, "错误", f"✅ 提示词模版保存成功")
     return True
 
 """提示词校验"""
 def export_prompt_check(self, prompt_id, point_type, prompt_type, title, export_json, key):
     prompt = query_prompt_template(prompt_id, point_type, prompt_type)
     if not prompt:
-        self.prompt_status_bar.showMessage(f"❌ {title}提示词信息为空")
+        QMessageBox.warning(self, "错误", f"❌ {title}提示词信息为空")
         return False
     if len(prompt[0]['context']) <= 0:
-        self.prompt_status_bar.showMessage(f"❌ {title}提示词规则为空")
+        QMessageBox.warning(self, "错误", f"❌ {title}提示词规则为空")
         return False
     export_json[key] = prompt[0]['context']
     return True
@@ -300,11 +300,11 @@ def export_prompt_check(self, prompt_id, point_type, prompt_type, title, export_
 """导出模版"""
 def export_prompt(self):
     if self.prompt_id is None:
-        self.prompt_status_bar.showMessage(f"❌ 提示词模版ID获取失败")
+        QMessageBox.warning(self, "错误", f"❌ 提示词模版ID获取失败")
         return False
     model = query_prompt_info_by_id(self.prompt_id)
     if len(model) <= 0:
-        self.prompt_status_bar.showMessage(f"❌ 提示词模版信息获取失败")
+        QMessageBox.warning(self, "错误", f"❌ 提示词模版信息获取失败")
         return False
     # 组装
     export_json = {}
@@ -327,7 +327,7 @@ def export_prompt(self):
     # 场景规则查询
     all_scene_prompt = query_prompt_template(self.prompt_id, 3, 3)
     if len(all_scene_prompt) <= 0:
-        self.prompt_status_bar.showMessage("❌ 场景提示词规则为空")
+        QMessageBox.warning(self, "错误", f"❌ 场景提示词规则为空")
         return False
     # 场景提示词组装
     scene_data = []
@@ -360,9 +360,9 @@ def export_prompt(self):
             with open(file_path, "w", encoding="utf-8") as file:
                 # indent=4 用于格式化输出，ensure_ascii=False 用于正确保存中文
                 std_json.dump(export_json, file, indent=4, ensure_ascii=False)
-            self.prompt_status_bar.showMessage("✅ 文件导出成功")
+            QMessageBox.warning(self, "错误", f"✅ 文件导出成功")
         except Exception as e:
-            self.prompt_status_bar.showMessage("❌ 导出失败")
+            QMessageBox.warning(self, "错误", f"❌ 导出失败")
             print(f"导出失败: {e}")
             return False
     return True
@@ -399,10 +399,6 @@ def review_page(self):
     title_label = QLabel("提示词配置")
     title_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #333;")
     header_layout.addWidget(title_label)
-
-    # 状态栏
-    self.prompt_status_bar = QStatusBar()
-    header_layout.addWidget(self.prompt_status_bar)
 
     # 弹到另一端
     header_layout.addStretch()

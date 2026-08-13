@@ -11,6 +11,7 @@ from config.GlobalMap import APP_STATE
 from utils.ClearLayoutRecursive import clear_layout
 from utils.StatusDot import StatusDot
 from . import NovelChapterList
+from . import ProjectStartPolish
 
 def on_prompt_item_clicked(self, point_type, prompt_type):
     choose_project_id = self.prompt_combo.currentData()
@@ -593,7 +594,11 @@ def start_stop_clicked(self, tool1_model, tool2_model, tool3_model, tool4_col1_r
         self.start_stop_btn.setText("开始")
         self.start_stop_btn.setStyleSheet(button_style_sheet(back_color='#00C853'))
 
+    # 更新按钮状态
     disable_enable_prompt_model_conf(self.project_info['id'], self.prompt_combo, tool1_model, tool2_model, tool3_model, tool4_col1_row1_model, tool4_col1_row2_model)
+
+    # 处理操作
+    ProjectStartPolish.start(self)
 
 
 def disable_enable_prompt_model_conf(project_id, prompt_combo, tool1_model, tool2_model, tool3_model, tool4_col1_row1_model, tool4_col1_row2_model):
