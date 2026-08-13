@@ -1,18 +1,206 @@
 from PyQt6.QtWidgets import QMessageBox
+from openai import OpenAI
 
 from config.GlobalMap import APP_STATE
-from sqlite.Sqlite3Utils import query_project_by_id
+from sqlite.Sqlite3Utils import query_project_by_id, query_prompt_info_by_id, query_prompt_template, query_model_by_id
 
+
+def prompt_rules_parse(self, transmit, transmit_key, prompt_id, point_type, prompt_type, title):
+    """提示词规则处理"""
+    prompt_list = query_prompt_template(prompt_id, point_type, prompt_type)
+    if prompt_list is None or len(prompt_list) < 1:
+        QMessageBox.warning(self, "", f"项目{title}提示词配置信息为空")
+        return False
+    prompt = prompt_list[0]
+    if prompt is None or len(prompt['context']) < 1:
+        QMessageBox.warning(self, "", f"项目{title}提示词配置规则为空")
+        return False
+    transmit[transmit_key] = prompt['context']
+    return True
+
+def model_connection_check(self, model_id, title, model_map):
+    """模型校验处理"""
+    # 模型ID判断
+    if model_id is None:
+        QMessageBox.warning(self, "", f"项目{title}模型ID为空")
+        return False
+    # 判断模型map中是否存在, 存在直接返回
+    model = model_map[model_id]
+    if model:
+        return True
+    # 校验信息
+    model = query_model_by_id(model_id)
+    if model is None:
+        QMessageBox.warning(self, "", f"项目{title}模型信息为空")
+        return False
+    if len(model['url']) < 1:
+        QMessageBox.warning(self, "", f"项目{title}模型BaseURL地址为空")
+        return False
+    if len(model['model_id']) < 1:
+        QMessageBox.warning(self, "", f"项目{title}模型ID为空")
+        return False
+    if model['type'] is None:
+        QMessageBox.warning(self, "", f"项目{title}模型类型为空")
+        return False
+    if 1 == model['type'] or 3 == model['type']:
+        if len(model['api_key']) < 1:
+            QMessageBox.warning(self, "", f"项目{title}模型ApiKey为空")
+            return False
+    if model['temperature'] is None:
+        QMessageBox.warning(self, "", f"项目{title}模型温度(Temperature)为空")
+        return False
+    if 0 < model['temperature'] <= 2.0:
+        QMessageBox.warning(self, "", f"项目{title}模型温度(Temperature)范围应0.1~2.0")
+        return False
+    if model['top_p'] is None:
+        QMessageBox.warning(self, "", f"项目{title}模型Top-P为空")
+        return False
+    if 0 < model['top_p'] <= 1.0:
+        QMessageBox.warning(self, "", f"项目{title}模型Top-P范围应0.01~1.00")
+        return False
+    if model['max_token'] is None:
+        QMessageBox.warning(self, "", f"项目{title}模型最大Token(Max Tokens)为空")
+        return False
+    if model['time_out'] is None:
+        QMessageBox.warning(self, "", f"项目{title}模型超时时间为空")
+        return False
+    model_map[model_id] = model
+    # 测试连接通畅度
+    try:
+        client = OpenAI(
+            base_url = model['url'],
+            api_key= model['api_key']
+        )
+        # 发送一个极短的请求来测试连通性
+        client.models.list()
+        return True
+    except Exception as e:
+        print(e)
+        QMessageBox.warning(self, "错误", f"项目{title}模型连接失败")
+        return False
 
 def start(self):
     """开始处理"""
+    transmit = {'project_id': self.project_info['id']}
     # 当前项目ID
-    project_id = self.project_info['id']
-    QMessageBox.warning(self, "配置错误", "项目ID为空")
+    if transmit['project_id'] is None:
+        QMessageBox.warning(self, "配置错误", "项目ID为空")
+        return False
 
     # 获取当前项目状态
-    project_status = APP_STATE.get(project_id)
+    project_status = APP_STATE.get(transmit['project_id'])
+    if project_status is None:
+        QMessageBox.warning(self, "", "当前项目状态为空")
+        return False
+
+    # 待开始状态 或 完成状态直接退出
+    if 1 == project_status or 3 == project_status:
+        # todo 停止线程
+        return True
 
     # 获取最新项目信息
-    project = query_project_by_id(project_id)
+    transmit['project_info'] = query_project_by_id(transmit['project_id'])
+    if transmit['project_info'] is None:
+        QMessageBox.warning(self, "", "项目信息为空")
+        return False
+
+    """提示词模版信息"""
     # 获取提示词模版
+    prompt_id = transmit['project_info']['prompt_id']
+    if prompt_id is None:
+        QMessageBox.warning(self, "", "项目提示词模版ID为空")
+        return False
+
+    # 获取提示词模版信息
+    transmit['prompt_info'] = query_prompt_info_by_id(prompt_id)
+    if transmit['prompt_info'] is None:
+        QMessageBox.warning(self, "", "项目提示词配置信息为空")
+        return False
+
+    """角色分析"""
+    # 获取角色分析系统提示词规则
+    if not prompt_rules_parse(self, transmit, 'role_system', prompt_id, 1, 1, "角色分析系统"):
+        return False
+    # 获取角色分析用户提示词规则
+    if not prompt_rules_parse(self, transmit, 'role_user', prompt_id, 1, 2, "角色分析用户"):
+        return False
+    """关系分析"""
+    # 获取关系分析系统提示词规则
+    if not prompt_rules_parse(self, transmit, 'relation_system', prompt_id, 2, 1, "关系分析系统"):
+        return False
+    # 获取关系分析用户提示词规则
+    if not prompt_rules_parse(self, transmit, 'relation_user', prompt_id, 2, 2, "关系分析用户"):
+        return False
+    """场景规则"""
+    # 获取场景规则系统提示词规则
+    if not prompt_rules_parse(self, transmit, 'scene_system', prompt_id, 3, 1, "场景规则系统"):
+        return False
+    # 获取场景规则用户提示词规则
+    if not prompt_rules_parse(self, transmit, 'scene_user', prompt_id, 3, 2, "场景规则用户"):
+        return False
+    # 获取场景规则场景提示词规则
+    # 1. 获取全部场景规则
+    scene_prompt_list = query_prompt_template(prompt_id, 3, 3)
+    if scene_prompt_list is None or len(scene_prompt_list) < 1:
+        QMessageBox.warning(self, "", "项目场景规则场景提示词配置信息为空")
+        return False
+    # 2. 定义存储配置信息
+    ## 1. 场景识别kv
+    scene_identify = {}
+    transmit['scene_identify'] = scene_identify
+    ## 2. 场景改写kv
+    scene_polish = {}
+    transmit['scene_polish'] = scene_polish
+    for scene_prompt in scene_prompt_list:
+        if len(scene_prompt['scene_name']) < 1:
+            QMessageBox.warning(self, "", f"项目场景规则场景提示词，序号：{scene_prompt['sort']} 场景名称为空")
+            return False
+        if len(scene_prompt['scene_identify']) < 1:
+            QMessageBox.warning(self, "", f"项目场景规则场景提示词，序号：{scene_prompt['sort']} 场景识别规则为空")
+            return False
+        if len(scene_prompt['context']) < 1:
+            QMessageBox.warning(self, "", f"项目场景规则场景提示词，序号：{scene_prompt['sort']} 场景改写规则为空")
+            return False
+        scene_identify[scene_prompt['scene_name']] = scene_prompt['scene_identify']
+        scene_polish[scene_prompt['scene_name']] = scene_prompt['context']
+    """脉络改写"""
+    # 获取脉络改写系统提示词规则
+    if not prompt_rules_parse(self, transmit, 'framework_system', prompt_id, 4, 1, "脉络改写系统"):
+        return False
+    # 获取脉络改写用户提示词规则
+    if not prompt_rules_parse(self, transmit, 'framework_user', prompt_id, 4, 2, "脉络改写用户"):
+        return False
+    """结果润色"""
+    # 获取结果润色系统提示词规则
+    if not prompt_rules_parse(self, transmit, 'polish_system', prompt_id, 5, 1, "结果润色系统"):
+        return False
+    # 获取结果润色用户提示词规则
+    if not prompt_rules_parse(self, transmit, 'polish_user', prompt_id, 5, 2, "结果润色用户"):
+        return False
+
+    """模型配置"""
+    # 1. 定义模型数组
+    model_map = {}
+    transmit['model_map'] = model_map
+    # 获取角色分析模型配置信息
+    transmit['role_model_id'] = transmit['project_info']['role_model_id']
+    if not model_connection_check(self, transmit['role_model_id'], "角色分析", model_map):
+        return False
+    # 获取关系分析模型配置信息
+    transmit['relation_model_id'] = transmit['project_info']['relation_model_id']
+    if not model_connection_check(self, transmit['relation_model_id'], "关系分析", model_map):
+        return False
+    # 获取场景规则模型配置信息
+    transmit['scene_model_id'] = transmit['project_info']['scene_model_id']
+    if not model_connection_check(self, transmit['scene_model_id'], "场景规则", model_map):
+        return False
+    # 获取脉络改写模型配置信息
+    transmit['framework_model_id'] = transmit['project_info']['framework_model_id']
+    if not model_connection_check(self, transmit['framework_model_id'], "脉络改写", model_map):
+        return False
+    # 获取结果润色模型配置信息
+    transmit['polish_model_id'] = transmit['project_info']['polish_model_id']
+    if not model_connection_check(self, transmit['polish_model_id'], "结果润色", model_map):
+        return False
+
+    return True
