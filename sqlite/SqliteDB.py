@@ -63,6 +63,7 @@ class SqliteDB:
                     old_content TEXT DEFAULT NULL,                  -- 原始章节内容
                     role_content TEXT DEFAULT NULL,                 -- 角色分析内容
                     relation_content TEXT DEFAULT NULL,             -- 角色关系内容
+                    process_content TEXT DEFAULT NULL,              -- 流程控制内容
                     scene_content TEXT DEFAULT NULL,                -- 场景规则内容
                     framework_content TEXT DEFAULT NULL,            -- 框架脉络内容
                     new_len INTEGER DEFAULT 0,                      -- 新章节字数
