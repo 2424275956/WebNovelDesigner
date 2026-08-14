@@ -1,6 +1,7 @@
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIntValidator
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame, QListWidget, QPushButton, QPlainTextEdit, \
-    QComboBox, QListWidgetItem
+    QComboBox, QListWidgetItem, QLineEdit
 
 from sqlite.Sqlite3Utils import query_project_by_id, query_all_model, query_all_prompt, query_prompt_template, \
     edit_project_prompt_id, edit_project_role_model_id, edit_project_relation_model_id, edit_project_scene_model_id, \
@@ -320,50 +321,63 @@ def polist_page(self, project_id):
     center_right_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     center_layout.addLayout(center_right_layout)
 
+    """顶部章节统计"""
+    center_right_top_layout = QHBoxLayout()
+    center_right_top_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    center_right_layout.addLayout(center_right_top_layout)
+    # 顶部左侧统计
     """章节信息"""
-    chapter_layout = QVBoxLayout()
-    chapter_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    center_right_layout.addLayout(chapter_layout)
+    center_right_top_left_layout = QVBoxLayout()
+    center_right_top_left_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    center_right_top_layout.addLayout(center_right_top_left_layout)
     """章节统计1"""
     all_chapter = self.project_info['chapter_num']
     self.chapter_count1 = QLabel(f"项目共有 {all_chapter} 章节")
     self.chapter_count1.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    self.chapter_count1.setStyleSheet(label_style_sheet(20))
-    chapter_layout.addWidget(self.chapter_count1)
+    self.chapter_count1.setStyleSheet(label_style_sheet(font_size=20))
+    center_right_top_left_layout.addWidget(self.chapter_count1)
     """章节统计2"""
     success_chapter = self.project_info['success_num']
     self.chapter_count2 = QLabel(f"项目已完成 {success_chapter} 章节")
     self.chapter_count2.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    self.chapter_count2.setStyleSheet(label_style_sheet(20))
-    chapter_layout.addWidget(self.chapter_count2)
+    self.chapter_count2.setStyleSheet(label_style_sheet(font_size=20))
+    center_right_top_left_layout.addWidget(self.chapter_count2)
     """章节统计3"""
     fail_chapter = self.project_info['fail_num']
     self.chapter_count3 = QLabel(f"项目已失败 {fail_chapter} 章节")
     self.chapter_count3.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    self.chapter_count3.setStyleSheet(label_style_sheet(20))
-    chapter_layout.addWidget(self.chapter_count3)
+    self.chapter_count3.setStyleSheet(label_style_sheet(font_size=20))
+    center_right_top_left_layout.addWidget(self.chapter_count3)
     """章节统计4"""
     wait_chapter = all_chapter - success_chapter
     self.chapter_count4 = QLabel(f"项目待完成 {wait_chapter} 章节")
     self.chapter_count4.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    self.chapter_count4.setStyleSheet(label_style_sheet(20))
-    chapter_layout.addWidget(self.chapter_count4)
+    self.chapter_count4.setStyleSheet(label_style_sheet(font_size=20))
+    center_right_top_left_layout.addWidget(self.chapter_count4)
     """章节统计5"""
     self.chapter_count5 = QLabel(f"项目已新增 {self.project_info['expansion_num']} 章节")
     self.chapter_count5.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    self.chapter_count5.setStyleSheet(label_style_sheet(20))
-    chapter_layout.addWidget(self.chapter_count5)
+    self.chapter_count5.setStyleSheet(label_style_sheet(font_size=20))
+    center_right_top_left_layout.addWidget(self.chapter_count5)
 
-    """分割线"""
-    frame7 = QFrame()
-    frame7.setFrameShape(QFrame.Shape.HLine)
-    frame7.setFrameShadow(QFrame.Shadow.Sunken)
-    center_right_layout.addWidget(frame7)
+    # 弹开
+    center_right_top_layout.addStretch()
+
+    # 分割线
+    frame11 = QFrame()
+    frame11.setFrameShape(QFrame.Shape.VLine)
+    frame11.setFrameShadow(QFrame.Shadow.Sunken)
+    center_right_top_layout.addWidget(frame11)
+
+    """章节配置"""
+    center_right_top_col2 = QVBoxLayout()
+    center_right_top_col2.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    center_right_top_layout.addLayout(center_right_top_col2)
 
     """提示词布局"""
     prompt_low_layout = QHBoxLayout()
     prompt_low_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    center_right_layout.addLayout(prompt_low_layout)
+    center_right_top_col2.addLayout(prompt_low_layout)
     """提示词标题"""
     prompt_title = QLabel("项目提示词模版：")
     prompt_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
@@ -383,6 +397,53 @@ def polist_page(self, project_id):
         self.prompt_combo.setCurrentIndex(0)
     self.prompt_combo.textActivated.connect(lambda text : update_project_prompt_id(self, text))
     prompt_low_layout.addWidget(self.prompt_combo)
+
+    """分割线"""
+    frame7 = QFrame()
+    frame7.setFrameShape(QFrame.Shape.HLine)
+    frame7.setFrameShadow(QFrame.Shadow.Sunken)
+    center_right_top_col2.addWidget(frame7)
+
+    """章节滑动窗口数"""
+    # 附带当前章节前数量
+    chapter_before_num_layout = QHBoxLayout()
+    chapter_before_num_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    center_right_top_col2.addLayout(chapter_before_num_layout)
+    ## 标题
+    chapter_before_num_title = QLabel("改写（撰写）附带前n章节数：")
+    chapter_before_num_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    chapter_before_num_title.setStyleSheet(label_style_sheet())
+    chapter_before_num_layout.addWidget(chapter_before_num_title)
+    ## 编辑框
+    chapter_before_num = QLineEdit()
+    chapter_before_num.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    chapter_before_num.setStyleSheet(line_edit_style_sheet())
+    int_validator = QIntValidator(0, 9999, self)
+    chapter_before_num.setValidator(int_validator)
+    chapter_before_num_layout.addWidget(chapter_before_num)
+
+    # 附带当前章节后数量
+    chapter_after_num_layout = QHBoxLayout()
+    chapter_after_num_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    center_right_top_col2.addLayout(chapter_after_num_layout)
+    ## 标题
+    chapter_after_num_title = QLabel("改写（撰写）附带后n章节数：")
+    chapter_after_num_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    chapter_after_num_title.setStyleSheet(label_style_sheet())
+    chapter_after_num_layout.addWidget(chapter_after_num_title)
+    ## 编辑框
+    chapter_after_num = QLineEdit()
+    chapter_after_num.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    chapter_after_num.setStyleSheet(line_edit_style_sheet())
+    chapter_after_num.setValidator(int_validator)
+    chapter_after_num_layout.addWidget(chapter_after_num)
+
+    """分割线"""
+    frame12 = QFrame()
+    frame12.setFrameShape(QFrame.Shape.HLine)
+    frame12.setFrameShadow(QFrame.Shadow.Sunken)
+    center_right_top_col2.addWidget(frame12)
+
 
 
     """插入分割线"""
@@ -745,7 +806,9 @@ def polist_page(self, project_id):
                                                                     original_framework_prompt_conf_model,
                                                                     extra_scene_prompt_conf_model,
                                                                     extra_framework_prompt_conf_model,
-                                                                    polish_prompt_conf_model))
+                                                                    polish_prompt_conf_model,
+                                                                    chapter_before_num,
+                                                                    chapter_after_num))
     start_stop_layout.addWidget(self.start_stop_btn)
     """开始按钮控制"""
     if 1 == project_status:
@@ -769,7 +832,9 @@ def polist_page(self, project_id):
                                      original_framework_prompt_conf_model,
                                      extra_scene_prompt_conf_model,
                                      extra_framework_prompt_conf_model,
-                                     polish_prompt_conf_model)
+                                     polish_prompt_conf_model,
+                                     chapter_before_num,
+                                     chapter_after_num)
 
 def start_stop_clicked(self,
                        role_prompt_conf_model,
@@ -779,15 +844,26 @@ def start_stop_clicked(self,
                        original_framework_prompt_conf_model,
                        extra_scene_prompt_conf_model,
                        extra_framework_prompt_conf_model,
-                       polish_prompt_conf_model):
+                       polish_prompt_conf_model,
+                       chapter_before_num,
+                       chapter_after_num):
     # 获取状态
-    project_status = APP_STATE.get(self.project_info['id'])
-    if 1 == project_status:
+    old_project_status = APP_STATE.get(self.project_info['id'])
+    if 1 == old_project_status:
         APP_STATE[self.project_info['id']] = 2
+    elif 2 == old_project_status:
+        APP_STATE[self.project_info['id']] = 1
+
+    # 处理操作
+    if not ProjectStartPolish.start(self):
+        APP_STATE[self.project_info['id']] = old_project_status
+        return False
+
+    # 获取状态
+    if 1 == old_project_status:
         self.start_stop_btn.setText("停止")
         self.start_stop_btn.setStyleSheet(button_style_sheet(back_color='#FF0000'))
-    elif 2 == project_status:
-        APP_STATE[self.project_info['id']] = 1
+    elif 2 == old_project_status:
         self.start_stop_btn.setText("开始")
         self.start_stop_btn.setStyleSheet(button_style_sheet(back_color='#00C853'))
 
@@ -801,10 +877,11 @@ def start_stop_clicked(self,
                                      original_framework_prompt_conf_model,
                                      extra_scene_prompt_conf_model,
                                      extra_framework_prompt_conf_model,
-                                     polish_prompt_conf_model)
+                                     polish_prompt_conf_model,
+                                     chapter_before_num,
+                                     chapter_after_num)
+    return True
 
-    # 处理操作
-    ProjectStartPolish.start(self)
 
 
 def disable_enable_prompt_model_conf(project_id,
@@ -816,7 +893,9 @@ def disable_enable_prompt_model_conf(project_id,
                                      original_framework_prompt_conf_model,
                                      extra_scene_prompt_conf_model,
                                      extra_framework_prompt_conf_model,
-                                     polish_prompt_conf_model):
+                                     polish_prompt_conf_model,
+                                     chapter_before_num,
+                                     chapter_after_num):
     # 获取状态
     project_status = APP_STATE.get(project_id)
     if 1 == project_status:
@@ -830,6 +909,8 @@ def disable_enable_prompt_model_conf(project_id,
         extra_scene_prompt_conf_model.setEnabled(True)
         extra_framework_prompt_conf_model.setEnabled(True)
         polish_prompt_conf_model.setEnabled(True)
+        chapter_before_num.setEnabled(True)
+        chapter_after_num.setEnabled(True)
     else:
         # 不可选
         prompt_combo.setEnabled(False)
@@ -841,4 +922,6 @@ def disable_enable_prompt_model_conf(project_id,
         extra_scene_prompt_conf_model.setEnabled(False)
         extra_framework_prompt_conf_model.setEnabled(False)
         polish_prompt_conf_model.setEnabled(False)
+        chapter_before_num.setEnabled(False)
+        chapter_after_num.setEnabled(False)
 

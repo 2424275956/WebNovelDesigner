@@ -25,7 +25,7 @@ def model_connection_check(self, model_id, title, model_map):
         QMessageBox.warning(self, "", f"项目{title}模型ID为空")
         return False
     # 判断模型map中是否存在, 存在直接返回
-    model = model_map[model_id]
+    model = model_map.get(model_id)
     if model:
         return True
     # 校验信息
@@ -49,13 +49,13 @@ def model_connection_check(self, model_id, title, model_map):
     if model['temperature'] is None:
         QMessageBox.warning(self, "", f"项目{title}模型温度(Temperature)为空")
         return False
-    if 0 < model['temperature'] <= 2.0:
+    if model['temperature'] <= 0 or model['temperature'] > 2.0:
         QMessageBox.warning(self, "", f"项目{title}模型温度(Temperature)范围应0.1~2.0")
         return False
     if model['top_p'] is None:
         QMessageBox.warning(self, "", f"项目{title}模型Top-P为空")
         return False
-    if 0 < model['top_p'] <= 1.0:
+    if model['top_p'] <= 0 or model['top_p']  > 1.0:
         QMessageBox.warning(self, "", f"项目{title}模型Top-P范围应0.01~1.00")
         return False
     if model['max_token'] is None:
@@ -72,7 +72,9 @@ def model_connection_check(self, model_id, title, model_map):
             api_key= model['api_key']
         )
         # 发送一个极短的请求来测试连通性
-        client.models.list()
+        models = client.models.list()
+        # next是防止提前返回
+        next(iter(models))
         return True
     except Exception as e:
         print(e)

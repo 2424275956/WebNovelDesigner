@@ -46,6 +46,8 @@ class SqliteDB:
                     scene_model_id INTEGER DEFAULT NULL,            -- 场景规则模型ID
                     framework_model_id INTEGER DEFAULT NULL,        -- 脉络改写模型ID
                     polish_model_id INTEGER DEFAULT NULL,           -- 结果润色模型ID
+                    polish_before_num INTEGER DEFAULT NULL,         -- 附带前n章节
+                    polish_after_num INTEGER DEFAULT NULL,          -- 附带后n章节
                     word_count REAL NOT NULL,                       -- 字数（单位万）
                     status INTEGER NOT NULL DEFAULT 1               -- 状态（1：未开始，2：进行中，3：已完成）
                 );
