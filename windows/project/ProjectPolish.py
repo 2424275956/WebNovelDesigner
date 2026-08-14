@@ -1,11 +1,12 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QIntValidator
+from PyQt6.QtGui import QIntValidator, QStandardItemModel
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame, QListWidget, QPushButton, QPlainTextEdit, \
     QComboBox, QListWidgetItem, QLineEdit
 
 from sqlite.Sqlite3Utils import query_project_by_id, query_all_model, query_all_prompt, query_prompt_template, \
     edit_project_prompt_id, edit_project_role_model_id, edit_project_relation_model_id, edit_project_scene_model_id, \
-    edit_project_framework_model_id, edit_project_polish_model_id
+    edit_project_framework_model_id, edit_project_polish_model_id, edit_polish_before_num, edit_polish_after_num, \
+    edit_project_extra_scene_model_id, edit_project_process_model_id, edit_project_extra_framework_model_id
 from style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet, label_style_sheet, \
     list_widget_style_sheet
 from config.GlobalMap import APP_STATE
@@ -98,11 +99,31 @@ def update_project_role_id(self, combo, text):
     if role_model_id:
         edit_project_role_model_id(role_model_id, self.project_info['id'])
 
+def update_polish_before_num(self, chapter_before_num):
+    """更新附带章节"""
+    num = 0
+    if len(chapter_before_num.text()) > 0:
+        num = int(chapter_before_num.text())
+    edit_polish_before_num(num, self.project_info['id'])
+
+def update_polish_after_num(self, chapter_after_num):
+    """更新附带章节"""
+    num = 0
+    if len(chapter_after_num.text()) > 0:
+        num = int(chapter_after_num.text())
+    edit_polish_after_num(num, self.project_info['id'])
+
 def update_project_relation_id(self, combo, text):
     """更新索引"""
     relation_model_id = combo.currentData()
     if relation_model_id:
         edit_project_relation_model_id(relation_model_id, self.project_info['id'])
+
+def update_project_process_id(self, combo, text):
+    """更新索引"""
+    process_id = combo.currentData()
+    if process_id:
+        edit_project_process_model_id(process_id, self.project_info['id'])
 
 def update_project_scene_id(self, combo, text):
     """更新索引"""
@@ -110,11 +131,23 @@ def update_project_scene_id(self, combo, text):
     if scene_model_id:
         edit_project_scene_model_id(scene_model_id, self.project_info['id'])
 
+def update_project_extra_scene_id(self, combo, text):
+    """更新索引"""
+    extra_scene_id = combo.currentData()
+    if extra_scene_id:
+        edit_project_extra_scene_model_id(extra_scene_id, self.project_info['id'])
+
 def update_project_framework_id(self, combo, text):
     """更新索引"""
     framework_model_id = combo.currentData()
     if framework_model_id:
         edit_project_framework_model_id(framework_model_id, self.project_info['id'])
+
+def update_project_extra_framework_id(self, combo, text):
+    """更新索引"""
+    extra_framework_id = combo.currentData()
+    if extra_framework_id:
+        edit_project_extra_framework_model_id(extra_framework_id, self.project_info['id'])
 
 def update_project_polish_id(self, combo, text):
     """更新索引"""
@@ -394,7 +427,8 @@ def polist_page(self, project_id):
         prompt_combo_index = self.prompt_combo.findData(self.project_info['prompt_id'])
         self.prompt_combo.setCurrentIndex(prompt_combo_index)
     else:
-        self.prompt_combo.setCurrentIndex(0)
+        self.prompt_combo.setCurrentIndex(-1)
+        self.prompt_combo.setPlaceholderText("请选择...")
     self.prompt_combo.textActivated.connect(lambda text : update_project_prompt_id(self, text))
     prompt_low_layout.addWidget(self.prompt_combo)
 
@@ -416,10 +450,14 @@ def polist_page(self, project_id):
     chapter_before_num_layout.addWidget(chapter_before_num_title)
     ## 编辑框
     chapter_before_num = QLineEdit()
+    chapter_before_num.setText("5")
+    if self.project_info['polish_before_num']:
+        chapter_before_num.setText(str(self.project_info['polish_before_num']))
     chapter_before_num.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     chapter_before_num.setStyleSheet(line_edit_style_sheet())
     int_validator = QIntValidator(0, 9999, self)
     chapter_before_num.setValidator(int_validator)
+    chapter_before_num.textChanged.connect(lambda : update_polish_before_num(self, chapter_before_num))
     chapter_before_num_layout.addWidget(chapter_before_num)
 
     # 附带当前章节后数量
@@ -433,9 +471,13 @@ def polist_page(self, project_id):
     chapter_after_num_layout.addWidget(chapter_after_num_title)
     ## 编辑框
     chapter_after_num = QLineEdit()
+    chapter_after_num.setText("1")
+    if self.project_info['polish_after_num']:
+        chapter_after_num.setText(str(self.project_info['polish_after_num']))
     chapter_after_num.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     chapter_after_num.setStyleSheet(line_edit_style_sheet())
     chapter_after_num.setValidator(int_validator)
+    chapter_after_num.textChanged.connect(lambda : update_polish_after_num(self, chapter_after_num))
     chapter_after_num_layout.addWidget(chapter_after_num)
 
     """分割线"""
@@ -443,8 +485,6 @@ def polist_page(self, project_id):
     frame12.setFrameShape(QFrame.Shape.HLine)
     frame12.setFrameShadow(QFrame.Shadow.Sunken)
     center_right_top_col2.addWidget(frame12)
-
-
 
     """插入分割线"""
     frame5 = QFrame()
@@ -475,7 +515,8 @@ def polist_page(self, project_id):
         tool1_model_index = role_prompt_conf_model.findData(self.project_info['role_model_id'])
         role_prompt_conf_model.setCurrentIndex(tool1_model_index)
     else:
-        role_prompt_conf_model.setCurrentIndex(0)
+        role_prompt_conf_model.setCurrentIndex(-1)
+        role_prompt_conf_model.setPlaceholderText("请选择...")
     role_prompt_conf_model.textActivated.connect(lambda text : update_project_role_id(self, role_prompt_conf_model, text))
     role_prompt_conf_layout.addWidget(role_prompt_conf_model)
     ### 角色分析提示词-配置-布局-系统提示词
@@ -511,7 +552,8 @@ def polist_page(self, project_id):
         tool2_model_index = relation_prompt_btn_model.findData(self.project_info['relation_model_id'])
         relation_prompt_btn_model.setCurrentIndex(tool2_model_index)
     else:
-        relation_prompt_btn_model.setCurrentIndex(0)
+        relation_prompt_btn_model.setCurrentIndex(-1)
+        relation_prompt_btn_model.setPlaceholderText("请选择...")
     relation_prompt_btn_model.textActivated.connect(lambda text : update_project_relation_id(self, relation_prompt_btn_model, text))
     relation_prompt_conf_layout.addWidget(relation_prompt_btn_model)
     ### 关系分析提示词-配置-布局-系统提示词
@@ -547,8 +589,9 @@ def polist_page(self, project_id):
         tool3_model_index = process_prompt_conf_model.findData(self.project_info['scene_model_id'])
         process_prompt_conf_model.setCurrentIndex(tool3_model_index)
     else:
-        process_prompt_conf_model.setCurrentIndex(0)
-    process_prompt_conf_model.textActivated.connect(lambda text : update_project_scene_id(self, process_prompt_conf_model, text))
+        process_prompt_conf_model.setCurrentIndex(-1)
+        process_prompt_conf_model.setPlaceholderText("请选择...")
+    process_prompt_conf_model.textActivated.connect(lambda text : update_project_process_id(self, process_prompt_conf_model, text))
     process_prompt_conf_layout.addWidget(process_prompt_conf_model)
     ### 流程控制提示词-配置-布局-系统提示词
     process_prompt_btn_system = QPushButton("系统提示词")
@@ -595,7 +638,8 @@ def polist_page(self, project_id):
         tool3_model_index = original_scene_prompt_conf_model.findData(self.project_info['scene_model_id'])
         original_scene_prompt_conf_model.setCurrentIndex(tool3_model_index)
     else:
-        original_scene_prompt_conf_model.setCurrentIndex(0)
+        original_scene_prompt_conf_model.setCurrentIndex(-1)
+        original_scene_prompt_conf_model.setPlaceholderText("请选择...")
     original_scene_prompt_conf_model.textActivated.connect(lambda text : update_project_scene_id(self, original_scene_prompt_conf_model, text))
     original_scene_prompt_conf_layout.addWidget(original_scene_prompt_conf_model)
     ### 场景分析提示词-配置-布局-系统提示词
@@ -637,7 +681,8 @@ def polist_page(self, project_id):
         tool4_col1_row1_model_index = original_framework_prompt_conf_model.findData(self.project_info['framework_model_id'])
         original_framework_prompt_conf_model.setCurrentIndex(tool4_col1_row1_model_index)
     else:
-        original_framework_prompt_conf_model.setCurrentIndex(0)
+        original_framework_prompt_conf_model.setCurrentIndex(-1)
+        original_framework_prompt_conf_model.setPlaceholderText("请选择...")
     original_framework_prompt_conf_model.textActivated.connect(lambda text : update_project_framework_id(self, original_framework_prompt_conf_model, text))
     original_framework_prompt_conf_layout.addWidget(original_framework_prompt_conf_model)
     ### 脉络改写提示词-配置-布局-系统提示词
@@ -685,8 +730,9 @@ def polist_page(self, project_id):
         tool3_model_index = extra_scene_prompt_conf_model.findData(self.project_info['scene_model_id'])
         extra_scene_prompt_conf_model.setCurrentIndex(tool3_model_index)
     else:
-        extra_scene_prompt_conf_model.setCurrentIndex(0)
-    extra_scene_prompt_conf_model.textActivated.connect(lambda text : update_project_scene_id(self, extra_scene_prompt_conf_model, text))
+        extra_scene_prompt_conf_model.setCurrentIndex(-1)
+        extra_scene_prompt_conf_model.setPlaceholderText("请选择...")
+    extra_scene_prompt_conf_model.textActivated.connect(lambda text : update_project_extra_scene_id(self, extra_scene_prompt_conf_model, text))
     extra_scene_prompt_conf_layout.addWidget(extra_scene_prompt_conf_model)
     ### 场景分析提示词-配置-布局-系统提示词
     extra_scene_prompt_btn_system = QPushButton("系统提示词")
@@ -727,8 +773,9 @@ def polist_page(self, project_id):
         tool4_col1_row1_model_index = extra_framework_prompt_conf_model.findData(self.project_info['framework_model_id'])
         extra_framework_prompt_conf_model.setCurrentIndex(tool4_col1_row1_model_index)
     else:
-        extra_framework_prompt_conf_model.setCurrentIndex(0)
-    extra_framework_prompt_conf_model.textActivated.connect(lambda text : update_project_framework_id(self, extra_framework_prompt_conf_model, text))
+        extra_framework_prompt_conf_model.setCurrentIndex(-1)
+        extra_framework_prompt_conf_model.setPlaceholderText("请选择...")
+    extra_framework_prompt_conf_model.textActivated.connect(lambda text : update_project_extra_framework_id(self, extra_framework_prompt_conf_model, text))
     extra_framework_prompt_conf_layout.addWidget(extra_framework_prompt_conf_model)
     ### 脉络生成提示词-配置-布局-系统提示词
     extra_framework_prompt_btn_system = QPushButton("系统提示词")
@@ -769,7 +816,8 @@ def polist_page(self, project_id):
         tool4_col1_row2_model_index = polish_prompt_conf_model.findData(self.project_info['polish_model_id'])
         polish_prompt_conf_model.setCurrentIndex(tool4_col1_row2_model_index)
     else:
-        polish_prompt_conf_model.setCurrentIndex(0)
+        polish_prompt_conf_model.setCurrentIndex(-1)
+        polish_prompt_conf_model.setPlaceholderText("请选择...")
     polish_prompt_conf_model.textActivated.connect(lambda text : update_project_polish_id(self, polish_prompt_conf_model, text))
     polish_prompt_conf_layout.addWidget(polish_prompt_conf_model)
     ### 结果润色提示词-配置-布局-系统提示词

@@ -66,7 +66,7 @@ def review_page(self):
     """数据不为空"""
     if not projects:
         # 如果没有项目，显示空状态
-        empty_label = QLabel("暂无项目，请导入文件或拖拽文件到此处")
+        empty_label = QLabel("暂无项目，请导入文件")
         empty_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         empty_label.setStyleSheet("font-size: 18px; color: #888; margin-top: 100px;")
         self.project_win_layout.addWidget(empty_label)

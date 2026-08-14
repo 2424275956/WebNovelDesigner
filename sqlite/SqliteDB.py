@@ -42,12 +42,13 @@ class SqliteDB:
                     role_model_id INTEGER DEFAULT NULL,             -- 角色分析模型ID
                     relation_model_id INTEGER DEFAULT NULL,         -- 角色关系模型ID
                     process_model_id INTEGER DEFAULT NULL,          -- 流程控制模型ID
-                    extra_model_id INTEGER DEFAULT NULL,            -- 番外扩写模型ID
                     scene_model_id INTEGER DEFAULT NULL,            -- 场景规则模型ID
                     framework_model_id INTEGER DEFAULT NULL,        -- 脉络改写模型ID
+                    extra_scene_model_id INTEGER DEFAULT NULL,      -- 番外扩写场景分析模型ID
+                    extra_framework_model_id INTEGER DEFAULT NULL,  -- 番外扩写脉络生成模型ID
                     polish_model_id INTEGER DEFAULT NULL,           -- 结果润色模型ID
-                    polish_before_num INTEGER DEFAULT NULL,         -- 附带前n章节
-                    polish_after_num INTEGER DEFAULT NULL,          -- 附带后n章节
+                    polish_before_num INTEGER DEFAULT 5,            -- 附带前n章节
+                    polish_after_num INTEGER DEFAULT 1,             -- 附带后n章节
                     word_count REAL NOT NULL,                       -- 字数（单位万）
                     status INTEGER NOT NULL DEFAULT 1               -- 状态（1：未开始，2：进行中，3：已完成）
                 );

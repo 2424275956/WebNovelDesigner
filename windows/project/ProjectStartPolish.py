@@ -133,18 +133,25 @@ def start(self):
     # 获取关系分析用户提示词规则
     if not prompt_rules_parse(self, transmit, 'relation_user', prompt_id, 2, 2, "关系分析用户"):
         return False
-    """场景规则"""
+    """流程控制"""
+    # 获取流程控制系统提示词规则
+    if not prompt_rules_parse(self, transmit, 'process_system', prompt_id, 6, 1, "流程控制系统"):
+        return False
+    # 获取流程控制用户提示词规则
+    if not prompt_rules_parse(self, transmit, 'process_user', prompt_id, 6, 2, "流程控制用户"):
+        return False
+    """原文改写场景分析"""
     # 获取场景规则系统提示词规则
-    if not prompt_rules_parse(self, transmit, 'scene_system', prompt_id, 3, 1, "场景规则系统"):
+    if not prompt_rules_parse(self, transmit, 'scene_system', prompt_id, 3, 1, "原文改写场景分析系统"):
         return False
     # 获取场景规则用户提示词规则
-    if not prompt_rules_parse(self, transmit, 'scene_user', prompt_id, 3, 2, "场景规则用户"):
+    if not prompt_rules_parse(self, transmit, 'scene_user', prompt_id, 3, 2, "原文改写场景分析用户"):
         return False
     # 获取场景规则场景提示词规则
     # 1. 获取全部场景规则
     scene_prompt_list = query_prompt_template(prompt_id, 3, 3)
     if scene_prompt_list is None or len(scene_prompt_list) < 1:
-        QMessageBox.warning(self, "", "项目场景规则场景提示词配置信息为空")
+        QMessageBox.warning(self, "", "项目原文改写场景分析场景提示词配置信息为空")
         return False
     # 2. 定义存储配置信息
     ## 1. 场景识别kv
@@ -155,22 +162,61 @@ def start(self):
     transmit['scene_polish'] = scene_polish
     for scene_prompt in scene_prompt_list:
         if len(scene_prompt['scene_name']) < 1:
-            QMessageBox.warning(self, "", f"项目场景规则场景提示词，序号：{scene_prompt['sort']} 场景名称为空")
+            QMessageBox.warning(self, "", f"项目原文改写场景分析场景提示词，序号：{scene_prompt['sort']} 场景名称为空")
             return False
         if len(scene_prompt['scene_identify']) < 1:
-            QMessageBox.warning(self, "", f"项目场景规则场景提示词，序号：{scene_prompt['sort']} 场景识别规则为空")
+            QMessageBox.warning(self, "", f"项目原文改写场景分析场景提示词，序号：{scene_prompt['sort']} 场景识别规则为空")
             return False
         if len(scene_prompt['context']) < 1:
-            QMessageBox.warning(self, "", f"项目场景规则场景提示词，序号：{scene_prompt['sort']} 场景改写规则为空")
+            QMessageBox.warning(self, "", f"项目原文改写场景分析场景提示词，序号：{scene_prompt['sort']} 场景改写规则为空")
             return False
         scene_identify[scene_prompt['scene_name']] = scene_prompt['scene_identify']
         scene_polish[scene_prompt['scene_name']] = scene_prompt['context']
-    """脉络改写"""
+    """原文改写脉络改写"""
     # 获取脉络改写系统提示词规则
-    if not prompt_rules_parse(self, transmit, 'framework_system', prompt_id, 4, 1, "脉络改写系统"):
+    if not prompt_rules_parse(self, transmit, 'framework_system', prompt_id, 4, 1, "原文改写脉络改写系统"):
         return False
     # 获取脉络改写用户提示词规则
-    if not prompt_rules_parse(self, transmit, 'framework_user', prompt_id, 4, 2, "脉络改写用户"):
+    if not prompt_rules_parse(self, transmit, 'framework_user', prompt_id, 4, 2, "原文改写脉络改写用户"):
+        return False
+    """番外撰写场景分析"""
+    # 获取场景规则系统提示词规则
+    if not prompt_rules_parse(self, transmit, 'extra_scene_system', prompt_id, 7, 1, "番外撰写场景分析系统"):
+        return False
+    # 获取场景规则用户提示词规则
+    if not prompt_rules_parse(self, transmit, 'extra_scene_user', prompt_id, 7, 2, "番外撰写场景分析用户"):
+        return False
+    # 获取场景规则场景提示词规则
+    # 1. 获取全部场景规则
+    extra_scene_prompt_list = query_prompt_template(prompt_id, 7, 3)
+    if extra_scene_prompt_list is None or len(extra_scene_prompt_list) < 1:
+        QMessageBox.warning(self, "", "项目番外撰写场景分析场景提示词配置信息为空")
+        return False
+    # 2. 定义存储配置信息
+    ## 1. 场景识别kv
+    extra_scene_identify = {}
+    transmit['extra_scene_identify'] = extra_scene_identify
+    ## 2. 场景改写kv
+    extra_scene_polish = {}
+    transmit['extra_scene_polish'] = extra_scene_polish
+    for scene_prompt in extra_scene_prompt_list:
+        if len(scene_prompt['scene_name']) < 1:
+            QMessageBox.warning(self, "", f"项目番外撰写场景分析场景提示词，序号：{scene_prompt['sort']} 场景名称为空")
+            return False
+        if len(scene_prompt['scene_identify']) < 1:
+            QMessageBox.warning(self, "", f"项目番外撰写场景分析场景提示词，序号：{scene_prompt['sort']} 场景识别规则为空")
+            return False
+        if len(scene_prompt['context']) < 1:
+            QMessageBox.warning(self, "", f"项目番外撰写场景分析场景提示词，序号：{scene_prompt['sort']} 场景改写规则为空")
+            return False
+        extra_scene_identify[scene_prompt['scene_name']] = scene_prompt['scene_identify']
+        extra_scene_polish[scene_prompt['scene_name']] = scene_prompt['context']
+    """番外撰写脉络改写"""
+    # 获取脉络改写系统提示词规则
+    if not prompt_rules_parse(self, transmit, 'extra_framework_system', prompt_id, 8, 1, "番外撰写脉络改写系统"):
+        return False
+    # 获取脉络改写用户提示词规则
+    if not prompt_rules_parse(self, transmit, 'extra_framework_user', prompt_id, 8, 2, "番外撰写脉络改写用户"):
         return False
     """结果润色"""
     # 获取结果润色系统提示词规则
@@ -178,6 +224,16 @@ def start(self):
         return False
     # 获取结果润色用户提示词规则
     if not prompt_rules_parse(self, transmit, 'polish_user', prompt_id, 5, 2, "结果润色用户"):
+        return False
+
+    """章节附带数"""
+    transmit['polish_before_num'] = transmit['project_info']['polish_before_num']
+    if transmit['polish_before_num'] is None:
+        QMessageBox.warning(self, "", "改写（撰写）附带前n篇数量为空")
+        return False
+    transmit['polish_after_num'] = transmit['project_info']['polish_after_num']
+    if transmit['polish_after_num'] is None:
+        QMessageBox.warning(self, "", "改写（撰写）附带后n篇数量为空")
         return False
 
     """模型配置"""
@@ -192,13 +248,27 @@ def start(self):
     transmit['relation_model_id'] = transmit['project_info']['relation_model_id']
     if not model_connection_check(self, transmit['relation_model_id'], "关系分析", model_map):
         return False
-    # 获取场景规则模型配置信息
-    transmit['scene_model_id'] = transmit['project_info']['scene_model_id']
-    if not model_connection_check(self, transmit['scene_model_id'], "场景规则", model_map):
+    # 获取流程控制模型配置信息
+    transmit['process_model_id'] = transmit['project_info']['process_model_id']
+    if not model_connection_check(self, transmit['process_model_id'], "流程控制", model_map):
         return False
-    # 获取脉络改写模型配置信息
+    # 原文改写
+    ## 获取场景规则模型配置信息
+    transmit['scene_model_id'] = transmit['project_info']['scene_model_id']
+    if not model_connection_check(self, transmit['scene_model_id'], "原文改写场景规则", model_map):
+        return False
+    ## 获取脉络改写模型配置信息
     transmit['framework_model_id'] = transmit['project_info']['framework_model_id']
-    if not model_connection_check(self, transmit['framework_model_id'], "脉络改写", model_map):
+    if not model_connection_check(self, transmit['framework_model_id'], "原文改写脉络改写", model_map):
+        return False
+    # 番外撰写
+    ## 获取场景规则模型配置信息
+    transmit['extra_scene_model_id'] = transmit['project_info']['extra_scene_model_id']
+    if not model_connection_check(self, transmit['extra_scene_model_id'], "番外撰写场景规则", model_map):
+        return False
+    ## 获取脉络改写模型配置信息
+    transmit['extra_framework_model_id'] = transmit['project_info']['extra_framework_model_id']
+    if not model_connection_check(self, transmit['extra_framework_model_id'], "番外撰写脉络改写", model_map):
         return False
     # 获取结果润色模型配置信息
     transmit['polish_model_id'] = transmit['project_info']['polish_model_id']

@@ -21,11 +21,26 @@ def edit_project_role_model_id(role_model_id, project_id):
 def edit_project_relation_model_id(relation_model_id, project_id):
     SqlDB.SqliteDB.execute("UPDATE project SET relation_model_id = ? WHERE id = ?", (relation_model_id, project_id))
 
+def edit_polish_before_num(num, project_id):
+    SqlDB.SqliteDB.execute("UPDATE project SET polish_before_num = ? WHERE id = ?", (num, project_id))
+
+def edit_polish_after_num(num, project_id):
+    SqlDB.SqliteDB.execute("UPDATE project SET polish_after_num = ? WHERE id = ?", (num, project_id))
+
 def edit_project_scene_model_id(scene_model_id, project_id):
     SqlDB.SqliteDB.execute("UPDATE project SET scene_model_id = ? WHERE id = ?", (scene_model_id, project_id))
 
+def edit_project_process_model_id(process_model_id, project_id):
+    SqlDB.SqliteDB.execute("UPDATE project SET process_model_id = ? WHERE id = ?", (process_model_id, project_id))
+
+def edit_project_extra_scene_model_id(extra_scene_model_id, project_id):
+    SqlDB.SqliteDB.execute("UPDATE project SET extra_scene_model_id = ? WHERE id = ?", (extra_scene_model_id, project_id))
+
 def edit_project_framework_model_id(framework_model_id, project_id):
     SqlDB.SqliteDB.execute("UPDATE project SET framework_model_id = ? WHERE id = ?", (framework_model_id, project_id))
+
+def edit_project_extra_framework_model_id(extra_framework_model_id, project_id):
+    SqlDB.SqliteDB.execute("UPDATE project SET extra_framework_model_id = ? WHERE id = ?", (extra_framework_model_id, project_id))
 
 def edit_project_polish_model_id(polish_model_id, project_id):
     SqlDB.SqliteDB.execute("UPDATE project SET polish_model_id = ? WHERE id = ?", (polish_model_id, project_id))
