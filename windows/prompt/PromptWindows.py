@@ -41,14 +41,24 @@ def prompt_page_info(self, model):
     prompt_page_review_info(model, self.role_system_prompt, self.role_user_prompt, 1)
     """关系分析"""
     prompt_page_review_info(model, self.relation_system_prompt, self.relation_user_prompt, 2)
-    """场景分析"""
+    """流程控制"""
+    prompt_page_review_info(model, self.process_system_prompt, self.process_user_prompt, 6)
+    """改写-场景分析"""
     prompt_page_review_info(model, self.scene_system_prompt, self.scene_user_prompt, 3)
     # 清空场景提示词
     self.scene_prompt_list.clear()
     # 渲染
     review_scene_prompt_list(self.scene_prompt_list, model['id'], 3, 3)
-    """脉络改写"""
+    """改写-脉络改写"""
     prompt_page_review_info(model, self.framework_system_prompt, self.framework_user_prompt, 4)
+    """番外-场景分析"""
+    prompt_page_review_info(model, self.extra_scene_system_prompt, self.extra_scene_user_prompt, 7)
+    # 清空场景提示词
+    self.extra_scene_prompt_list.clear()
+    # 渲染
+    review_scene_prompt_list(self.extra_scene_prompt_list, model['id'], 7, 3)
+    """番外-脉络生成"""
+    prompt_page_review_info(model, self.extra_framework_system_prompt, self.extra_framework_user_prompt, 8)
     """结果润色"""
     prompt_page_review_info(model, self.polish_system_prompt, self.polish_user_prompt, 5)
 
