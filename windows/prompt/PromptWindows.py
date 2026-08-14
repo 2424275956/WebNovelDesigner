@@ -106,39 +106,66 @@ def import_prompt(self):
                 return False
             if not import_prompt_check(self, json_data['relation_user'], "❌ 关系分析用户提示词规则为空"):
                 return False
-            """场景分析"""
-            if not import_prompt_check(self, json_data['scene_system'], "❌ 场景分析系统提示词规则为空"):
+            """流程控制"""
+            if not import_prompt_check(self, json_data['process_system'], "❌ 流程控制系统提示词规则为空"):
                 return False
-            if not import_prompt_check(self, json_data['scene_user'], "❌ 场景分析用户提示词规则为空"):
+            if not import_prompt_check(self, json_data['process_user'], "❌ 流程控制用户提示词规则为空"):
+                return False
+            """改写-场景分析"""
+            if not import_prompt_check(self, json_data['scene_system'], "❌ 改写-场景分析系统提示词规则为空"):
+                return False
+            if not import_prompt_check(self, json_data['scene_user'], "❌ 改写-场景分析用户提示词规则为空"):
                 return False
             # 场景提示词
             scene = json_data['scene']
-            scene_data = []
             if len(scene) <= 0:
-                QMessageBox.warning(self, "错误", f"❌ 场景提示词规则为空")
+                QMessageBox.warning(self, "错误", f"❌ 改写-场景提示词规则为空")
                 return False
             for i, item in enumerate(scene):
                 scene_name = item['scene_name']
                 if len(scene_name) <= 0:
-                    QMessageBox.warning(self, "错误", f"❌ 第{i + 1}条场景提示词场景名称为空")
+                    QMessageBox.warning(self, "错误", f"❌ 第{i + 1}条，改写-场景提示词场景名称为空")
                     return False
                 scene_identify = item['scene_identify']
                 if len(scene_identify) <= 0:
-                    QMessageBox.warning(self, "错误", f"❌ 第{i + 1}条场景提示词识别规则为空")
+                    QMessageBox.warning(self, "错误", f"❌ 第{i + 1}条，改写-场景提示词识别规则为空")
                     return False
                 scene_rules = item['scene_rules']
                 if len(scene_rules) <= 0:
-                    QMessageBox.warning(self, "错误", f"❌ 第{i + 1}条场景提示词改写规则为空")
+                    QMessageBox.warning(self, "错误", f"❌ 第{i + 1}条，改写-场景提示词改写规则为空")
                     return False
-                scene_data.append({
-                    "scene_name": scene_name,
-                    "scene_identify": scene_identify,
-                    "scene_rules": scene_rules
-                })
-            """脉络改写"""
-            if not import_prompt_check(self, json_data['framework_system'], "❌ 脉络改写系统提示词规则为空"):
+            """改写-脉络改写"""
+            if not import_prompt_check(self, json_data['framework_system'], "❌ 改写-脉络改写系统提示词规则为空"):
                 return False
-            if not import_prompt_check(self, json_data['framework_user'], "❌ 脉络改写用户提示词规则为空"):
+            if not import_prompt_check(self, json_data['framework_user'], "❌ 改写-脉络改写用户提示词规则为空"):
+                return False
+            """番外-场景分析"""
+            if not import_prompt_check(self, json_data['extra_scene_system'], "❌ 番外-场景分析系统提示词规则为空"):
+                return False
+            if not import_prompt_check(self, json_data['extra_scene_user'], "❌ 番外-场景分析用户提示词规则为空"):
+                return False
+            # 场景提示词
+            extra_scene = json_data['extra_scene']
+            if len(extra_scene) <= 0:
+                QMessageBox.warning(self, "错误", f"❌ 番外-场景提示词规则为空")
+                return False
+            for i, item in enumerate(extra_scene):
+                scene_name = item['scene_name']
+                if len(scene_name) <= 0:
+                    QMessageBox.warning(self, "错误", f"❌ 第{i + 1}条，番外-场景提示词场景名称为空")
+                    return False
+                scene_identify = item['scene_identify']
+                if len(scene_identify) <= 0:
+                    QMessageBox.warning(self, "错误", f"❌ 第{i + 1}条，番外-场景提示词识别规则为空")
+                    return False
+                scene_rules = item['scene_rules']
+                if len(scene_rules) <= 0:
+                    QMessageBox.warning(self, "错误", f"❌ 第{i + 1}条，番外-场景提示词改写规则为空")
+                    return False
+            """番外-脉络生成"""
+            if not import_prompt_check(self, json_data['extra_framework_system'], "❌ 番外-脉络生成系统提示词规则为空"):
+                return False
+            if not import_prompt_check(self, json_data['extra_framework_user'], "❌ 番外-脉络生成用户提示词规则为空"):
                 return False
             """结果润色"""
             if not import_prompt_check(self, json_data['polish_system'], "❌ 结果润色系统提示词规则为空"):
@@ -152,11 +179,18 @@ def import_prompt(self):
                 "role_user": json_data['role_user'],
                 "relation_system": json_data['relation_system'],
                 "relation_user": json_data['relation_user'],
+                "process_system": json_data['process_system'],
+                "process_user": json_data['process_user'],
                 "scene_system": json_data['scene_system'],
                 "scene_user": json_data['scene_user'],
                 "scene": json_data['scene'],
                 "framework_system": json_data['framework_system'],
                 "framework_user": json_data['framework_user'],
+                "extra_scene_system": json_data['extra_scene_system'],
+                "extra_scene_user": json_data['extra_scene_user'],
+                "extra_scene": json_data['extra_scene'],
+                "extra_framework_system": json_data['extra_framework_system'],
+                "extra_framework_user": json_data['extra_framework_user'],
                 "polish_system": json_data['polish_system'],
                 "polish_user": json_data['polish_user']
             }
