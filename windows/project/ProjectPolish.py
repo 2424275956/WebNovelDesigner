@@ -875,8 +875,8 @@ def polist_page(self, project_id):
         self.start_stop_btn.setEnabled(True)
         self.start_stop_btn.setStyleSheet(button_style_sheet(back_color='#FF0000'))
     else:
-        self.start_stop_btn.setText("开始")
-        self.start_stop_btn.setEnabled(False)
+        self.start_stop_btn.setText("导出")
+        self.start_stop_btn.setEnabled(True)
 
     """可选框初始化"""
     disable_enable_prompt_model_conf(self.project_info['id'],
@@ -909,6 +909,9 @@ def start_stop_clicked(self,
         APP_STATE[self.project_info['id']] = 2
     elif 2 == old_project_status:
         APP_STATE[self.project_info['id']] = 1
+    else:
+        # todo 导出数据
+        return True
 
     # 处理操作
     if not ProjectStartPolish.start(self):

@@ -54,6 +54,11 @@ def insert_project_info(project):
     cursor = SqlDB.SqliteDB.execute("INSERT INTO project (title, author, chapter_num, word_count) VALUES (?, ?, ?, ?)", (title, author, chapter_num, word_count))
     return cursor.lastrowid
 
+# 获取第一位章节信息
+def query_wait_polish_chapter(project_id):
+    chapter_list = SqlDB.SqliteDB.execute("SELECT * FROM chapter WHERE status in (1, 2, 4) and project_id = ? ORDER BY sort LIMIT 1", (project_id,))
+    return chapter_list.fetchall()
+
 # 保存创建的章节信息
 def insert_project_chapter(project_id, chapters):
     sql = "INSERT INTO chapter (project_id, title, old_len, old_content, sort) VALUES (?, ?, ?, ?, ?)"

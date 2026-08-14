@@ -1,8 +1,12 @@
+import threading
+import time
+
 from PyQt6.QtWidgets import QMessageBox
 from openai import OpenAI
 
-from config.GlobalMap import APP_STATE
+from config.GlobalMap import APP_STATE, APP_FUTURE, APP_STOP_EVENT
 from sqlite.Sqlite3Utils import query_project_by_id, query_prompt_info_by_id, query_prompt_template, query_model_by_id
+from windows.polish.NovelPolish import polish
 
 
 def prompt_rules_parse(self, transmit, transmit_key, prompt_id, point_type, prompt_type, title):
@@ -97,7 +101,10 @@ def start(self):
 
     # 待开始状态 或 完成状态直接退出
     if 1 == project_status or 3 == project_status:
-        # todo 停止线程
+        # 停止线程
+        stop_event = APP_STOP_EVENT.get(transmit['project_id'])
+        if stop_event:
+            stop_event.set()
         return True
 
     # 获取最新项目信息
@@ -275,5 +282,35 @@ def start(self):
     if not model_connection_check(self, transmit['polish_model_id'], "结果润色", model_map):
         return False
 
+    # 处理模型任务
+    future = APP_FUTURE.get(transmit['project_id'])
+    if future:
+        # 任务还在执行
+        if not future.done():
+            # 发送停止事件
+            stop_event = APP_STOP_EVENT.get(transmit['project_id'])
+            if stop_event:
+                stop_event.set()
+            else:
+                QMessageBox.warning(self, "", "项目存在旧任务线程但未获取到停止事件信息")
+                return False
+            # 循环3次，每次5秒钟
+            for i in range(3):
+                # 睡眠5秒钟
+                time.sleep(5)
+                # 判断任务状态, 结束退出循环
+                if future.done():
+                    break
+            # 判断3次循环后，是否依旧未结束
+            if not future.done():
+                QMessageBox.warning(self, "", "项目存在旧任务线程且尝试结束失败，请等待一段时间后重试")
+                return False
 
+    # 生成新的停止事件
+    APP_STOP_EVENT[transmit['project_id']] = threading.Event()
+    # 创建新的任务
+    params = (self, transmit)
+    future = self.executor.submit(polish, params)
+    # 放入全局
+    APP_FUTURE[transmit['project_id']] = future
     return True
