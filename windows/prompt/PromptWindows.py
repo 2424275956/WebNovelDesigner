@@ -46,7 +46,7 @@ def prompt_page_info(self, model):
     # 清空场景提示词
     self.scene_prompt_list.clear()
     # 渲染
-    review_scene_prompt_list(self.scene_prompt_list, model['id'])
+    review_scene_prompt_list(self.scene_prompt_list, model['id'], 3, 3)
     """脉络改写"""
     prompt_page_review_info(model, self.framework_system_prompt, self.framework_user_prompt, 4)
     """结果润色"""
@@ -531,18 +531,26 @@ def review_page(self):
     self.relation_user_prompt = QPlainTextEdit()
     prompt_text_slide(self.relation_user_prompt, "关系分析用户提示词（主要为改写规则）", prompt_inner_layout, 350)
 
-    """场景分析"""
+    """流程控制"""
+    # 系统提示词
+    self.process_system_prompt = QPlainTextEdit()
+    prompt_text_slide(self.process_system_prompt, "流程控制系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    # 用户提示词
+    self.process_user_prompt = QPlainTextEdit()
+    prompt_text_slide(self.process_user_prompt, "流程控制用户提示词（主要为改写规则）", prompt_inner_layout, 350)
+
+    """改写-场景分析"""
     # 系统提示词
     self.scene_system_prompt = QPlainTextEdit()
-    prompt_text_slide(self.scene_system_prompt, "场景分析系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    prompt_text_slide(self.scene_system_prompt, "改写-场景分析系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
     # 用户提示词
     self.scene_user_prompt = QPlainTextEdit()
-    prompt_text_slide(self.scene_user_prompt, "场景分析用户提示词（主要为改写规则）", prompt_inner_layout, 350)
+    prompt_text_slide(self.scene_user_prompt, "改写-场景分析用户提示词（主要为改写规则）", prompt_inner_layout, 350)
     # 场景提示词顶部
     scene_prompt_top = QHBoxLayout()
     scene_prompt_top.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     # 场景提示词内容
-    scene_prompt_title = QLabel("场景提示词")
+    scene_prompt_title = QLabel("改写-场景提示词")
     scene_prompt_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     scene_prompt_title.setStyleSheet(title_style_sheet())
     scene_prompt_top.addWidget(scene_prompt_title)
@@ -552,7 +560,6 @@ def review_page(self):
     insert_scene_prompt_btn = QPushButton("+ 新增场景规则")
     insert_scene_prompt_btn.setFixedSize(120, 30)
     insert_scene_prompt_btn.setStyleSheet(button_style_sheet())
-    insert_scene_prompt_btn.clicked.connect(lambda : create_scene_prompt_text(self))
     scene_prompt_top.addWidget(insert_scene_prompt_btn)
     prompt_inner_layout.addLayout(scene_prompt_top)
 
@@ -563,17 +570,63 @@ def review_page(self):
     self.scene_prompt_list.setFixedHeight(500)
     self.scene_prompt_list.setItemAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
     self.scene_prompt_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    insert_scene_prompt_btn.clicked.connect(lambda : create_scene_prompt_text(self.scene_prompt_list))
     # 渲染列表
-    review_scene_prompt_list(self.scene_prompt_list, self.prompt_id)
+    review_scene_prompt_list(self.scene_prompt_list, self.prompt_id, 3, 3)
     prompt_inner_layout.addWidget(self.scene_prompt_list)
 
-    """脉络改写"""
+    """改写-脉络改写"""
     # 系统提示词
     self.framework_system_prompt = QPlainTextEdit()
-    prompt_text_slide(self.framework_system_prompt, "脉络改写系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    prompt_text_slide(self.framework_system_prompt, "改写-脉络改写系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
     # 用户提示词
     self.framework_user_prompt = QPlainTextEdit()
-    prompt_text_slide(self.framework_user_prompt, "脉络改写用户提示词（主要为改写规则）", prompt_inner_layout, 350)
+    prompt_text_slide(self.framework_user_prompt, "改写-脉络改写用户提示词（主要为改写规则）", prompt_inner_layout, 350)
+
+    """番外-场景规则"""
+    # 系统提示词
+    self.extra_scene_system_prompt = QPlainTextEdit()
+    prompt_text_slide(self.extra_scene_system_prompt, "番外-场景分析系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    # 用户提示词
+    self.extra_scene_user_prompt = QPlainTextEdit()
+    prompt_text_slide(self.extra_scene_user_prompt, "番外-场景分析用户提示词（主要为改写规则）", prompt_inner_layout, 350)
+    # 场景提示词顶部
+    extra_scene_prompt_top = QHBoxLayout()
+    extra_scene_prompt_top.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    # 场景提示词内容
+    extra_scene_prompt_title = QLabel("番外-场景提示词")
+    extra_scene_prompt_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    extra_scene_prompt_title.setStyleSheet(title_style_sheet())
+    extra_scene_prompt_top.addWidget(extra_scene_prompt_title)
+    # 弹开
+    extra_scene_prompt_top.addStretch()
+    # 增加场景规则
+    extra_insert_scene_prompt_btn = QPushButton("+ 新增场景规则")
+    extra_insert_scene_prompt_btn.setFixedSize(120, 30)
+    extra_insert_scene_prompt_btn.setStyleSheet(button_style_sheet())
+    extra_scene_prompt_top.addWidget(extra_insert_scene_prompt_btn)
+    prompt_inner_layout.addLayout(extra_scene_prompt_top)
+
+    # 场景提示词列表
+    self.extra_scene_prompt_list = QListWidget()
+    self.extra_scene_prompt_list.setContentsMargins(10, 10, 10, 10)
+    # 设置大小
+    self.extra_scene_prompt_list.setFixedHeight(500)
+    self.extra_scene_prompt_list.setItemAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+    self.extra_scene_prompt_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    extra_insert_scene_prompt_btn.clicked.connect(lambda : create_scene_prompt_text(self.extra_scene_prompt_list))
+    # 渲染列表
+    review_scene_prompt_list(self.extra_scene_prompt_list, self.prompt_id, 7, 3)
+    prompt_inner_layout.addWidget(self.extra_scene_prompt_list)
+
+    """番外-脉络生成"""
+    # 系统提示词
+    self.extra_framework_system_prompt = QPlainTextEdit()
+    prompt_text_slide(self.extra_framework_system_prompt, "番外-脉络生成系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    # 用户提示词
+    self.extra_framework_user_prompt = QPlainTextEdit()
+    prompt_text_slide(self.extra_framework_user_prompt, "番外-脉络生成用户提示词（主要为改写规则）", prompt_inner_layout, 350)
+
 
     """结果润色"""
     # 系统提示词
@@ -612,12 +665,12 @@ def prompt_text_slide(plain, title, layout, height):
     layout.addWidget(fream)
 
 """增加场景规则"""
-def create_scene_prompt_text(self):
+def create_scene_prompt_text(scene_prompt_list):
     # 新创卡片
     model_item = QListWidgetItem()
     # 设置高度（宽度由列表控制）
     model_item.setSizeHint(QSize(680, 200))
-    self.scene_prompt_list.insertItem(0, model_item)
+    scene_prompt_list.insertItem(0, model_item)
 
     # ===== 关键：创建一个居中容器 =====
     container = QWidget()
@@ -675,7 +728,7 @@ def create_scene_prompt_text(self):
     scene_delete = QPushButton("🗑️删除")
     scene_delete.setFixedSize(80, 30)
     scene_delete.setStyleSheet(button_style_sheet())
-    scene_delete.clicked.connect(lambda : remove_scene_prompt(self.scene_prompt_list, model_item))
+    scene_delete.clicked.connect(lambda : remove_scene_prompt(scene_prompt_list, model_item))
     top_layout.addWidget(scene_delete)
     frame_layout.addLayout(top_layout)
 
@@ -725,9 +778,9 @@ def create_scene_prompt_text(self):
     container_layout.addWidget(model_frame)
 
     # 将容器设置为列表项
-    self.scene_prompt_list.setItemWidget(model_item, container)
+    scene_prompt_list.setItemWidget(model_item, container)
     # 重排序
-    sort_scene_rules(self.scene_prompt_list)
+    sort_scene_rules(scene_prompt_list)
 
 """用户提示词计数"""
 def system_prompt_count(title, prompt_title, prompt):
@@ -782,9 +835,9 @@ def sort_scene_rules(scene_prompt_list):
                     sort.setText(f"序号：{index + 1}")
 
 """场景规则渲染列表"""
-def review_scene_prompt_list(model_list, prompt_id):
+def review_scene_prompt_list(model_list, prompt_id, point_type, prompt_type):
     # 场景规则查询
-    all_scene_prompt = query_prompt_template(prompt_id, 3, 3)
+    all_scene_prompt = query_prompt_template(prompt_id, point_type, prompt_type)
     # 内容不为空
     if all_scene_prompt:
         for row, prompt in enumerate(all_scene_prompt):

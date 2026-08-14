@@ -41,6 +41,8 @@ class SqliteDB:
                     prompt_id INTEGER DEFAULT NULL,                 -- 提示词模版ID
                     role_model_id INTEGER DEFAULT NULL,             -- 角色分析模型ID
                     relation_model_id INTEGER DEFAULT NULL,         -- 角色关系模型ID
+                    process_model_id INTEGER DEFAULT NULL,          -- 流程控制模型ID
+                    extra_model_id INTEGER DEFAULT NULL,            -- 番外扩写模型ID
                     scene_model_id INTEGER DEFAULT NULL,            -- 场景规则模型ID
                     framework_model_id INTEGER DEFAULT NULL,        -- 脉络改写模型ID
                     polish_model_id INTEGER DEFAULT NULL,           -- 结果润色模型ID
@@ -67,7 +69,7 @@ class SqliteDB:
                     new_content TEXT DEFAULT NULL,                  -- 新章节内容
                     type INTEGER NOT NULL DEFAULT 1,                -- 章节类型（1：润色改写，2：内容扩写）
                     status INTEGER NOT NULL DEFAULT 1,              -- 状态（1：未开始，2：进行中，3：已完成，4：已失败）
-                    point INTEGER NOT NULL DEFAULT 1,               -- 节点（1：分析角色模型，2：分析角色关系，3：匹配场景规则，4：生成发展脉络，5：润色输出内容，6：已完成）
+                    point INTEGER NOT NULL DEFAULT 10,               -- 节点（100：分析角色模型，200：分析角色关系，300：流程控制判断，400：改写-匹配场景规则，401：改写-改写发展脉络，410：番外-匹配场景规则，411：番外-生成发展脉络，500：润色输出内容，600：已完成）
                     sort INTEGER NOT NULL DEFAULT 0                 -- 排序
                 );
                 CREATE INDEX IF NOT EXISTS idx_project_id ON chapter(project_id);
@@ -111,7 +113,7 @@ class SqliteDB:
                     scene_name TEXT DEFAULT NULL,                   -- 场景提示词名称
                     scene_identify TEXT DEFAULT NULL,               -- 场景提示词识别规则
                     context TEXT DEFAULT NULL,                      -- 提示词规则    
-                    point_type INTEGER NOT NULL DEFAULT 1,          -- 节点类型（1：角色分析，2：关系分析，3：场景分析，4：脉络改写，5：结果润色）
+                    point_type INTEGER NOT NULL DEFAULT 1,          -- 节点类型（1：角色分析，2：关系分析，3：改写-场景分析，4：改写-脉络改写，5：结果润色，6：流程控制，7：番外-场景分析，8：番外-脉络生成）
                     type INTEGER NOT NULL DEFAULT 1                 -- 提示词类型（1：系统提示词，2：用户提示词，3：场景提示词）
                 );
                 CREATE INDEX IF NOT EXISTS idx_prompt_id ON prompt_rules(prompt_id);
