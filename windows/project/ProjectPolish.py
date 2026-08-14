@@ -1,4 +1,4 @@
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QIntValidator, QStandardItemModel
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame, QListWidget, QPushButton, QPlainTextEdit, \
     QComboBox, QListWidgetItem, QLineEdit
@@ -36,6 +36,7 @@ def on_prompt_item_clicked(self, point_type, prompt_type):
                 prompt_text = prompt['context']
 
     self.text_content.setPlainText(prompt_text)
+    QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
 
 def on_item_clicked(self, item: QListWidgetItem):
@@ -48,36 +49,42 @@ def polish_btn_clicked(self):
     if self.chapter_info is None:
         return
     self.text_content.setPlainText(self.chapter_info['new_content'])
+    QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
 def framework_btn_clicked(self):
     """脉络内容按钮触发"""
     if self.chapter_info is None:
         return
     self.text_content.setPlainText(self.chapter_info['framework_content'])
+    QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
 def scene_btn_clicked(self):
     """场景规则按钮触发"""
     if self.chapter_info is None:
         return
     self.text_content.setPlainText(self.chapter_info['scene_content'])
+    QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
 def relation_btn_clicked(self):
     """关系分析按钮触发"""
     if self.chapter_info is None:
         return
     self.text_content.setPlainText(self.chapter_info['relation_content'])
+    QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
 def process_btn_clicked(self):
     """流程控制按钮触发"""
     if self.chapter_info is None:
         return
     self.text_content.setPlainText(self.chapter_info['process_content'])
+    QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
 def role_btn_clicked(self):
     """角色分析按钮触发"""
     if self.chapter_info is None:
         return
     self.text_content.setPlainText(self.chapter_info['role_content'])
+    QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
 def original_btn_clicked(self):
     """原文按钮触发"""
@@ -86,6 +93,7 @@ def original_btn_clicked(self):
     self.text_content.setPlainText("")
     for line in self.chapter_info['old_content'].split('\\n'):
         self.text_content.appendPlainText(line)
+    QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
 def update_project_prompt_id(self, text):
     """更新索引"""
