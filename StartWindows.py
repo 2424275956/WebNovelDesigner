@@ -68,7 +68,7 @@ class MainWindows(QMainWindow):
         """标题名称"""
         self.setWindowTitle("WebNovel大师")
         """宽度1080，高度800"""
-        self.setFixedSize(1080, 800)
+        self.setFixedSize(1600, 960)
 
         """窗口渲染"""
         """创建主容器"""
