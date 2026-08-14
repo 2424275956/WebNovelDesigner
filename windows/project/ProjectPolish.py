@@ -1,5 +1,5 @@
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QIntValidator, QStandardItemModel
+from PyQt6.QtGui import QIntValidator
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame, QListWidget, QPushButton, QPlainTextEdit, \
     QComboBox, QListWidgetItem, QLineEdit
 

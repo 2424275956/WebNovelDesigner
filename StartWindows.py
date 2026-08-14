@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QFra
 from windows.model.ModelWindows import model_open_windows
 from windows.project.ProjectWindows import project_open_windows, review_page
 from windows.prompt.PromptWindows import prompt_open_windows
+from thread.GlobaThreadPoolExecutor import get_executor
 
 
 def create_button(text, icon_path):
@@ -69,6 +70,9 @@ class MainWindows(QMainWindow):
         self.setWindowTitle("WebNovel大师")
         """宽度1080，高度800"""
         self.setFixedSize(1600, 960)
+
+        """全局线程池"""
+        self.executor = get_executor()
 
         """窗口渲染"""
         """创建主容器"""

@@ -275,4 +275,5 @@ def start(self):
     if not model_connection_check(self, transmit['polish_model_id'], "结果润色", model_map):
         return False
 
+
     return True
