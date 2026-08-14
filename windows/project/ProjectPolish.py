@@ -203,32 +203,36 @@ def polist_page(self, project_id):
     center_left_layout = QVBoxLayout()
     center_left_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     center_layout.addLayout(center_left_layout)
-    """"顶部"""
-    chapter_top_layout = QHBoxLayout()
-    chapter_top_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    center_left_layout.addLayout(chapter_top_layout)
     """章节提示"""
     chapter_title = QLabel("章节导航")
     chapter_title.setFixedWidth(100)
     chapter_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     chapter_title.setStyleSheet(title_style_sheet())
-    chapter_top_layout.addWidget(chapter_title)
+    center_left_layout.addWidget(chapter_title)
     """章节统计1"""
     all_chapter = self.project_info['chapter_num']
-    self.chapter_count1 = QLabel(f"共 {all_chapter} 章节")
+    self.chapter_count1 = QLabel(f"项目共有 {all_chapter} 章节")
     self.chapter_count1.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    chapter_top_layout.addWidget(self.chapter_count1)
+    center_left_layout.addWidget(self.chapter_count1)
     """章节统计2"""
     success_chapter = self.project_info['success_num']
-    fail_chapter = self.project_info['fail_num']
-    self.chapter_count2 = QLabel(f"已完成 {success_chapter} 章节 · 已失败 {fail_chapter} 章节")
+    self.chapter_count2 = QLabel(f"项目已完成 {success_chapter} 章节")
     self.chapter_count2.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     center_left_layout.addWidget(self.chapter_count2)
     """章节统计3"""
-    wait_chapter = all_chapter - success_chapter
-    self.chapter_count3 = QLabel(f"待完成 {wait_chapter} 章节 · 新增 {self.project_info['expansion_num']} 章节")
+    fail_chapter = self.project_info['fail_num']
+    self.chapter_count3 = QLabel(f"项目已失败 {fail_chapter} 章节")
     self.chapter_count3.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     center_left_layout.addWidget(self.chapter_count3)
+    """章节统计4"""
+    wait_chapter = all_chapter - success_chapter
+    self.chapter_count4 = QLabel(f"项目待完成 {wait_chapter} 章节")
+    self.chapter_count4.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    center_left_layout.addWidget(self.chapter_count4)
+    """章节统计5"""
+    self.chapter_count5 = QLabel(f"项目已新增 {self.project_info['expansion_num']} 章节")
+    self.chapter_count5.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    center_left_layout.addWidget(self.chapter_count5)
     """提示词布局"""
     prompt_low_layout = QHBoxLayout()
     prompt_low_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
