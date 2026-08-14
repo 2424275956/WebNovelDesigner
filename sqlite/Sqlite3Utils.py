@@ -122,7 +122,9 @@ def save_prompt_info(req_json):
     save_prompt(prompt_id, req_json['role_system'], req_json['role_user'], 1)
     """关系分析"""
     save_prompt(prompt_id, req_json['relation_system'], req_json['relation_user'], 2)
-    """场景分析"""
+    """流程控制"""
+    save_prompt(prompt_id, req_json['process_system'], req_json['process_user'], 6)
+    """改写-场景分析"""
     save_prompt(prompt_id, req_json['scene_system'], req_json['scene_user'], 3)
     # 场景提示词
     scene_data = []
@@ -131,8 +133,19 @@ def save_prompt_info(req_json):
         scene_data.append((prompt_id, scene['scene_name'], scene['scene_identify'], scene['scene_rules'], 3, 3))
     SqlDB.SqliteDB.execute_batch("INSERT INTO prompt_rules (prompt_id, scene_name, scene_identify, context, point_type, type) VALUES (?, ?, ?, ?, ?, ?)"
                                  , scene_data)
-    """脉络改写"""
+    """改写-脉络改写"""
     save_prompt(prompt_id, req_json['framework_system'], req_json['framework_user'], 4)
+    """番外-场景分析"""
+    save_prompt(prompt_id, req_json['extra_scene_system'], req_json['extra_scene_user'], 7)
+    # 场景提示词
+    extra_scene_data = []
+    extra_scene_list = req_json['extra_scene']
+    for extra_scene in extra_scene_list:
+        extra_scene_data.append((prompt_id, extra_scene['scene_name'], extra_scene['scene_identify'], extra_scene['scene_rules'], 7, 3))
+    SqlDB.SqliteDB.execute_batch("INSERT INTO prompt_rules (prompt_id, scene_name, scene_identify, context, point_type, type) VALUES (?, ?, ?, ?, ?, ?)"
+                                 , extra_scene_data)
+    """番外-脉络生成"""
+    save_prompt(prompt_id, req_json['extra_framework_system'], req_json['extra_framework_user'], 8)
     """结果润色"""
     save_prompt(prompt_id, req_json['polish_system'], req_json['polish_user'], 5)
 

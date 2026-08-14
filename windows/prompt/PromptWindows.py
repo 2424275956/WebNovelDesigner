@@ -203,16 +203,23 @@ def save_prompt_conf(self):
     # 用户提示词
     if not prompt_check(self, self.relation_user_prompt, "关系分析用户"):
         return False
-    """场景分析"""
+    """流程控制"""
     # 系统提示词
-    if not prompt_check(self, self.scene_system_prompt, "场景分析系统"):
+    if not prompt_check(self, self.process_system_prompt, "流程控制系统"):
         return False
     # 用户提示词
-    if not prompt_check(self, self.scene_user_prompt, "场景分析用户"):
+    if not prompt_check(self, self.process_user_prompt, "流程控制用户"):
+        return False
+    """改写-场景分析"""
+    # 系统提示词
+    if not prompt_check(self, self.scene_system_prompt, "改写-场景分析系统"):
+        return False
+    # 用户提示词
+    if not prompt_check(self, self.scene_user_prompt, "改写-场景分析用户"):
         return False
     # 场景规则 循环获取
     if len(self.scene_prompt_list) <= 0:
-        QMessageBox.warning(self, "错误", f"❌ 场景提示词模版为空")
+        QMessageBox.warning(self, "错误", f"❌ 改写-场景提示词模版为空")
         return False
     scene = []
     for index in range(self.scene_prompt_list.count()):
@@ -229,30 +236,30 @@ def save_prompt_conf(self):
                 # 场景名称
                 scene_name = custom_widget.findChild(QLineEdit, "scene_name")
                 if scene_name is None:
-                    QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,场景名称对象获取失败")
+                    QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,改写-场景名称对象获取失败")
                     return False
                 else:
                     if len(scene_name.text()) <= 0:
-                        QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,场景名称为空")
+                        QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,改写-场景名称为空")
                         return False
                 # 识别点
                 identify_text = custom_widget.findChild(QPlainTextEdit, "identify_text")
                 if identify_text is None:
-                    QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,场景识别规则对象获取失败")
+                    QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,改写-场景识别规则对象获取失败")
                     return False
                 else:
                     if len(identify_text.toPlainText()) <= 0:
-                        QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,场景识别规则为空")
+                        QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,改写-场景识别规则为空")
                         return False
 
                 # 改写规则
                 rules_text = custom_widget.findChild(QPlainTextEdit, "rules_text")
                 if rules_text is None:
-                    QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,场景改写规则对象获取失败")
+                    QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,改写-场景改写规则对象获取失败")
                     return False
                 else:
                     if len(rules_text.toPlainText()) <= 0:
-                        QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,场景改写规则为空")
+                        QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,改写-场景改写规则为空")
                         return False
                 # json组装
                 scene.append({
@@ -260,12 +267,76 @@ def save_prompt_conf(self):
                     "scene_identify": identify_text.toPlainText(),
                     "scene_rules": rules_text.toPlainText()
                 })
-    """脉络改写"""
+    """改写-脉络改写"""
     # 系统提示词
-    if not prompt_check(self, self.framework_system_prompt, "脉络改写系统"):
+    if not prompt_check(self, self.framework_system_prompt, "改写-脉络改写系统"):
         return False
     # 用户提示词
-    if not prompt_check(self, self.framework_user_prompt, "脉络改写用户"):
+    if not prompt_check(self, self.framework_user_prompt, "改写-脉络改写用户"):
+        return False
+    """番外-场景分析"""
+    # 系统提示词
+    if not prompt_check(self, self.extra_scene_system_prompt, "番外-场景分析系统"):
+        return False
+    # 用户提示词
+    if not prompt_check(self, self.extra_scene_user_prompt, "番外-场景分析用户"):
+        return False
+    # 场景规则 循环获取
+    if len(self.extra_scene_prompt_list) <= 0:
+        QMessageBox.warning(self, "错误", f"❌ 番外-场景提示词模版为空")
+        return False
+    extra_scene = []
+    for index in range(self.extra_scene_prompt_list.count()):
+        # 获取到item并循环处理
+        item = self.extra_scene_prompt_list.item(index)
+
+        # item不可以为空
+        if item:
+            # 通过 QListWidget 的 itemWidget() 方法，取出绑定到该 item 上的真实 QWidget
+            custom_widget = self.extra_scene_prompt_list.itemWidget(item)
+
+            # 容器不为空
+            if custom_widget:
+                # 场景名称
+                scene_name = custom_widget.findChild(QLineEdit, "scene_name")
+                if scene_name is None:
+                    QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,改写-场景名称对象获取失败")
+                    return False
+                else:
+                    if len(scene_name.text()) <= 0:
+                        QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,改写-场景名称为空")
+                        return False
+                # 识别点
+                identify_text = custom_widget.findChild(QPlainTextEdit, "identify_text")
+                if identify_text is None:
+                    QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,改写-场景识别规则对象获取失败")
+                    return False
+                else:
+                    if len(identify_text.toPlainText()) <= 0:
+                        QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,改写-场景识别规则为空")
+                        return False
+
+                # 改写规则
+                rules_text = custom_widget.findChild(QPlainTextEdit, "rules_text")
+                if rules_text is None:
+                    QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,改写-场景改写规则对象获取失败")
+                    return False
+                else:
+                    if len(rules_text.toPlainText()) <= 0:
+                        QMessageBox.warning(self, "错误", f"❌ 序号：{index + 1} ,改写-场景改写规则为空")
+                        return False
+                # json组装
+                extra_scene.append({
+                    "scene_name": scene_name.text(),
+                    "scene_identify": identify_text.toPlainText(),
+                    "scene_rules": rules_text.toPlainText()
+                })
+    """番外-脉络生成"""
+    # 系统提示词
+    if not prompt_check(self, self.extra_framework_system_prompt, "番外-脉络生成系统"):
+        return False
+    # 用户提示词
+    if not prompt_check(self, self.extra_framework_user_prompt, "番外-脉络生成用户"):
         return False
     """结果润色"""
     # 系统提示词
@@ -282,11 +353,18 @@ def save_prompt_conf(self):
         "role_user": self.role_user_prompt.toPlainText(),
         "relation_system": self.relation_system_prompt.toPlainText(),
         "relation_user": self.relation_user_prompt.toPlainText(),
+        "process_system": self.process_system_prompt.toPlainText(),
+        "process_user": self.process_user_prompt.toPlainText(),
         "scene_system": self.scene_system_prompt.toPlainText(),
         "scene_user": self.scene_user_prompt.toPlainText(),
         "scene":scene,
         "framework_system": self.framework_system_prompt.toPlainText(),
         "framework_user": self.framework_user_prompt.toPlainText(),
+        "extra_scene_system": self.extra_scene_system_prompt.toPlainText(),
+        "extra_scene_user": self.extra_scene_user_prompt.toPlainText(),
+        "extra_scene": extra_scene,
+        "extra_framework_system": self.extra_framework_system_prompt.toPlainText(),
+        "extra_framework_user": self.extra_framework_user_prompt.toPlainText(),
         "polish_system": self.polish_system_prompt.toPlainText(),
         "polish_user": self.polish_user_prompt.toPlainText()
     }
