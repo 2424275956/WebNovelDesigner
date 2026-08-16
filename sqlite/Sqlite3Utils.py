@@ -190,3 +190,64 @@ def remove_prompt(prompt_id):
     SqlDB.SqliteDB.execute("DELETE FROM prompt_rules WHERE prompt_id = ?", (prompt_id,))
     # 提示词信息
     SqlDB.SqliteDB.execute("DELETE FROM prompt_info WHERE id = ?", (prompt_id,))
+
+# 更新章节-角色分析内容
+def update_chapter_role(role_text, chapter_id):
+    SqlDB.SqliteDB.execute("UPDATE chapter SET role_content = ?, status = 2, point = 200 WHERE id = ?", (role_text, chapter_id))
+
+# 更新章节-关系分析内容
+def update_chapter_relation(relation_text, chapter_id):
+    SqlDB.SqliteDB.execute("UPDATE chapter SET relation_content = ?, point = 300 WHERE id = ?", (relation_text, chapter_id))
+
+# 更新章节-状态
+def update_chapter_status(status, chapter_id):
+    SqlDB.SqliteDB.execute("UPDATE chapter SET status = ? WHERE id = ?", (status, chapter_id))
+
+# 更新章节-流程判断
+def update_chapter_process(process_content, point, chapter_id):
+    SqlDB.SqliteDB.execute("UPDATE chapter SET process_content = ?, point = ? WHERE id = ?", (process_content, point, chapter_id))
+
+# 更新章节-序号
+def update_chapter_sort(sort, project_id):
+    SqlDB.SqliteDB.execute("UPDATE chapter SET sort = sort + 1 WHERE sort >= ? and project_id = ?", (sort, project_id))
+
+# 新增章节-番外章节
+def insert_extra_chapter(chapter, chapter_sort):
+    return SqlDB.SqliteDB.execute("INSERT INTO chapter (project_id, title, role_content, relation_content, process_content, type, status, point, sort) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        (chapter['project_id'],
+                        "番外",
+                        chapter['role_content'],
+                        chapter['relation_content'],
+                        chapter['process_content'],
+                        2,
+                        1,
+                        410,
+                        chapter_sort))
+
+# 更新章节-场景分析
+def update_chapter_scene(scene_text, point, chapter_id):
+    SqlDB.SqliteDB.execute("UPDATE chapter SET scene_content = ?, point = ? WHERE id = ?", (scene_text, point, chapter_id))
+
+# 更新章节-脉络改写
+def update_chapter_framework(framework_content, point, chapter_id):
+    SqlDB.SqliteDB.execute("UPDATE chapter SET framework_content = ?, point = ? WHERE id = ?", (framework_content, point, chapter_id))
+
+# 更新章节-完成润色
+def update_chapter_polish(polish_text, chapter_id):
+    SqlDB.SqliteDB.execute("UPDATE chapter SET new_len = ?, new_content = ?, status = 3, point = 600 WHERE id = ?", (len(polish_text), polish_text, chapter_id))
+
+# 更新项目-完成数
+def update_chapter_success_num(project_id):
+    SqlDB.SqliteDB.execute("UPDATE project SET success_num = success_num + 1 WHERE id = ?", (project_id,))
+
+# 获取失败章节数
+def count_fail_chapter_num(project_id):
+    return SqlDB.SqliteDB.query_execute("SELECT count(*) FROM chapter WHERE status = 4 and project_id = ?", (project_id,))
+
+# 更新项目-失败数
+def update_chapter_fail_num(num, project_id):
+    SqlDB.SqliteDB.execute("UPDATE project SET fail_num = ? WHERE id = ?", (num, project_id))
+
+# 更新项目-章节数
+def update_chapter_all_num(project_id):
+    SqlDB.SqliteDB.execute("UPDATE project SET chapter_num = chapter_num + 1, expansion_num = expansion_num + 1 WHERE id = ?", (project_id,))

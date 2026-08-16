@@ -1,7 +1,7 @@
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtWidgets import QListWidgetItem, QWidget, QHBoxLayout, QFrame, QVBoxLayout, QLabel
 
-from sqlite.Sqlite3Utils import query_project_chapter_by_id
+from sqlite.Sqlite3Utils import query_project_chapter_by_id, query_project_by_id
 from style.StyleSheet import label_style_sheet
 from utils.StatusDot import StatusDot
 
@@ -96,3 +96,22 @@ def novel_chapter(self, project_id):
             self.chapter_list.setItemWidget(chapter_item, container)
 
     return chapter_list
+
+
+def update_chapter_num(self, project_id):
+    project = query_project_by_id(project_id)
+
+    """章节统计1"""
+    all_chapter = project['chapter_num']
+    self.chapter_count1.setText(f"项目共有 {all_chapter} 章节")
+    """章节统计2"""
+    success_chapter = project['success_num']
+    self.chapter_count2.setText(f"项目已完成 {success_chapter} 章节")
+    """章节统计3"""
+    fail_chapter = self.project_info['fail_num']
+    self.chapter_count3.setText(f"项目已失败 {fail_chapter} 章节")
+    """章节统计4"""
+    wait_chapter = all_chapter - success_chapter
+    self.chapter_count4.setText(f"项目待完成 {wait_chapter} 章节")
+    """章节统计5"""
+    self.chapter_count5.setText(f"项目已新增 {self.project_info['expansion_num']} 章节")

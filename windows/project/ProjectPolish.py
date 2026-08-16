@@ -983,4 +983,3 @@ def disable_enable_prompt_model_conf(project_id,
         polish_prompt_conf_model.setEnabled(False)
         chapter_before_num.setEnabled(False)
         chapter_after_num.setEnabled(False)
-

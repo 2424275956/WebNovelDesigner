@@ -71,7 +71,7 @@ class SqliteDB:
                             new_content TEXT DEFAULT NULL,                  -- 新章节内容
                             type INTEGER NOT NULL DEFAULT 1,                -- 章节类型（1：润色改写，2：内容扩写）
                             status INTEGER NOT NULL DEFAULT 1,              -- 状态（1：未开始，2：进行中，3：已完成，4：已失败）
-                            point INTEGER NOT NULL DEFAULT 10,               -- 节点（100：分析角色模型，200：分析角色关系，300：流程控制判断，400：改写-匹配场景规则，401：改写-改写发展脉络，410：番外-匹配场景规则，411：番外-生成发展脉络，500：润色输出内容，600：已完成）
+                            point INTEGER NOT NULL DEFAULT 10,              -- 节点（100：分析角色模型，200：分析角色关系，300：流程控制判断，400：改写-匹配场景规则，401：改写-改写发展脉络，410：番外-匹配场景规则，411：番外-生成发展脉络，500：润色输出内容，600：已完成）
                             sort INTEGER NOT NULL DEFAULT 0                 -- 排序
                         );
                         CREATE INDEX IF NOT EXISTS idx_project_id ON chapter(project_id);
