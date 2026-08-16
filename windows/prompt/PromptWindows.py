@@ -8,6 +8,7 @@ import json as std_json
 from sqlite.Sqlite3Utils import query_all_prompt, save_prompt_info, remove_prompt, query_prompt_info_by_id, \
     import_prompt_template, query_prompt_template
 from style.StyleSheet import button_style_sheet, title_style_sheet, line_edit_style_sheet
+from utils.CustomPlainTextEdit import CustomPlainTextEdit
 from windows.prompt.InsertPrompt import InsertModel
 
 
@@ -668,34 +669,34 @@ def review_page(self):
     """角色分析"""
     # 系统提示词
     self.role_system_prompt = QPlainTextEdit()
-    prompt_text_slide(self.role_system_prompt, "角色分析系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    prompt_text_slide(self.role_system_prompt, "角色分析系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 400)
     # 用户提示词
     self.role_user_prompt = QPlainTextEdit()
-    prompt_text_slide(self.role_user_prompt, "角色分析用户提示词（主要为改写规则）", prompt_inner_layout, 350)
+    prompt_text_slide(self.role_user_prompt, "角色分析用户提示词（主要为改写规则）", prompt_inner_layout, 400)
 
     """关系分析"""
     # 系统提示词
     self.relation_system_prompt = QPlainTextEdit()
-    prompt_text_slide(self.relation_system_prompt, "关系分析系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    prompt_text_slide(self.relation_system_prompt, "关系分析系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 400)
     # 用户提示词
     self.relation_user_prompt = QPlainTextEdit()
-    prompt_text_slide(self.relation_user_prompt, "关系分析用户提示词（主要为改写规则）", prompt_inner_layout, 350)
+    prompt_text_slide(self.relation_user_prompt, "关系分析用户提示词（主要为改写规则）", prompt_inner_layout, 400)
 
     """流程控制"""
     # 系统提示词
     self.process_system_prompt = QPlainTextEdit()
-    prompt_text_slide(self.process_system_prompt, "流程控制系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    prompt_text_slide(self.process_system_prompt, "流程控制系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 400)
     # 用户提示词
     self.process_user_prompt = QPlainTextEdit()
-    prompt_text_slide(self.process_user_prompt, "流程控制用户提示词（主要为改写规则）", prompt_inner_layout, 350)
+    prompt_text_slide(self.process_user_prompt, "流程控制用户提示词（主要为改写规则）", prompt_inner_layout, 400)
 
     """改写-场景分析"""
     # 系统提示词
     self.scene_system_prompt = QPlainTextEdit()
-    prompt_text_slide(self.scene_system_prompt, "改写-场景分析系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    prompt_text_slide(self.scene_system_prompt, "改写-场景分析系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 400)
     # 用户提示词
     self.scene_user_prompt = QPlainTextEdit()
-    prompt_text_slide(self.scene_user_prompt, "改写-场景分析用户提示词（主要为改写规则）", prompt_inner_layout, 350)
+    prompt_text_slide(self.scene_user_prompt, "改写-场景分析用户提示词（主要为改写规则）", prompt_inner_layout, 400)
     # 场景提示词顶部
     scene_prompt_top = QHBoxLayout()
     scene_prompt_top.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
@@ -728,18 +729,18 @@ def review_page(self):
     """改写-脉络改写"""
     # 系统提示词
     self.framework_system_prompt = QPlainTextEdit()
-    prompt_text_slide(self.framework_system_prompt, "改写-脉络改写系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    prompt_text_slide(self.framework_system_prompt, "改写-脉络改写系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 400)
     # 用户提示词
     self.framework_user_prompt = QPlainTextEdit()
-    prompt_text_slide(self.framework_user_prompt, "改写-脉络改写用户提示词（主要为改写规则）", prompt_inner_layout, 350)
+    prompt_text_slide(self.framework_user_prompt, "改写-脉络改写用户提示词（主要为改写规则）", prompt_inner_layout, 400)
 
     """番外-场景规则"""
     # 系统提示词
     self.extra_scene_system_prompt = QPlainTextEdit()
-    prompt_text_slide(self.extra_scene_system_prompt, "番外-场景分析系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    prompt_text_slide(self.extra_scene_system_prompt, "番外-场景分析系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 400)
     # 用户提示词
     self.extra_scene_user_prompt = QPlainTextEdit()
-    prompt_text_slide(self.extra_scene_user_prompt, "番外-场景分析用户提示词（主要为改写规则）", prompt_inner_layout, 350)
+    prompt_text_slide(self.extra_scene_user_prompt, "番外-场景分析用户提示词（主要为改写规则）", prompt_inner_layout, 400)
     # 场景提示词顶部
     extra_scene_prompt_top = QHBoxLayout()
     extra_scene_prompt_top.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
@@ -772,19 +773,19 @@ def review_page(self):
     """番外-脉络生成"""
     # 系统提示词
     self.extra_framework_system_prompt = QPlainTextEdit()
-    prompt_text_slide(self.extra_framework_system_prompt, "番外-脉络生成系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    prompt_text_slide(self.extra_framework_system_prompt, "番外-脉络生成系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 400)
     # 用户提示词
     self.extra_framework_user_prompt = QPlainTextEdit()
-    prompt_text_slide(self.extra_framework_user_prompt, "番外-脉络生成用户提示词（主要为改写规则）", prompt_inner_layout, 350)
+    prompt_text_slide(self.extra_framework_user_prompt, "番外-脉络生成用户提示词（主要为改写规则）", prompt_inner_layout, 400)
 
 
     """结果润色"""
     # 系统提示词
     self.polish_system_prompt = QPlainTextEdit()
-    prompt_text_slide(self.polish_system_prompt, "结果润色系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 200)
+    prompt_text_slide(self.polish_system_prompt, "结果润色系统提示词（最好1000字以内，过长会导致遗忘设定）", prompt_inner_layout, 400)
     # 用户提示词
     self.polish_user_prompt = QPlainTextEdit()
-    prompt_text_slide(self.polish_user_prompt, "结果润色用户提示词（主要为改写规则）", prompt_inner_layout, 350)
+    prompt_text_slide(self.polish_user_prompt, "结果润色用户提示词（主要为改写规则）", prompt_inner_layout, 400)
 
     self.conf_page.addWidget(scroll_area)
 
@@ -819,12 +820,12 @@ def create_scene_prompt_text(scene_prompt_list):
     # 新创卡片
     model_item = QListWidgetItem()
     # 设置高度（宽度由列表控制）
-    model_item.setSizeHint(QSize(680, 200))
+    model_item.setSizeHint(QSize(1200, 200))
     scene_prompt_list.insertItem(0, model_item)
 
     # ===== 关键：创建一个居中容器 =====
     container = QWidget()
-    container.setFixedSize(680, 200)
+    container.setFixedSize(1200, 200)
 
     # 容器内部使用水平布局，让卡片居中
     container_layout = QHBoxLayout(container)
@@ -833,7 +834,7 @@ def create_scene_prompt_text(scene_prompt_list):
 
     # 创建卡片
     model_frame = QFrame()
-    model_frame.setFixedSize(670, 200)
+    model_frame.setFixedSize(1190, 200)
     model_frame.setStyleSheet("""
                 QFrame {
                     background-color: #2D3436;
@@ -847,82 +848,79 @@ def create_scene_prompt_text(scene_prompt_list):
             """)
 
     # 卡片内部布局
-    frame_layout = QVBoxLayout(model_frame)
+    frame_layout = QHBoxLayout(model_frame)
     frame_layout.setContentsMargins(10, 5, 10, 5)
     frame_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
-    # 顶部
-    top_layout = QHBoxLayout()
-    top_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    # 场景名称
+    ## 左部分
+    frame_left_you = QVBoxLayout()
+    frame_left_you.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+    frame_layout.addLayout(frame_left_you)
+    ## 左部分-第一行
+    frame_left_row1_layout = QHBoxLayout()
+    frame_left_row1_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    frame_left_you.addLayout(frame_left_row1_layout)
+    ### 场景名称
     scene_name_title = QLabel("场景名称：")
     scene_name_title.setFixedSize(80, 30)
     scene_name_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     scene_name_title.setStyleSheet(title_style_sheet(color='white'))
-    top_layout.addWidget(scene_name_title)
-    # 场景名称修改
+    frame_left_row1_layout.addWidget(scene_name_title)
+    ### 场景名称修改
     scene_name = QLineEdit()
     scene_name.setObjectName("scene_name")
     scene_name.setFixedSize(300, 30)
     scene_name.setAlignment(Qt.AlignmentFlag.AlignLeft)
     scene_name.setStyleSheet(line_edit_style_sheet(15))
-    top_layout.addWidget(scene_name)
-    # 弹开按钮
-    top_layout.addStretch()
-    # 序号
-    sort = QLabel("序号：1")
-    sort.setObjectName("sort")
-    sort.setStyleSheet(title_style_sheet(color='white'))
-    top_layout.addWidget(sort)
+    frame_left_row1_layout.addWidget(scene_name)
+
+    ## 左部分-第二行
+    frame_left_row2_layout = QHBoxLayout()
+    frame_left_row2_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    frame_left_you.addLayout(frame_left_row2_layout)
+    ### 识别框标题
+    identify_title = QLabel("<br>".join("场景识别匹配规则"))
+    identify_title.setFixedHeight(80)
+    identify_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    identify_title.setStyleSheet(title_style_sheet(color='white'))
+    frame_left_row2_layout.addWidget(identify_title, alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    ### 识别框
+    identify_text = QPlainTextEdit()
+    identify_text.setObjectName("identify_text")
+    identify_text.setFixedSize(350, 140)
+    identify_text.setStyleSheet(line_edit_style_sheet())
+    frame_left_row2_layout.addWidget(identify_text)
+
+    # 规则框标题
+    rules_title = QLabel("<br>".join("场景改写规则"))
+    rules_title.setFixedHeight(80)
+    rules_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    rules_title.setStyleSheet(title_style_sheet(color='white'))
+    frame_layout.addWidget(rules_title)
+    # 规则框
+    rules_text = QPlainTextEdit()
+    rules_text.setObjectName("rules_text")
+    rules_text.setFixedSize(640, 180)
+    rules_text.setStyleSheet(line_edit_style_sheet())
+    frame_layout.addWidget(rules_text, alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+
+    # 右部分
+    frame_right_layout = QVBoxLayout()
+    frame_right_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    frame_layout.addLayout(frame_right_layout)
     # 按钮
     scene_delete = QPushButton("🗑️删除")
     scene_delete.setFixedSize(80, 30)
     scene_delete.setStyleSheet(button_style_sheet())
     scene_delete.clicked.connect(lambda : remove_scene_prompt(scene_prompt_list, model_item))
-    top_layout.addWidget(scene_delete)
-    frame_layout.addLayout(top_layout)
-
-    # 底部框
-    low_layout = QHBoxLayout()
-    low_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    # 左侧布局
-    low_col1 = QVBoxLayout()
-    low_col1.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    # 识别框标题
-    identify_title = QLabel("场景识别匹配规则")
-    identify_title.setFixedHeight(30)
-    identify_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    identify_title.setStyleSheet(title_style_sheet(color='white'))
-    low_col1.addWidget(identify_title)
-    # 识别框
-    identify_text = QPlainTextEdit()
-    identify_text.setObjectName("identify_text")
-    identify_text.setFixedSize(200, 100)
-    identify_text.setStyleSheet(line_edit_style_sheet())
-    low_col1.addWidget(identify_text)
-    low_layout.addLayout(low_col1)
-
-    # 弹开距离
-    low_layout.addStretch()
-
-    # 右侧布局
-    low_col2 = QVBoxLayout()
-    low_col2.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    # 规则框标题
-    rules_title = QLabel("场景改写规则")
-    rules_title.setFixedHeight(30)
-    rules_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    rules_title.setStyleSheet(title_style_sheet(color='white'))
-    low_col2.addWidget(rules_title)
-    # 规则框
-    rules_text = QPlainTextEdit()
-    rules_text.setObjectName("rules_text")
-    rules_text.setFixedSize(440, 100)
-    rules_text.setStyleSheet(line_edit_style_sheet())
-    low_col2.addWidget(rules_text)
-    low_layout.addLayout(low_col2)
-
-    frame_layout.addLayout(low_layout)
+    frame_right_layout.addWidget(scene_delete)
+    # 序号
+    sort = QLabel("序号：1")
+    sort.setObjectName("sort")
+    sort.setStyleSheet(title_style_sheet(color='white'))
+    frame_right_layout.addWidget(sort)
+    ## 弹开
+    frame_right_layout.addStretch()
 
     # 将卡片添加到容器（居中）
     container_layout.addWidget(model_frame)
@@ -994,12 +992,12 @@ def review_scene_prompt_list(model_list, prompt_id, point_type, prompt_type):
             # 创建item占位
             model_item = QListWidgetItem()
             # 设置高度（宽度由列表控制）
-            model_item.setSizeHint(QSize(680, 200))
+            model_item.setSizeHint(QSize(1200, 200))
             model_list.addItem(model_item)
 
             # ===== 关键：创建一个居中容器 =====
             container = QWidget()
-            container.setFixedSize(680, 200)
+            container.setFixedSize(1200, 200)
 
             # 容器内部使用水平布局，让卡片居中
             container_layout = QHBoxLayout(container)
@@ -1008,7 +1006,7 @@ def review_scene_prompt_list(model_list, prompt_id, point_type, prompt_type):
 
             # 创建卡片
             model_frame = QFrame()
-            model_frame.setFixedSize(670, 200)
+            model_frame.setFixedSize(1190, 200)
             model_frame.setStyleSheet("""
                 QFrame {
                     background-color: #2D3436;
@@ -1022,85 +1020,82 @@ def review_scene_prompt_list(model_list, prompt_id, point_type, prompt_type):
             """)
 
             # 卡片内部布局
-            frame_layout = QVBoxLayout(model_frame)
+            frame_layout = QHBoxLayout(model_frame)
             frame_layout.setContentsMargins(10, 5, 10, 5)
             frame_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
-            # 顶部
-            top_layout = QHBoxLayout()
-            top_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-            # 场景名称
+            ## 左部分
+            frame_left_you = QVBoxLayout()
+            frame_left_you.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+            frame_layout.addLayout(frame_left_you)
+            ## 左部分-第一行
+            frame_left_row1_layout = QHBoxLayout()
+            frame_left_row1_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+            frame_left_you.addLayout(frame_left_row1_layout)
+            ### 场景名称
             scene_name_title = QLabel("场景名称：")
             scene_name_title.setFixedSize(80, 30)
             scene_name_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
             scene_name_title.setStyleSheet(title_style_sheet(color='white'))
-            top_layout.addWidget(scene_name_title)
-            # 场景名称修改
+            frame_left_row1_layout.addWidget(scene_name_title)
+            ### 场景名称修改
             scene_name = QLineEdit()
-            scene_name.setText(prompt['scene_name'])
             scene_name.setObjectName("scene_name")
+            scene_name.setText(prompt['scene_name'])
             scene_name.setFixedSize(300, 30)
             scene_name.setAlignment(Qt.AlignmentFlag.AlignLeft)
             scene_name.setStyleSheet(line_edit_style_sheet(15))
-            top_layout.addWidget(scene_name)
-            # 弹开按钮
-            top_layout.addStretch()
-            # 序号
-            sort = QLabel(f"序号：{row + 1}")
-            sort.setObjectName("sort")
-            sort.setStyleSheet(title_style_sheet(color='white'))
-            top_layout.addWidget(sort)
+            frame_left_row1_layout.addWidget(scene_name)
+
+            ## 左部分-第二行
+            frame_left_row2_layout = QHBoxLayout()
+            frame_left_row2_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+            frame_left_you.addLayout(frame_left_row2_layout)
+            ### 识别框标题
+            identify_title = QLabel("<br>".join("场景识别匹配规则"))
+            identify_title.setFixedHeight(80)
+            identify_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+            identify_title.setStyleSheet(title_style_sheet(color='white'))
+            frame_left_row2_layout.addWidget(identify_title, alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+            ### 识别框
+            identify_text = QPlainTextEdit()
+            identify_text.setObjectName("identify_text")
+            identify_text.setPlainText(prompt['scene_identify'])
+            identify_text.setFixedSize(350, 140)
+            identify_text.setStyleSheet(line_edit_style_sheet())
+            frame_left_row2_layout.addWidget(identify_text)
+
+            # 规则框标题
+            rules_title = QLabel("<br>".join("场景改写规则"))
+            rules_title.setFixedHeight(80)
+            rules_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+            rules_title.setStyleSheet(title_style_sheet(color='white'))
+            frame_layout.addWidget(rules_title)
+            # 规则框
+            rules_text = QPlainTextEdit()
+            rules_text.setObjectName("rules_text")
+            rules_text.setPlainText(prompt['context'])
+            rules_text.setFixedSize(640, 180)
+            rules_text.setStyleSheet(line_edit_style_sheet())
+            frame_layout.addWidget(rules_text, alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+
+            # 右部分
+            frame_right_layout = QVBoxLayout()
+            frame_right_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+            frame_layout.addLayout(frame_right_layout)
             # 按钮
             scene_delete = QPushButton("🗑️删除")
             scene_delete.setFixedSize(80, 30)
             scene_delete.setStyleSheet(button_style_sheet())
             scene_delete.clicked.connect(lambda : remove_scene_prompt(model_list, model_item))
-            top_layout.addWidget(scene_delete)
-            frame_layout.addLayout(top_layout)
-
-            # 底部框
-            low_layout = QHBoxLayout()
-            low_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-            # 左侧布局
-            low_col1 = QVBoxLayout()
-            low_col1.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-            # 识别框标题
-            identify_title = QLabel("场景识别匹配规则")
-            identify_title.setFixedHeight(30)
-            identify_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-            identify_title.setStyleSheet(title_style_sheet(color='white'))
-            low_col1.addWidget(identify_title)
-            # 识别框
-            identify_text = QPlainTextEdit()
-            identify_text.setObjectName("identify_text")
-            identify_text.setPlainText(prompt['scene_identify'])
-            identify_text.setFixedSize(200, 100)
-            identify_text.setStyleSheet(line_edit_style_sheet())
-            low_col1.addWidget(identify_text)
-            low_layout.addLayout(low_col1)
-
-            # 弹开距离
-            low_layout.addStretch()
-
-            # 右侧布局
-            low_col2 = QVBoxLayout()
-            low_col2.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-            # 规则框标题
-            rules_title = QLabel("场景改写规则")
-            rules_title.setFixedHeight(30)
-            rules_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-            rules_title.setStyleSheet(title_style_sheet(color='white'))
-            low_col2.addWidget(rules_title)
-            # 规则框
-            rules_text = QPlainTextEdit()
-            rules_text.setObjectName("rules_text")
-            rules_text.setPlainText(prompt['context'])
-            rules_text.setFixedSize(440, 100)
-            rules_text.setStyleSheet(line_edit_style_sheet())
-            low_col2.addWidget(rules_text)
-            low_layout.addLayout(low_col2)
-
-            frame_layout.addLayout(low_layout)
+            frame_right_layout.addWidget(scene_delete)
+            # 序号
+            sort = QLabel("序号：1")
+            sort.setObjectName("sort")
+            sort.setStyleSheet(title_style_sheet(color='white'))
+            frame_right_layout.addWidget(sort)
+            ## 弹开
+            frame_right_layout.addStretch()
 
             # 将卡片添加到容器（居中）
             container_layout.addWidget(model_frame)

@@ -3,14 +3,12 @@ from . import SqliteDB as SqlDB
 # 查询所有项目信息的函数
 def query_all_project():
     # 执行SQL查询语句，获取project表中的所有数据
-    tables = SqlDB.SqliteDB.execute("SELECT * FROM project")
     # 返回查询结果
-    return tables.fetchall()
+    return SqlDB.SqliteDB.query_execute_batch("SELECT * FROM project")
 
 # 项目详情
 def query_project_by_id(project_id):
-    tables = SqlDB.SqliteDB.execute("SELECT * FROM project WHERE id = ?", (project_id,))
-    return tables.fetchone()
+    return SqlDB.SqliteDB.query_execute("SELECT * FROM project WHERE id = ?", (project_id,))
 
 def edit_project_prompt_id(prompt_id, project_id):
     SqlDB.SqliteDB.execute("UPDATE project SET prompt_id = ? WHERE id = ?", (prompt_id, project_id))
@@ -51,13 +49,23 @@ def insert_project_info(project):
     author = project['author']
     chapter_num = project['chapter_num']
     word_count = project['word_count']
-    cursor = SqlDB.SqliteDB.execute("INSERT INTO project (title, author, chapter_num, word_count) VALUES (?, ?, ?, ?)", (title, author, chapter_num, word_count))
-    return cursor.lastrowid
+    return SqlDB.SqliteDB.execute("INSERT INTO project (title, author, chapter_num, word_count) VALUES (?, ?, ?, ?)", (title, author, chapter_num, word_count))
 
 # 获取第一位章节信息
 def query_wait_polish_chapter(project_id):
-    chapter_list = SqlDB.SqliteDB.execute("SELECT * FROM chapter WHERE status in (1, 2, 4) and project_id = ? ORDER BY sort LIMIT 1", (project_id,))
-    return chapter_list.fetchall()
+    return SqlDB.SqliteDB.query_execute_batch("SELECT * FROM chapter WHERE status in (1, 2, 4) and project_id = ? ORDER BY sort", (project_id,))
+
+# 获取章节通过id
+def query_chapter_by_id(chapter_id):
+    return SqlDB.SqliteDB.query_execute("SELECT * FROM chapter WHERE id = ?", (chapter_id,))
+
+# 获取前几章内容
+def query_before_chapter(project_id, sort, before_num):
+    return SqlDB.SqliteDB.query_execute_batch("SELECT * FROM chapter WHERE project_id = ? and sort < ? ORDER BY sort DESC LIMIT ?", (project_id, sort, before_num))
+
+# 获取后几章内容
+def query_after_chapter(project_id, sort, after_num):
+    return SqlDB.SqliteDB.query_execute_batch("SELECT * FROM chapter WHERE project_id = ? and sort > ? ORDER BY sort DESC LIMIT ?", (project_id, sort, after_num))
 
 # 保存创建的章节信息
 def insert_project_chapter(project_id, chapters):
@@ -77,18 +85,15 @@ def remove_novel_info(project_id):
 
 # 获取项目所有章节列表 并根据sort排序
 def query_project_chapter_by_id(project_id):
-    data_list = SqlDB.SqliteDB.execute("SELECT * FROM chapter WHERE project_id = ? ORDER BY sort", (project_id,))
-    return data_list.fetchall()
+    return SqlDB.SqliteDB.query_execute_batch("SELECT * FROM chapter WHERE project_id = ? ORDER BY sort", (project_id,))
 
 # 查询全部模型配置信息
 def query_all_model():
-    data_list = SqlDB.SqliteDB.execute("SELECT * FROM model_info")
-    return data_list.fetchall()
+    return SqlDB.SqliteDB.query_execute_batch("SELECT * FROM model_info")
 
 # 根据ID获取模型配置信息
 def query_model_by_id(model_id):
-    data_list = SqlDB.SqliteDB.execute("SELECT * FROM model_info WHERE id = ?", (model_id,))
-    return data_list.fetchone()
+    return SqlDB.SqliteDB.query_execute("SELECT * FROM model_info WHERE id = ?", (model_id,))
 
 # 保存模型配置信息
 def insert_model_conf(req_json):
@@ -115,23 +120,19 @@ def remove_model_conf(conf_id):
 
 # 查询全部提示词
 def query_all_prompt():
-    data_list = SqlDB.SqliteDB.execute("SELECT * FROM prompt_info")
-    return data_list.fetchall()
+    return SqlDB.SqliteDB.query_execute_batch("SELECT * FROM prompt_info")
 
 # 根据id获取模版提示词项目
 def query_prompt_info_by_id(prompt_id):
-    data_list = SqlDB.SqliteDB.execute("SELECT * FROM prompt_info WHERE id = ?", (prompt_id,))
-    return data_list.fetchall()
+    return SqlDB.SqliteDB.query_execute_batch("SELECT * FROM prompt_info WHERE id = ?", (prompt_id,))
 
 # 新增提示词配置
 def insert_prompt_conf(name):
-    cursor = SqlDB.SqliteDB.execute("INSERT INTO prompt_info (name) VALUES (?)", (name,))
-    return cursor.lastrowid
+    return SqlDB.SqliteDB.execute("INSERT INTO prompt_info (name) VALUES (?)", (name,))
 
 # 查询场景提示词
 def query_prompt_template(prompt_id, point_type, prompt_type):
-    data_list = SqlDB.SqliteDB.execute("SELECT * FROM prompt_rules WHERE prompt_id = ? and point_type = ? and type = ?", (prompt_id,point_type, prompt_type))
-    return data_list.fetchall()
+    return SqlDB.SqliteDB.query_execute_batch("SELECT * FROM prompt_rules WHERE prompt_id = ? and point_type = ? and type = ?", (prompt_id,point_type, prompt_type))
 
 # 保存提示词信息
 def save_prompt_info(req_json):
