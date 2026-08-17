@@ -1,14 +1,17 @@
+from contextlib import closing
+
 from langchain_openai import ChatOpenAI
 
 from sqlite.Sqlite3Utils import query_wait_polish_chapter, query_chapter_by_id, query_before_chapter, \
     query_after_chapter, update_chapter_status, update_chapter_sort, insert_extra_chapter, update_chapter_success_num, \
     count_fail_chapter_num, update_chapter_fail_num, update_chapter_all_num
 from windows.polish.ChapterPolish import role_chapter_polish, relation_chapter_polish, process_chapter_polish, \
-    original_scene_chapter_polish, original_framework_chapter_polish, extra_scene_chapter_plish, polish_chapter_polish
+    original_scene_chapter_polish, original_framework_chapter_polish, extra_scene_chapter_plish, polish_chapter_polish, \
+    extra_framework_chapter_polish
 from windows.project.NovelChapterList import novel_chapter, update_chapter_num
 
 
-def polish(params):
+def polish(params, progress_callback=None):
     """润色小说"""
     self, transmit = params
     # 获取项目ID
@@ -37,11 +40,10 @@ def polish(params):
         row_dict = row_to_dict(chapter)
         # 初始化章节状态
         update_chapter_status(2, row_dict['id'])
-        print(row_dict['status'])
         row_dict['status'] = 2
-        # 刷新页面
-        novel_chapter(self, row_dict['project_id'])
-        update_chapter_num(self, row_dict['project_id'])
+        # 调用进度回调,刷新页面
+        if progress_callback:
+            progress_callback(row_dict['project_id'])
         ## 获取最新章节信息
         row_dict = row_to_dict(query_chapter_by_id(row_dict['id']))
         ## 获取前几章内容
@@ -93,13 +95,13 @@ def polish(params):
                     # 更新章节数量
                     update_chapter_all_num(row_dict['project_id'])
                     # 刷新页面
-                    novel_chapter(self, row_dict['project_id'])
-                    update_chapter_num(self, row_dict['project_id'])
+                    if progress_callback:
+                        progress_callback(chapter['project_id'])
 
         ## 后续流程
         after_chapter_polish(self, row_dict, transmit, model_map, reference_before_text, reference_after_text)
 
-def after_chapter_polish(self, chapter, transmit, model_map, reference_before_text, reference_after_text):
+def after_chapter_polish(progress_callback, chapter, transmit, model_map, reference_before_text, reference_after_text):
     """剩余流程章节处理"""
     # 原文改写-场景分析
     if 400 == chapter['point'] and 4 != chapter['status']:
@@ -115,6 +117,10 @@ def after_chapter_polish(self, chapter, transmit, model_map, reference_before_te
 
     # 番外章节-脉络生成
     if 411 == chapter['point'] and 4 != chapter['status']:
+        extra_framework_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text)
+
+    # 润色章节
+    if 500 == chapter['point'] and 4 != chapter['status']:
         polish_chapter_polish(chapter, transmit, model_map)
 
     if 3 == chapter['status']:
@@ -127,19 +133,15 @@ def after_chapter_polish(self, chapter, transmit, model_map, reference_before_te
         update_chapter_fail_num(fail_num, chapter['project_id'])
 
     # 刷新页面
-    novel_chapter(self, chapter['project_id'])
-    update_chapter_num(self, chapter['project_id'])
+    if progress_callback:
+        progress_callback(chapter['project_id'])
 
 # 通用方法：转为 dict
 def row_to_dict(row):
-    """将各种 row 对象转为普通字典"""
-    if hasattr(row, '_asdict'):  # sqlite3.Row 或 namedtuple
-        return row._asdict()
-    elif hasattr(row, '__dict__'):  # 普通对象
-        return row.__dict__
-    elif isinstance(row, dict):  # 已经是字典
-        return row.copy()
-    else:  # tuple
-        # 如果有 cursor.description，可以获取列名
-        # 这里假设你知道列名
-        return dict(zip(['id', 'status', 'content'], row))
+    """
+    将各种 row 对象转为普通字典
+    """
+    res_items = {}
+    for key in row.keys():
+        res_items[key] = row[key]
+    return res_items

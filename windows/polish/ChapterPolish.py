@@ -1,8 +1,11 @@
+from itertools import permutations
+
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda
 
 from sqlite.Sqlite3Utils import update_chapter_role, update_chapter_relation, update_chapter_status, \
-    update_chapter_process, update_chapter_scene, update_chapter_framework, update_chapter_polish
+    update_chapter_process, update_chapter_scene, update_chapter_framework, update_chapter_polish, query_role_model, \
+    query_role_relation, remove_old_role_model, insert_role_model, remove_old_role_relation, insert_role_relation
 from windows.polish.DynamicPromptTemplate import get_role_prompt_template, get_relation_prompt_template, \
     get_process_prompt_template, get_original_scene_prompt_template, get_original_framework_prompt_template, \
     get_polish_prompt_template, get_extra_scene_prompt_template, get_extra_framework_prompt_template
@@ -37,8 +40,37 @@ def relation_chapter_polish(chapter, transmit, model_map, reference_text):
         model_map.get(transmit['relation_model_id']) |
         StrOutputParser()
     )
-    # todo 查询向量角色信息
-    db_role = "-"
+    # 查询角色信息
+    db_role = {}
+    role_content = json.loads(chapter['role_content'])
+    if role_content:
+        character_list = role_content['character_list']
+        character_list_db = []
+        relation_list_db = []
+        if character_list:
+            role_names = []
+            for chapter_role in character_list:
+                if chapter_role:
+                    character_name = chapter_role.get('character_name')
+                    if character_name:
+                        role_names.append(character_name)
+            # 查询角色信息
+            if chapter.get('project_id') and role_names:
+                role_list = query_role_model(chapter['project_id'], role_names)
+                if role_list:
+                    for role in role_list:
+                        if role and role.get('role_json'):
+                            character_list_db.append(role.get('role_json'))
+            # 关系
+            if chapter.get('project_id') and role_names and len(role_names) > 1:
+                pairs = list(permutations(role_names, 2))
+                for a, b in pairs:
+                    relation_json = query_role_relation(chapter.get('project_id'), a, b)
+                    if relation_json:
+                        relation_list_db.append(relation_json)
+
+        db_role['character_list'] = character_list_db
+        db_role['relationships'] = relation_list_db
     # 查询
     relation = relation_chain.invoke({
         "role_analysis": chapter['role_content'],
@@ -46,7 +78,7 @@ def relation_chapter_polish(chapter, transmit, model_map, reference_text):
         "relation_prompt_user": transmit['relation_user'],
         "reference_text": reference_text,
         "original_text": chapter['old_content'],
-        "db_role_json": db_role
+        "db_role_json": str(db_role)
     })
     # 更新
     update_chapter_relation(str(relation), chapter['id'])
@@ -217,3 +249,35 @@ def polish_chapter_polish(chapter, transmit, model_map):
     chapter['new_len'] = len(str(polish))
     chapter['point'] = 600
     chapter['status'] = 3
+
+    # 更新角色信息
+    relation_content = json.loads(chapter.get("relation_content"))
+    if relation_content:
+        character_list = relation_content["character_list"]
+        if character_list:
+            role_name = []
+            for cha in character_list:
+                name = cha.get("character_name")
+                if name:
+                    role_name.append(name)
+            if role_name and len(role_name) > 0:
+                remove_old_role_model(chapter['project_id'], role_name)
+            for cha in character_list:
+                name = cha.get("character_name")
+                if name:
+                    insert_role_model(chapter['project_id'], name, cha)
+            # 关系
+            if len(role_name) > 1:
+                relation_list = list(permutations(role_name, 2))
+                # 清除关系信息
+                if relation_list:
+                    for a, b in relation_list:
+                        remove_old_role_relation(chapter['project_id'], a, b)
+        # 新增关系
+        relationships = relation_content.get("relationships")
+        if relationships:
+            for relation in relationships:
+                role_a = relation.get("character_a")
+                role_b = relation.get("character_b")
+                if role_a and role_b:
+                    insert_role_relation(chapter['project_id'], role_a, role_b, relation)

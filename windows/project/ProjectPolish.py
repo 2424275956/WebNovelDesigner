@@ -91,9 +91,10 @@ def original_btn_clicked(self):
     if self.chapter_info is None:
         return
     self.text_content.setPlainText("")
-    for line in self.chapter_info['old_content'].split('\\n'):
-        self.text_content.appendPlainText(line)
-    QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
+    if self.chapter_info['old_content']:
+        for line in self.chapter_info['old_content'].split('\\n'):
+            self.text_content.appendPlainText(line)
+        QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
 def update_project_prompt_id(self, text):
     """更新索引"""

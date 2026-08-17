@@ -297,7 +297,8 @@ class ModifyModel(QDialog):
             "time_out": self.time_out_edit.text()
         }
         modify_model_conf(req_json)
-        return self.accept()
+        self.accept()
+        return True
 
     """根据选择的提供商动态显示或隐藏控件"""
     def update_ui_visibility(self, text:str):

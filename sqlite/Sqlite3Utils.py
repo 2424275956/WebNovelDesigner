@@ -43,6 +43,44 @@ def edit_project_extra_framework_model_id(extra_framework_model_id, project_id):
 def edit_project_polish_model_id(polish_model_id, project_id):
     SqlDB.SqliteDB.execute("UPDATE project SET polish_model_id = ? WHERE id = ?", (polish_model_id, project_id))
 
+def query_role_model(project_id, role_names):
+    if not role_names:
+        return  # 如果列表为空，直接返回，避免生成无效的 SQL
+    # 动态生成占位符：'?,?,?'
+    placeholders = ','.join('?' * len(role_names))
+
+    # 拼接正确的 SQL
+    sql = f"SELECT * FROM role_model WHERE project_id = ? AND role_name IN ({placeholders})"
+
+    # 注意：参数必须解包，project_id 和 role_names 中的每个元素都要作为独立参数传入
+    params = [project_id] + role_names
+
+    SqlDB.SqliteDB.query_execute_batch(sql, params)
+
+def query_role_relation(project_id, role_a, role_b):
+    return SqlDB.SqliteDB.query_execute("SELECT relation FROM role_relation WHERE project_id = ? and role_a_name = ? and role_b_name = ?", (project_id, role_a, role_b))
+
+def remove_old_role_model(project_id, role_names):
+    if not role_names:
+        return  # 如果列表为空，直接返回，避免生成无效的 SQL
+    # 动态生成占位符：'?,?,?'
+    placeholders = ','.join('?' * len(role_names))
+    print(type(placeholders))
+    # 注意：参数必须解包，project_id 和 role_names 中的每个元素都要作为独立参数传入
+    params = [project_id] + role_names
+    for p in params:
+        print(type(p))
+    SqlDB.SqliteDB.execute_batch(f"DELETE FROM role_model WHERE project_id = ? and role_name in ({placeholders})", [params])
+
+def insert_role_model(project_id, role_name, role_json):
+    SqlDB.SqliteDB.execute("INSERT INTO role_model (project_id, role_name, role_json) VALUES (?, ?, ?)", (project_id, str(role_name), str(role_json)))
+
+def remove_old_role_relation(project_id, role_a, role_b):
+    SqlDB.SqliteDB.execute("DELETE FROM role_relation WHERE project_id = ? and role_a_name = ? and role_b_name = ?", (project_id, role_a, role_b))
+
+def insert_role_relation(project_id, role_a, role_b, relation):
+    SqlDB.SqliteDB.execute("INSERT INTO role_relation (project_id, role_a_name, role_b_name, relation) VALUES (?, ?, ?, ?)", (project_id, str(role_a), str(role_b), str(relation)))
+
 # 保存新创建的项目信息
 def insert_project_info(project):
     title = project['title']

@@ -1,12 +1,14 @@
 import threading
 import time
 
+from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import QMessageBox
 from openai import OpenAI
 
 from config.GlobalMap import APP_STATE, APP_FUTURE, APP_STOP_EVENT
 from sqlite.Sqlite3Utils import query_project_by_id, query_prompt_info_by_id, query_prompt_template, query_model_by_id
 from windows.polish.NovelPolish import polish
+from windows.project.NovelChapterList import novel_chapter, update_chapter_num
 
 
 def prompt_rules_parse(self, transmit, transmit_key, prompt_id, point_type, prompt_type, title):
@@ -310,7 +312,26 @@ def start(self):
     APP_STOP_EVENT[transmit['project_id']] = threading.Event()
     # 创建新的任务
     params = (self, transmit)
-    future = self.executor.submit(polish, params)
+    self.pending_updates = []  # 存储待处理的更新
+    future = self.executor.submit(polish, params, lambda value: _safe_progress_callback(self, value))
     # 放入全局
     APP_FUTURE[transmit['project_id']] = future
     return True
+
+def _safe_progress_callback(self, value):
+    # 不直接操作 UI，而是将数据存入队列
+    self.pending_updates.append(value)
+    # 触发主线程的更新
+    QTimer.singleShot(0, _process_updates)
+
+def _process_updates(self):
+    """在主线程中处理所有待处理的更新"""
+    while self.pending_updates:
+        value = self.pending_updates.pop(0)
+        # ✅ 安全：在主线程中操作 UI
+        self.update_progress(value)
+
+def update_progress(self, value):
+    """在主线程中执行"""
+    novel_chapter(self, value)
+    update_chapter_num(self, value)
