@@ -6,7 +6,7 @@ from style.StyleSheet import label_style_sheet
 from utils.StatusDot import StatusDot
 
 
-def novel_chapter(self, project_id):
+def novel_chapter(self, project_id, chapter_id=None):
     """
     章节列表
     """
@@ -69,6 +69,9 @@ def novel_chapter(self, project_id):
                 chapter_status = StatusDot("#00FF00", size=8)
             elif 4 == chapter['status']:
                 chapter_status = StatusDot("#FF0000", size=8)
+            if chapter_id:
+                if chapter['id'] == chapter_id:
+                    chapter_status = StatusDot("#FFA500", size=8)
             frame_layout.addWidget(chapter_status)
 
             # 章节名称

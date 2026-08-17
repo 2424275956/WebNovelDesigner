@@ -313,25 +313,27 @@ def start(self):
     # 创建新的任务
     params = (self, transmit)
     self.pending_updates = []  # 存储待处理的更新
-    future = self.executor.submit(polish, params, lambda value: _safe_progress_callback(self, value))
+    future = self.executor.submit(polish, params, lambda project_id, chapter_id: _safe_progress_callback(self, project_id, chapter_id))
     # 放入全局
     APP_FUTURE[transmit['project_id']] = future
     return True
 
-def _safe_progress_callback(self, value):
+def _safe_progress_callback(self, project_id, chapter_id):
     # 不直接操作 UI，而是将数据存入队列
-    self.pending_updates.append(value)
+    self.pending_updates.append({project_id: chapter_id})
     # 触发主线程的更新
     QTimer.singleShot(0, _process_updates)
 
 def _process_updates(self):
     """在主线程中处理所有待处理的更新"""
     while self.pending_updates:
+        time.sleep(10)
         value = self.pending_updates.pop(0)
         # ✅ 安全：在主线程中操作 UI
-        self.update_progress(value)
+        update_progress(self, value)
 
 def update_progress(self, value):
     """在主线程中执行"""
-    novel_chapter(self, value)
-    update_chapter_num(self, value)
+    for k, v in value.items():
+        novel_chapter(self, k)
+        update_chapter_num(self, k)

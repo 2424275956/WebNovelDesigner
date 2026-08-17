@@ -120,6 +120,10 @@ def remove_novel_info(project_id):
     SqlDB.SqliteDB.execute("DELETE FROM chapter WHERE project_id = ?", (project_id,))
     # 删除项目信息
     SqlDB.SqliteDB.execute("DELETE FROM project WHERE id = ?", (project_id,))
+    # 删除角色信息
+    SqlDB.SqliteDB.execute("DELETE FROM role_model WHERE project_id = ?", (project_id,))
+    # 删除关系信息
+    SqlDB.SqliteDB.execute("DELETE FROM role_relation WHERE project_id = ?", (project_id,))
 
 # 获取项目所有章节列表 并根据sort排序
 def query_project_chapter_by_id(project_id):

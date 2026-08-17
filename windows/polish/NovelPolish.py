@@ -1,14 +1,12 @@
-from contextlib import closing
-
 from langchain_openai import ChatOpenAI
 
+from config.GlobalMap import APP_STOP_EVENT
 from sqlite.Sqlite3Utils import query_wait_polish_chapter, query_chapter_by_id, query_before_chapter, \
     query_after_chapter, update_chapter_status, update_chapter_sort, insert_extra_chapter, update_chapter_success_num, \
     count_fail_chapter_num, update_chapter_fail_num, update_chapter_all_num
 from windows.polish.ChapterPolish import role_chapter_polish, relation_chapter_polish, process_chapter_polish, \
     original_scene_chapter_polish, original_framework_chapter_polish, extra_scene_chapter_plish, polish_chapter_polish, \
     extra_framework_chapter_polish
-from windows.project.NovelChapterList import novel_chapter, update_chapter_num
 
 
 def polish(params, progress_callback=None):
@@ -43,7 +41,7 @@ def polish(params, progress_callback=None):
         row_dict['status'] = 2
         # 调用进度回调,刷新页面
         if progress_callback:
-            progress_callback(row_dict['project_id'])
+            progress_callback(row_dict['project_id'], row_dict['id'])
         ## 获取最新章节信息
         row_dict = row_to_dict(query_chapter_by_id(row_dict['id']))
         ## 获取前几章内容
@@ -73,10 +71,14 @@ def polish(params, progress_callback=None):
         ## 角色分析
         if 100 == row_dict['point']:
             role_chapter_polish(row_dict, transmit, model_map, reference_before_text)
+            if APP_STOP_EVENT.get(transmit['project_id']).is_set():
+                return
 
         ## 关系分析
         if 200 == row_dict['point'] and 4 != row_dict['status']:
             relation_chapter_polish(row_dict, transmit, model_map, reference_before_text)
+            if APP_STOP_EVENT.get(transmit['project_id']).is_set():
+                return
 
         ## 流程控制
         if 300 == row_dict['point'] and 4 != row_dict['status']:
@@ -91,33 +93,45 @@ def polish(params, progress_callback=None):
                 ### 获取番外章节信息
                 extra_chapter = query_chapter_by_id(extra_chapter_id)
                 if extra_chapter:
-                    after_chapter_polish(self, extra_chapter, transmit, model_map, reference_before_text, reference_after_text)
+                    after_chapter_polish(progress_callback, extra_chapter, transmit, model_map, reference_before_text, reference_after_text)
                     # 更新章节数量
                     update_chapter_all_num(row_dict['project_id'])
                     # 刷新页面
                     if progress_callback:
-                        progress_callback(chapter['project_id'])
+                        progress_callback(chapter['project_id'], row_dict['id'])
+            if APP_STOP_EVENT.get(transmit['project_id']).is_set():
+                return
 
         ## 后续流程
-        after_chapter_polish(self, row_dict, transmit, model_map, reference_before_text, reference_after_text)
+        after_chapter_polish(progress_callback, row_dict, transmit, model_map, reference_before_text, reference_after_text)
+        if APP_STOP_EVENT.get(transmit['project_id']).is_set():
+            return
 
 def after_chapter_polish(progress_callback, chapter, transmit, model_map, reference_before_text, reference_after_text):
     """剩余流程章节处理"""
     # 原文改写-场景分析
     if 400 == chapter['point'] and 4 != chapter['status']:
         original_scene_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text)
+        if APP_STOP_EVENT.get(transmit['project_id']).is_set():
+            return
 
     # 原文改写-脉络改写
     if 401 == chapter['point'] and 4 != chapter['status']:
         original_framework_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text)
+        if APP_STOP_EVENT.get(transmit['project_id']).is_set():
+            return
 
     # 番外章节-场景分析
     if 410 == chapter['point'] and 4 != chapter['status']:
         extra_scene_chapter_plish(chapter, transmit, model_map, reference_before_text, reference_after_text)
+        if APP_STOP_EVENT.get(transmit['project_id']).is_set():
+            return
 
     # 番外章节-脉络生成
     if 411 == chapter['point'] and 4 != chapter['status']:
         extra_framework_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text)
+        if APP_STOP_EVENT.get(transmit['project_id']).is_set():
+            return
 
     # 润色章节
     if 500 == chapter['point'] and 4 != chapter['status']:
@@ -134,7 +148,7 @@ def after_chapter_polish(progress_callback, chapter, transmit, model_map, refere
 
     # 刷新页面
     if progress_callback:
-        progress_callback(chapter['project_id'])
+        progress_callback(chapter['project_id'], chapter['id'])
 
 # 通用方法：转为 dict
 def row_to_dict(row):
