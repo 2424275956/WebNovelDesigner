@@ -14,7 +14,7 @@ import json
 
 def json_parse(raw_text):
     cleaned_json = re.sub(r'^\s*```(?:json)?\s*', '', raw_text, flags=re.IGNORECASE)
-    cleaned_json = re.sub(r'\s*```\s* $ ', '', cleaned_json)
+    cleaned_json = re.sub(r'\s*```\s*$', '', cleaned_json)
     return cleaned_json
 
 def is_valid_json(json_str):
