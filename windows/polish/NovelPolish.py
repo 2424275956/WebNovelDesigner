@@ -44,10 +44,12 @@ def polish(params, progress_callback=None):
         ## 获取前几章内容
         reference_before_text = ""
         chapter_before_list = query_before_chapter(temp_chapter['project_id'], temp_chapter['sort'], transmit['polish_before_num'])
+        print(chapter_before_list)
         if chapter_before_list:
             for chapter_before in chapter_before_list:
                 if chapter_before['new_content'] is None or len(chapter_before['new_content']) <= 0:
-                    reference_before_text = reference_before_text + chapter_before['old_content']
+                    if chapter_before['old_content']:
+                        reference_before_text = reference_before_text + chapter_before['old_content']
                 else:
                     reference_before_text = reference_before_text + chapter_before['new_content']
         else:
@@ -68,26 +70,35 @@ def polish(params, progress_callback=None):
 
         print(f"后续章节字数：{len(reference_after_text)}")
         ## 角色分析
+        print(10.01)
         temp_chapter100 = query_chapter_by_id(chapter['id'])
+        print(10.02)
         if 100 == chapter['point']:
+            print(10.03)
             role_chapter_polish(temp_chapter100, transmit, model_map, reference_before_text)
             print(f"角色分析-处理完成")
-            if APP_STOP_EVENT.get(transmit['project_id']).is_set():
-                print(f"角色分析-进入STOP-EVENT")
+            stop_event = APP_STOP_EVENT.get(transmit['project_id'])
+            if stop_event and stop_event.is_set():
                 return
 
         ## 关系分析
+        print(10.04)
         temp_chapter200 = query_chapter_by_id(chapter['id'])
+        print(10.05)
         if 200 == temp_chapter200['point'] and 4 != temp_chapter200['status']:
+            print(10.06)
             relation_chapter_polish(temp_chapter200, transmit, model_map, reference_before_text)
             print(f"关系分析-处理完成")
-            if APP_STOP_EVENT.get(transmit['project_id']).is_set():
-                print(f"关系分析-进入STOP-EVENT")
+            stop_event = APP_STOP_EVENT.get(transmit['project_id'])
+            if stop_event and stop_event.is_set():
                 return
 
         ## 流程控制
+        print(10.07)
         temp_chapter300 = query_chapter_by_id(chapter['id'])
+        print(10.08)
         if 300 == temp_chapter300['point'] and 4 != temp_chapter300['status']:
+            print(10.09)
             is_extra = process_chapter_polish(temp_chapter300, transmit, model_map, reference_before_text, reference_after_text)
             print(f"流程控制-处理完成，当前Chapter：{str(chapter)}")
             if is_extra:
@@ -97,68 +108,91 @@ def polish(params, progress_callback=None):
                 update_chapter_sort(chapter_sort, temp_extra['project_id'])
                 ### 新增番外章节
                 extra_chapter_id = insert_extra_chapter(temp_extra, chapter_sort)
+                # 更新章节数量
+                update_chapter_all_num(temp_extra['project_id'])
                 ### 获取番外章节信息
                 extra_chapter = query_chapter_by_id(extra_chapter_id)
                 if extra_chapter:
                     after_chapter_polish(progress_callback, extra_chapter, transmit, model_map, reference_before_text, reference_after_text)
-                    # 更新章节数量
-                    update_chapter_all_num(temp_extra['project_id'])
-            if APP_STOP_EVENT.get(transmit['project_id']).is_set():
-                print(f"流程控制-进入STOP-EVENT")
+            stop_event = APP_STOP_EVENT.get(transmit['project_id'])
+            if stop_event and stop_event.is_set():
                 return
 
         ## 后续流程
         after_chapter_polish(progress_callback, chapter, transmit, model_map, reference_before_text, reference_after_text)
-        if APP_STOP_EVENT.get(transmit['project_id']).is_set():
+        stop_event = APP_STOP_EVENT.get(transmit['project_id'])
+        if stop_event and stop_event.is_set():
             return
 
 def after_chapter_polish(progress_callback, chapter, transmit, model_map, reference_before_text, reference_after_text):
     """剩余流程章节处理"""
     # 原文改写-场景分析
+    print(10.10)
     temp_chapter400 = query_chapter_by_id(chapter['id'])
+    print(10.11)
     if 400 == temp_chapter400['point'] and 4 != temp_chapter400['status']:
+        print(10.12)
         original_scene_chapter_polish(temp_chapter400, transmit, model_map, reference_before_text, reference_after_text)
         print(f"原文改写-场景分析-处理完成")
-        if APP_STOP_EVENT.get(transmit['project_id']).is_set():
+        stop_event = APP_STOP_EVENT.get(transmit['project_id'])
+        if stop_event and stop_event.is_set():
             return
 
     # 原文改写-脉络改写
+    print(10.13)
     temp_chapter401 = query_chapter_by_id(chapter['id'])
+    print(10.14)
     if 401 == temp_chapter401['point'] and 4 != temp_chapter401['status']:
+        print(10.15)
         original_framework_chapter_polish(temp_chapter401, transmit, model_map, reference_before_text, reference_after_text)
         print(f"原文改写-脉络改写-处理完成")
-        if APP_STOP_EVENT.get(transmit['project_id']).is_set():
+        stop_event = APP_STOP_EVENT.get(transmit['project_id'])
+        if stop_event and stop_event.is_set():
             return
 
     # 番外章节-场景分析
+    print(10.16)
     temp_chapter410 = query_chapter_by_id(chapter['id'])
+    print(10.17)
     if 410 == temp_chapter410['point'] and 4 != temp_chapter410['status']:
+        print(10.18)
         extra_scene_chapter_plish(temp_chapter410, transmit, model_map, reference_before_text, reference_after_text)
         print(f"番外章节-场景分析-处理完成")
-        if APP_STOP_EVENT.get(transmit['project_id']).is_set():
+        stop_event = APP_STOP_EVENT.get(transmit['project_id'])
+        if stop_event and stop_event.is_set():
             return
 
     # 番外章节-脉络生成
+    print(10.19)
     temp_chapter411 = query_chapter_by_id(chapter['id'])
+    print(10.20)
     if 411 == temp_chapter411['point'] and 4 != temp_chapter411['status']:
+        print(10.21)
         extra_framework_chapter_polish(temp_chapter411, transmit, model_map, reference_before_text, reference_after_text)
         print(f"番外章节-脉络生成-处理完成")
-        if APP_STOP_EVENT.get(transmit['project_id']).is_set():
+        stop_event = APP_STOP_EVENT.get(transmit['project_id'])
+        if stop_event and stop_event.is_set():
             return
 
     # 润色章节
+    print(10.22)
     temp_chapter500 = query_chapter_by_id(chapter['id'])
+    print(10.23)
     if 500 == temp_chapter500['point'] and 4 != temp_chapter500['status']:
+        print(10.24)
         polish_chapter_polish(temp_chapter500, transmit, model_map)
         print(f"润色章节-处理完成")
 
+    print(10.25)
     temp_chapter600 = query_chapter_by_id(chapter['id'])
+    print(10.26)
     if 3 == temp_chapter600['status']:
         # 更新完成章节数
         update_chapter_success_num(chapter['project_id'])
     elif 4 == temp_chapter600['status']:
         # 获取失败章节
-        fail_num = count_fail_chapter_num(chapter['project_id'])
+        result = count_fail_chapter_num(chapter['project_id'])
+        fail_num = result[0][0] if result else 0
         # 更新失败章节
         update_chapter_fail_num(fail_num, chapter['project_id'])
 

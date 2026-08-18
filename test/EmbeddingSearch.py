@@ -1,4 +1,8 @@
+import json
+
+from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
 
 from sqlite.VectorService import vector_service
 
@@ -8,6 +12,8 @@ text = """
 system = """
 【角色定义】：你是一位资深的内容分析专家、文学评论家和心理学专家。
 【任务目标】：从下述‘原文片段’中总结‘关键信息’，用于片段关键内容召回检索。
+【输出格式】：严格按照下述列表格式生成。
+["关键信息内容总结", "关键信息内容总结"]
 """
 user = """
 【原文片段】
@@ -15,14 +21,26 @@ user = """
 """
 user = user.replace("{original_text}", text)
 # 调用模型进行关键信息召回内容检索
-template = ChatPromptTemplate.from_messages([
-    ("system", system),
-    ("user", user)
-])
-test_chain = (
+# template = ChatPromptTemplate.from_messages([
+#     ("system", system),
+#     ("user", user)
+# ])
+# test_chain = (
+#     template |
+#     ChatOpenAI(model="AITRADER:Huihui-Qwen3.5-0.8B-abliterated-fp16-MLX",
+#                api_key="sk-omlx-mKkDjqQpMTrP010mZIWp1uek",
+#                base_url="http://127.0.0.1:8000/v1") |
+#     StrOutputParser()
+# )
+# vector_chain = test_chain.invoke({})
+#
+# raw_text = vector_chain.content if hasattr(vector_chain, 'content') else str(vector_chain)
+# print(f"raw: {raw_text}")
+# for i in raw_text.split(","):
+# 直接查询核心实体，语义更纯粹
+results = vector_service.search("宁小龄")
+print(results)
 
-)
-
-results = vector_service.search(f"请检索出与下述文本片段相关内容："
-                      f"{text}", k=10)
+# 或者带上具体的检索意图
+results = vector_service.search("宁小龄的背景故事和人物设定", k=3)
 print(results)

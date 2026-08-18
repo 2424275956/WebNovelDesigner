@@ -15,7 +15,7 @@ def get_role_prompt_template(inputs) -> ChatPromptTemplate:
     system_template = str(inputs['role_prompt_system'])
     user_template = str(inputs['role_prompt_user'])
     user_template = user_template + """
-            【输出内容】：严格按照下述JSON格式输出，JSON必须是有效的格式。
+            【输出内容】：必须按照下述JSON格式输出且为有效的格式，禁止输出与JSON格式无关内容。
             {
                 "character_list": [
                     {
@@ -71,7 +71,7 @@ def get_relation_prompt_template(inputs) -> ChatPromptTemplate:
     system_template = str(inputs['relation_prompt_system'])
     user_template = str(inputs['relation_prompt_user'])
     user_template = user_template + """
-            【输出内容】：严格按照下述JSON格式输出，JSON必须是有效的格式，为每个识别出的角色与角色关系创建一份档案。
+            【输出内容】：必须按照下述JSON格式输出且为有效的格式，禁止输出与JSON格式无关内容。为每个识别出的角色与角色关系创建一份档案。
             {
                 "character_list": [
                     {
@@ -142,7 +142,7 @@ def get_process_prompt_template(inputs) -> ChatPromptTemplate:
     system_template = str(inputs['process_prompt_system'])
     user_template = str(inputs['process_prompt_user'])
     user_template = user_template + """
-            【输出格式要求】：请使用清晰的Json排版，JSON必须是有效的格式，语言风格保持专业、客观、犀利且富有洞察力。多使用文学评论和心理学的专业术语进行支撑，但解释要通俗易懂。
+            【输出格式要求】：必须使用下述JSON模版版且为有效的格式，禁止输出与JSON格式无关内容。语言风格保持专业、客观、犀利且富有洞察力。多使用文学评论和心理学的专业术语进行支撑，但解释要通俗易懂。
             {
                 "extra": "是否可以插入番外(True/False)",
                 "optional_roles": [
@@ -182,8 +182,8 @@ def get_original_scene_prompt_template(inputs) -> ChatPromptTemplate:
     system_template = str(inputs['original_scene_prompt_system'])
     user_template = str(inputs['original_scene_prompt_user'])
     user_template = user_template + """
-            【输出格式】：严格按照JSON格式生成,根据匹配度排序选出最匹配的3个场景。
-             ["场景名称"]
+            【输出格式】：必须按照下述数据格式生成为有效的数组格式输出，禁止携带无关内容,根据匹配度排序选出最匹配的3个场景。
+             ["场景名称","场景名称"]
     """
     relation_analysis = (inputs['relation_analysis'])
     reference_before_text = (inputs['reference_before_text'])
@@ -217,7 +217,7 @@ def get_original_framework_prompt_template(inputs) -> ChatPromptTemplate:
     system_template = str(inputs['original_framework_prompt_system'])
     user_template = str(inputs['original_framework_prompt_user'])
     user_template = user_template + """
-            【输出内容】:
+            【输出内容】:只输出脉络内容，禁止携带与内容无关输出
             [脉络改写完成后的内容]
     """
     framework_analysis = (inputs['framework_analysis'])
@@ -252,7 +252,7 @@ def get_polish_prompt_template(inputs) -> ChatPromptTemplate:
     system_template = str(inputs['polish_prompt_system'])
     user_template = str(inputs['polish_prompt_user'])
     user_template = user_template + """
-            【输出内容】:
+            【输出内容】: 只输出润色后的内容，禁止携带无关内容。
             "润色完成后的内容"
     """
     original_framework_text = (inputs['original_framework_text'])
@@ -278,8 +278,8 @@ def get_extra_scene_prompt_template(inputs) -> ChatPromptTemplate:
     system_template = str(inputs['extra_scene_prompt_system'])
     user_template = str(inputs['extra_scene_prompt_user'])
     user_template = user_template + """
-            【输出格式】：严格按照JSON格式生成,根据匹配度排序选出最匹配的3个场景。
-             ["场景名称"]
+            【输出格式】：严格按照下述格式输出数组数据，禁止携带无关内容,根据匹配度排序选出最匹配的3个场景。
+             ["场景名称","场景名称"]
     """
     reference_before_text = (inputs['reference_before_text'])
     original_text = (inputs['original_text'])
@@ -316,7 +316,7 @@ def get_extra_framework_prompt_template(inputs) -> ChatPromptTemplate:
     system_template = str(inputs['extra_framework_prompt_system'])
     user_template = str(inputs['extra_framework_prompt_user'])
     user_template = user_template + """
-            【输出内容】:
+            【输出内容】: 只输出脉络内容，禁止携带与内容无关输出
             [脉络生成的内容]
     """
     framework_analysis = (inputs['framework_analysis'])
