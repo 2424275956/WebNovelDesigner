@@ -12,8 +12,10 @@ from windows.polish.DynamicPromptTemplate import get_role_prompt_template, get_r
     get_polish_prompt_template, get_extra_scene_prompt_template, get_extra_framework_prompt_template
 import json
 
-def json_parse(chain):
-    return str(chain).replace("```json", "").replace("```", "")
+def json_parse(raw_text):
+    cleaned_json = re.sub(r'^\s*```(?:json)?\s*', '', raw_text, flags=re.IGNORECASE)
+    cleaned_json = re.sub(r'\s*```\s* $ ', '', cleaned_json)
+    return cleaned_json
 
 def is_valid_json(json_str):
     """
@@ -74,15 +76,16 @@ def role_chapter_polish(chapter, transmit, model_map, reference_text, for_num=1)
         "role_prompt_user": transmit['role_user']
     })
     # 格式校验
-    if not is_valid_json(str(role)):
+    raw_text = role.content if hasattr(role, 'content') else str(role)
+    if not is_valid_json(raw_text):
         print(f"角色分析-json格式校验失败：{for_num}")
         if 3 == for_num:
             update_chapter_status(4, chapter['id'])
             return
         else:
             role_chapter_polish(chapter, transmit, model_map, reference_text, for_num + 1)
-    print(f"角色分析-推理结果完成：{str(role)}")
-    role_str = json_parse(role)
+    print(f"角色分析-推理结果完成：{str(raw_text)}")
+    role_str = json_parse(raw_text)
     print(f"角色分析-推理结果转换完成")
     # 章节数据更新
     update_chapter_role(role_str, chapter['id'])
@@ -113,17 +116,17 @@ def relation_chapter_polish(chapter, transmit, model_map, reference_text, for_nu
                     if character_name:
                         role_names.append(character_name)
             # 查询角色信息
-            if chapter.get('project_id') and role_names:
+            if chapter['project_id'] and role_names:
                 role_list = query_role_model(chapter['project_id'], role_names)
                 if role_list:
                     for role in role_list:
                         if role and role.get('role_json'):
                             character_list_db.append(role.get('role_json'))
             # 关系
-            if chapter.get('project_id') and role_names and len(role_names) > 1:
+            if chapter['project_id'] and role_names and len(role_names) > 1:
                 pairs = list(permutations(role_names, 2))
                 for a, b in pairs:
-                    relation_json = query_role_relation(chapter.get('project_id'), a, b)
+                    relation_json = query_role_relation(chapter['project_id'], a, b)
                     if relation_json:
                         relation_list_db.append(relation_json)
 
@@ -140,15 +143,16 @@ def relation_chapter_polish(chapter, transmit, model_map, reference_text, for_nu
         "db_role_json": str(db_role)
     })
     # 格式校验
-    if not is_valid_json(str(relation)):
+    raw_text = relation.content if hasattr(relation, 'content') else str(relation)
+    if not is_valid_json(raw_text):
         print(f"关系分析-json格式校验失败：{for_num}")
         if 3 == for_num:
             update_chapter_status(4, chapter['id'])
             return
         else:
             relation_chapter_polish(chapter, transmit, model_map, reference_text, for_num + 1)
-    print(f"关系分析-推理结果完成：{str(relation)}")
-    relation_str = json_parse(relation)
+    print(f"关系分析-推理结果完成：{raw_text}")
+    relation_str = json_parse(raw_text)
     print(f"关系分析-推理结果转换完成")
     # 更新
     update_chapter_relation(relation_str, chapter['id'])
@@ -172,28 +176,29 @@ def process_chapter_polish(chapter, transmit, model_map, reference_before_text, 
         "reference_after_text": reference_after_text
     })
     # 格式校验
-    if not is_valid_json(str(process)):
+    raw_text = process.content if hasattr(process, 'content') else str(process)
+    if not is_valid_json(raw_text):
         print(f"流程控制-json格式校验失败：{for_num}")
         if 3 == for_num:
             update_chapter_status(4, chapter['id'])
             return False
         else:
             process_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num + 1)
-    print(f"流程控制-推理结果完成：{str(process)}")
+    print(f"流程控制-推理结果完成：{raw_text}")
     # 判断
-    if process is None:
+    if raw_text is None:
         update_chapter_status(4, chapter['id'])
         return False
     # 更新
-    process_obj = json.loads(process)
+    process_str = json_parse(raw_text)
+    print(f"流程控制-推理结果转换完成")
+    process_obj = json.loads(process_str)
     extra = process_obj['extra']
     # 判断
     if extra is None:
         update_chapter_status(4, chapter['id'])
         return False
     # 更新文本
-    process_str = json_parse(process)
-    print(f"流程控制-推理结果转换完成")
     update_chapter_process(process_str, 400, chapter['id'])
     print(f"流程控制-章节信息更新完成")
     # 状态判断
@@ -225,15 +230,16 @@ def original_scene_chapter_polish(chapter, transmit, model_map, reference_before
         "scene_list": scene_identify_list
     })
     # 格式校验
-    if not is_valid_json(str(original_scene)):
+    raw_text = original_scene.content if hasattr(original_scene, 'content') else str(original_scene)
+    if not is_valid_json(raw_text):
         print(f"原文改写-场景分析-json格式校验失败：{for_num}")
         if 3 == for_num:
             update_chapter_status(4, chapter['id'])
             return False
         else:
             original_scene_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num + 1)
-    print(f"原文改写-场景分析-推理结果完成：{str(original_scene)}")
-    scene_str = json_parse(original_scene)
+    print(f"原文改写-场景分析-推理结果完成：{raw_text}")
+    scene_str = json_parse(raw_text)
     print(f"原文改写-场景分析-推理结果转换完成")
     # 更新状态
     update_chapter_scene(scene_str, 401, chapter['id'])
@@ -267,7 +273,8 @@ def original_framework_chapter_polish(chapter, transmit, model_map, reference_be
             "reference_after_text": reference_after_text
     })
     # 英文含量校验
-    is_valid, english_ratio = is_valid_chinese_text(str(original_framework))
+    raw_text = original_framework.content if hasattr(original_framework, 'content') else str(original_framework)
+    is_valid, english_ratio = is_valid_chinese_text(raw_text)
     if not is_valid:
         print(f"原文改写-脉络改写-英文占比校验失败：{for_num}, 英文占比：{english_ratio * 100}%")
         if 3 == for_num:
@@ -275,9 +282,9 @@ def original_framework_chapter_polish(chapter, transmit, model_map, reference_be
             return
         else:
             original_framework_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num + 1)
-    print(f"原文改写-脉络改写-推理结果完成：{str(original_framework)}")
+    print(f"原文改写-脉络改写-推理结果完成：{raw_text}")
     # 更新状态
-    framework_str = json_parse(original_framework)
+    framework_str = json_parse(raw_text)
     print(f"原文改写-脉络改写-推理结果转换完成")
     update_chapter_framework(framework_str, 500, chapter['id'])
     print(f"原文改写-脉络改写-章节信息更新完成")
@@ -302,16 +309,17 @@ def extra_scene_chapter_plish(chapter, transmit, model_map, reference_before_tex
             "scene_list": str(transmit['extra_scene_identify'])
     })
     # 格式校验
-    if not is_valid_json(str(extra_scene)):
+    raw_text = extra_scene.content if hasattr(extra_scene, 'content') else str(extra_scene)
+    if not is_valid_json(raw_text):
         print(f"番外章节-场景分析-json格式校验失败：{for_num}")
         if 3 == for_num:
             update_chapter_status(4, chapter['id'])
             return
         else:
             extra_scene_chapter_plish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num + 1)
-    print(f"番外章节-场景分析-推理结果完成：{str(extra_scene)}")
+    print(f"番外章节-场景分析-推理结果完成：{raw_text}")
     # 更新信息
-    scene_str = json_parse(extra_scene)
+    scene_str = json_parse(raw_text)
     print(f"番外章节-场景分析-推理结果转换完成")
     update_chapter_scene(scene_str, 411, chapter['id'])
     print(f"番外章节-场景分析-章节信息更新完成")
@@ -344,7 +352,8 @@ def extra_framework_chapter_polish(chapter, transmit, model_map, reference_befor
         "create_framework_text": chapter['process_content']
     })
     # 英文含量校验
-    is_valid, english_ratio = is_valid_chinese_text(str(extra_framework))
+    raw_text = extra_framework.content if hasattr(extra_framework, 'content') else str(extra_framework)
+    is_valid, english_ratio = is_valid_chinese_text(raw_text)
     if not is_valid:
         print(f"番外章节-脉络生成-英文占比校验失败：{for_num}, 英文占比：{english_ratio * 100}%")
         if 3 == for_num:
@@ -352,9 +361,9 @@ def extra_framework_chapter_polish(chapter, transmit, model_map, reference_befor
             return
         else:
             extra_framework_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num + 1)
-    print(f"番外章节-脉络生成-推理结果完成：{str(extra_framework)}")
+    print(f"番外章节-脉络生成-推理结果完成：{raw_text}")
     # 更新状态
-    framework_str = json_parse(extra_framework)
+    framework_str = json_parse(raw_text)
     print(f"番外章节-脉络生成-推理结果转换完成")
     update_chapter_framework(framework_str, 500, chapter['id'])
     print(f"番外章节-脉络生成-章节信息更新完成")
@@ -374,7 +383,8 @@ def polish_chapter_polish(chapter, transmit, model_map, for_num=1):
                 "original_framework_text": chapter['framework_content']
     })
     # 英文含量校验
-    is_valid, english_ratio = is_valid_chinese_text(str(polish))
+    raw_text = polish.content if hasattr(polish, 'content') else str(polish)
+    is_valid, english_ratio = is_valid_chinese_text(raw_text)
     if not is_valid:
         print(f"结果润色-英文占比校验失败：{for_num}, 英文占比：{english_ratio * 100}%")
         if 3 == for_num:
@@ -382,13 +392,13 @@ def polish_chapter_polish(chapter, transmit, model_map, for_num=1):
             return
         else:
             polish_chapter_polish(chapter, transmit, model_map, for_num + 1)
-    print(f"结果润色-推理结果完成：{str(polish)}")
+    print(f"结果润色-推理结果完成：{raw_text}")
     # 更新状态
-    update_chapter_polish(str(polish), chapter['id'])
+    update_chapter_polish(raw_text, chapter['id'])
     print(f"结果润色-章节信息更新完成")
 
     # 更新角色信息
-    relation_content = json.loads(chapter.get("relation_content"))
+    relation_content = json.loads(chapter["relation_content"])
     print(f"结果润色-角色信息：{relation_content}")
     if relation_content:
         character_list = relation_content["character_list"]
