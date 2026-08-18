@@ -9,9 +9,6 @@ def special_chars_parse(text):
     text = re.sub(r'(?<!})}(?!})', '}}', text)
     return text
 
-def json_parse(chain):
-    return str(chain).replace("```json", "").replace("```", "")
-
 def get_role_prompt_template(inputs) -> ChatPromptTemplate:
     """获取用户分析提示词模版"""
     # 系统提示词

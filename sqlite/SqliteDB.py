@@ -1,7 +1,14 @@
-import sqlite3
 import os
+import sys
 from contextlib import closing
 from pathlib import Path
+import sqlite_vss
+try:
+    import pysqlite3
+    sys.modules['sqlite3'] = pysqlite3
+except ImportError:
+    pass
+import sqlite3
 
 class SqliteDB:
 
@@ -15,6 +22,18 @@ class SqliteDB:
         Path(db_path).parent.mkdir(parents=True, exist_ok=True)  # 创建数据库文件所需的目录结构，如果已存在则不创建
         _conn = sqlite3.connect(db_path, timeout=10.0)  # 连接数据库，设置超时时间为10秒
         _conn.row_factory = sqlite3.Row
+
+        # 开启向量数据库扩展
+        # 开启扩展加载权限
+        _conn.enable_load_extension(True)
+        ## 1. 首先加载底层的 vector0 扩展
+        _conn.load_extension(sqlite_vss.vector_loadable_path())
+        ## 2. 然后再加载上层的 vss0 扩展
+        _conn.load_extension(sqlite_vss.vss_loadable_path())
+        ## 加载 sqlite-vss 扩展
+        _conn.load_extension(sqlite_vss.vss_loadable_path())
+        ## 关闭扩展加载权限（出于安全考虑）
+        _conn.enable_load_extension(False)
 
         # 表结构校验  # 单行注释：对数据库表结构进行校验
         cls._db_table_init(db_exists, _conn)

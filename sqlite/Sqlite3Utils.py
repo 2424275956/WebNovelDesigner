@@ -65,11 +65,8 @@ def remove_old_role_model(project_id, role_names):
         return  # 如果列表为空，直接返回，避免生成无效的 SQL
     # 动态生成占位符：'?,?,?'
     placeholders = ','.join('?' * len(role_names))
-    print(type(placeholders))
     # 注意：参数必须解包，project_id 和 role_names 中的每个元素都要作为独立参数传入
     params = [project_id] + role_names
-    for p in params:
-        print(type(p))
     SqlDB.SqliteDB.execute_batch(f"DELETE FROM role_model WHERE project_id = ? and role_name in ({placeholders})", [params])
 
 def insert_role_model(project_id, role_name, role_json):
