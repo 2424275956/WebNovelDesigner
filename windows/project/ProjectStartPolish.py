@@ -55,7 +55,7 @@ def model_connection_check(self, model_id, title, model_map):
     if model['temperature'] is None:
         QMessageBox.warning(self, "", f"项目{title}模型温度(Temperature)为空")
         return False
-    if model['temperature'] <= 0 or model['temperature'] > 2.0:
+    if model['temperature'] < 0 or model['temperature'] > 2.0:
         QMessageBox.warning(self, "", f"项目{title}模型温度(Temperature)范围应0.1~2.0")
         return False
     if model['top_p'] is None:

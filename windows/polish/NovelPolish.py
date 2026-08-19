@@ -102,20 +102,32 @@ def polish(params, progress_callback=None):
             is_extra = process_chapter_polish(temp_chapter300, transmit, model_map, reference_before_text, reference_after_text)
             print(f"流程控制-处理完成，当前Chapter：{str(chapter)}")
             if is_extra:
+                print(13.10)
                 temp_extra = query_chapter_by_id(chapter['id'])
+                print(13.11)
                 chapter_sort = temp_extra['sort']
+                print(13.12)
                 ### 更新全部章节序号
                 update_chapter_sort(chapter_sort, temp_extra['project_id'])
+                print(13.13)
                 ### 新增番外章节
                 extra_chapter_id = insert_extra_chapter(temp_extra, chapter_sort)
+                print(13.14)
                 # 更新章节数量
                 update_chapter_all_num(temp_extra['project_id'])
+                print(13.15)
                 ### 获取番外章节信息
                 extra_chapter = query_chapter_by_id(extra_chapter_id)
+                print(13.16)
                 if extra_chapter:
+                    print(13.17)
                     after_chapter_polish(progress_callback, extra_chapter, transmit, model_map, reference_before_text, reference_after_text)
+                    print(13.18)
+            print(13.19)
             stop_event = APP_STOP_EVENT.get(transmit['project_id'])
+            print(13.20)
             if stop_event and stop_event.is_set():
+                print(13.21)
                 return
 
         ## 后续流程
@@ -188,13 +200,19 @@ def after_chapter_polish(progress_callback, chapter, transmit, model_map, refere
     print(10.26)
     if 3 == temp_chapter600['status']:
         # 更新完成章节数
+        print(10.27)
         update_chapter_success_num(chapter['project_id'])
+        print(10.28)
     elif 4 == temp_chapter600['status']:
+        print(10.29)
         # 获取失败章节
         result = count_fail_chapter_num(chapter['project_id'])
-        fail_num = result[0][0] if result else 0
+        print(10.30)
+        fail_num = result[0] if result else 0
+        print(10.31)
         # 更新失败章节
         update_chapter_fail_num(fail_num, chapter['project_id'])
+        print(10.32)
 
 
 # 通用方法：转为 dict

@@ -1,8 +1,10 @@
 import re
 from itertools import permutations
+from typing import List, Optional
 
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda
+from pydantic import Field, BaseModel, ConfigDict
 
 from sqlite.Sqlite3Utils import update_chapter_role, update_chapter_relation, update_chapter_status, \
     update_chapter_process, update_chapter_scene, update_chapter_framework, update_chapter_polish, query_role_model, \
@@ -68,6 +70,37 @@ def is_valid_chinese_text(text: str, max_english_ratio: float = 0.3) -> tuple[bo
     is_valid = english_ratio <= max_english_ratio
     return is_valid, english_ratio
 
+class CharacterCoreTraitLabel(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True,
+                              extra='ignore' )
+    trait_label: str = Field(description="性格标签（如：温柔）")
+    evidence: str = Field(description="原文中的具体支撑证据（简述关键情节）")
+    motivation: str = Field(description="该行为背后的动机分析")
+
+class CharacterInfoResult(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True,
+                              extra='ignore' )
+    character_name: str = Field(description="角色的标准名称")
+    alias_name: str = Field(description="角色的别称，多数人对其的称呼")
+    identify: str = Field(description="角色的身份，如皇帝、公主、大侠、圣女等")
+    sex: str = Field(description="角色的性别，如男性、女性、男女同体等")
+    type: str = Field(description="角色的类别，如人类、妖兽、精灵等")
+    size: str = Field(description="角色的大概身高，如1米5、2米等")
+    colour: str = Field(description="角色的肤色，如苍白、咖啡色、白色等")
+    chest: Optional[str] = Field(default=None, description="女性角色的胸部特征,如：半球型（圆型）、水滴型（泪珠型）、圆盘型、圆锥型（鸟嘴型）、下垂型（松弛型/钟型）、扁平型（苗条型/平胸型）、外扩型（东西型）")
+    chest_colour: Optional[str] = Field(default=None, description="女性角色的乳晕颜色（粉红、褐红、深红发黑）")
+    chest_size: Optional[str] = Field(default=None, description="女性角色的胸部大小（精致小巧、馒头大小、硕大丰盈等）")
+    pubes: Optional[str] = Field(default=None, description="女性角色的阴部特征（馒头型、一线天型、蝴蝶型等）")
+    pubes_hair: Optional[str] = Field(default=None, description="女性角色的阴部毛发特征（毛发稀疏、毛发浓密、白虎等）")
+    pubes_colour: Optional[str] = Field(default=None, description="女性角色的阴部颜色（粉色、褐色、深褐色、黑色）")
+    penis: Optional[str] = Field(default=None, description="男性角色的阴茎特征（如蘑菇头型、子弹头型、平头型）")
+    overall_summary: str = Field(description="对该角色性格的综合一句话总结")
+    core_traits: List[CharacterCoreTraitLabel] = Field(description="角色性格特征")
+
+class RolePromptResult(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+    character_list: List[CharacterInfoResult] = Field(description="每个角色的建模信息")
+
 def role_chapter_polish(chapter, transmit, model_map, reference_text, for_num=1):
     """角色分析处理"""
     # 角色分析
@@ -75,8 +108,7 @@ def role_chapter_polish(chapter, transmit, model_map, reference_text, for_num=1)
         print("角色分析-LangChain链构建")
         role_chain = (
                 RunnableLambda(get_role_prompt_template) |
-                model_map.get(transmit['role_model_id']) |
-                StrOutputParser()
+                model_map.get(transmit['role_model_id']).with_structured_output(RolePromptResult)
         )
         print(f"角色分析-LangChain链Invoke数据填充")
         role = role_chain.invoke({
@@ -85,32 +117,32 @@ def role_chapter_polish(chapter, transmit, model_map, reference_text, for_num=1)
             "role_prompt_system": transmit['role_system'],
             "role_prompt_user": transmit['role_user']
         })
-        # 格式校验
-        raw_text = role.content if hasattr(role, 'content') else str(role)
-        print(1.01)
-        role_str = json_parse(raw_text)
-        print(f"角色分析-推理结果转换完成")
-        if not is_valid_json(role_str):
-            print(f"角色分析-json格式校验失败：{for_num}")
-            if 3 == for_num:
-                print(1.02)
-                update_chapter_status(4, chapter['id'])
-                return
-            else:
-                print(1.03)
-                role_chapter_polish(chapter, transmit, model_map, reference_text, for_num + 1)
-        print(f"角色分析-推理结果完成：{str(role_str)}")
+        print(str(role))
+        print(101)
+        role_data = RolePromptResult.model_validate(role)
+        print(str(role_data))
         # 章节数据更新
-        update_chapter_role(role_str, chapter['id'])
+        update_chapter_role(role_data.model_dump_json(), chapter['id'])
         print(f"角色分析-章节信息更新完成")
     except Exception as e:
         print(e)
         if 3 == for_num:
             update_chapter_status(4, chapter['id'])
-            return
         else:
             role_chapter_polish(chapter, transmit, model_map, reference_text, for_num + 1)
+class RelationshipsResult(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True,
+                              extra='ignore' )
+    character_a: str = Field(description="角色A的标准名称")
+    character_b: str = Field(description="角色B的标准名称")
+    relation_label: str = Field(description="关系标签（如：宿敌、好友、伴侣、师徒、父女等）")
+    interaction_analysis: str = Field(description="基于性格和动机的互动分析（简述为什么他们会形成这种关系）")
+    evidence: str = Field(description="原文中的关键情节支撑")
+    overall_relation_summary: str = Field(description="对角色关系综合一句话总结")
 
+class RelationPromptResult(BaseModel):
+    character_list: List[CharacterInfoResult] = Field(description="每个角色的建模信息")
+    relationships: List[RelationshipsResult] = Field(description="角色与角色之间的关系信息")
 
 def relation_chapter_polish(chapter, transmit, model_map, reference_text, for_num=1):
     """关系分析处理"""
@@ -119,17 +151,16 @@ def relation_chapter_polish(chapter, transmit, model_map, reference_text, for_nu
         print("关系分析-LangChain链构建")
         relation_chain = (
             RunnableLambda(get_relation_prompt_template) |
-            model_map.get(transmit['relation_model_id']) |
-            StrOutputParser()
+            model_map.get(transmit['relation_model_id']).with_structured_output(RelationPromptResult)
         )
         # 查询角色信息
         db_role = {}
         print(2.01)
-        role_content = json.loads(chapter['role_content'])
-        print(f"关系分析-角色信息查询: {role_content}")
-        if role_content:
+        role_data = RolePromptResult.model_validate_json(chapter['role_content'])
+        print(f"关系分析-角色信息查询: {role_data}")
+        if role_data:
             print(2.02)
-            character_list = role_content['character_list']
+            character_list = role_data.character_list
             character_list_db = []
             relation_list_db = []
             if character_list:
@@ -139,7 +170,7 @@ def relation_chapter_polish(chapter, transmit, model_map, reference_text, for_nu
                     print(2.04)
                     if chapter_role:
                         print(2.05)
-                        character_name = chapter_role.get('character_name')
+                        character_name = chapter_role.character_name
                         print(2.06)
                         if character_name:
                             print(2.07)
@@ -186,29 +217,25 @@ def relation_chapter_polish(chapter, transmit, model_map, reference_text, for_nu
             "db_role_json": str(db_role)
         })
         print(2.22)
-        # 格式校验
-        raw_text = relation.content if hasattr(relation, 'content') else str(relation)
-        print(2.23)
-        relation_str = json_parse(raw_text)
-        print(f"关系分析-推理结果转换完成")
-        if not is_valid_json(relation_str):
-            print(f"关系分析-json格式校验失败：{for_num}")
-            if 3 == for_num:
-                update_chapter_status(4, chapter['id'])
-                return
-            else:
-                relation_chapter_polish(chapter, transmit, model_map, reference_text, for_num + 1)
+        relation_data = RelationPromptResult.model_validate(relation)
+        print(relation_data)
         # 更新
-        update_chapter_relation(relation_str, chapter['id'])
+        update_chapter_relation(relation_data.model_dump_json(), chapter['id'])
         print(f"关系分析-章节信息更新完成")
     except Exception as e:
         print(e)
         if 3 == for_num:
             update_chapter_status(4, chapter['id'])
-            return
         else:
             relation_chapter_polish(chapter, transmit, model_map, reference_text, for_num + 1)
 
+class RoleOptionalResult(BaseModel):
+    role_name: str = Field(description="角色的标准名称")
+    role_action: str = Field(description="角色的动作行为，如前往某个地点、会到房间等")
+
+class ProcessPromptResult(BaseModel):
+    extra: str = Field(description="是否可以插入番外(True/False)")
+    optional_roles: List[RoleOptionalResult] = Field(description="可以选择的角色")
 
 def process_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num=1):
     try:
@@ -216,8 +243,7 @@ def process_chapter_polish(chapter, transmit, model_map, reference_before_text, 
         print("流程控制-LangChain链构建")
         process_chain = (
             RunnableLambda(get_process_prompt_template) |
-            model_map.get(transmit['process_model_id']) |
-            StrOutputParser()
+            model_map.get(transmit['process_model_id']).with_structured_output(ProcessPromptResult)
         )
         print(f"流程控制-LangChain链Invoke数据填充")
         process = process_chain.invoke({
@@ -229,34 +255,21 @@ def process_chapter_polish(chapter, transmit, model_map, reference_before_text, 
             "reference_after_text": reference_after_text
         })
         print(123)
-        # 格式校验
-        raw_text = process.content if hasattr(process, 'content') else str(process)
-        print(124)
-        process_str = json_parse(raw_text)
-        print(f"流程控制-推理结果转换完成")
-        if not is_valid_json(process_str):
-            print(f"流程控制-json格式校验失败：{for_num}")
-            if 3 == for_num:
-                update_chapter_status(4, chapter['id'])
-                return False
-            else:
-                process_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num + 1)
-        print(f"流程控制-推理结果完成：{process_str}")
+        process_data = ProcessPromptResult.model_validate(process)
         # 判断
-        if process_str is None:
+        if process_data is None:
             update_chapter_status(4, chapter['id'])
             return False
         # 更新
         print(3.01)
-        process_obj = json.loads(process_str)
         print(3.02)
-        extra = process_obj['extra']
+        extra = process_data.extra
         # 判断
         if extra is None:
             update_chapter_status(4, chapter['id'])
             return False
         # 更新文本
-        update_chapter_process(process_str, 400, chapter['id'])
+        update_chapter_process(process_data.model_dump_json(), 400, chapter['id'])
         print(f"流程控制-章节信息更新完成")
         # 状态判断
         if "true" in str(extra).lower():
@@ -272,7 +285,7 @@ def process_chapter_polish(chapter, transmit, model_map, reference_before_text, 
             update_chapter_status(4, chapter['id'])
             return False
         else:
-            process_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num + 1)
+            return process_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num + 1)
 
 def original_scene_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num=1):
     try:
@@ -307,7 +320,7 @@ def original_scene_chapter_polish(chapter, transmit, model_map, reference_before
                 update_chapter_status(4, chapter['id'])
                 return False
             else:
-                original_scene_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num + 1)
+                return original_scene_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num + 1)
         print(f"原文改写-场景分析-推理结果完成：{scene_str}")
         # 更新状态
         update_chapter_scene(scene_str, 401, chapter['id'])
@@ -319,7 +332,7 @@ def original_scene_chapter_polish(chapter, transmit, model_map, reference_before
             update_chapter_status(4, chapter['id'])
             return False
         else:
-            original_scene_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num + 1)
+            return original_scene_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num + 1)
 
 def original_framework_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num=1):
     try:
@@ -366,18 +379,18 @@ def original_framework_chapter_polish(chapter, transmit, model_map, reference_be
             print(f"原文改写-脉络改写-英文占比校验失败：{for_num}, 英文占比：{english_ratio * 100}%")
             if 3 == for_num:
                 update_chapter_status(4, chapter['id'])
-                return
             else:
                 original_framework_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num + 1)
+            return
         print(f"原文改写-脉络改写-推理结果完成：{framework_str}")
         # 长度判断
-        if len(framework_str) < 1500:
+        if len(framework_str) < 3500:
             print(f"原文改写-脉络改写-长度低于阈值")
             if 3 == for_num:
                 update_chapter_status(4, chapter['id'])
-                return
             else:
                 original_framework_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num + 1)
+            return
         # 更新状态
         update_chapter_framework(framework_str, 500, chapter['id'])
         print(f"原文改写-脉络改写-章节信息更新完成")
@@ -385,7 +398,6 @@ def original_framework_chapter_polish(chapter, transmit, model_map, reference_be
         print(e)
         if 3 == for_num:
             update_chapter_status(4, chapter['id'])
-            return
         else:
             original_framework_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num + 1)
 
@@ -419,9 +431,9 @@ def extra_scene_chapter_plish(chapter, transmit, model_map, reference_before_tex
             print(f"番外章节-场景分析-json格式校验失败：{for_num}")
             if 3 == for_num:
                 update_chapter_status(4, chapter['id'])
-                return
             else:
                 extra_scene_chapter_plish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num + 1)
+            return
         print(f"番外章节-场景分析-推理结果完成：{scene_str}")
         # 更新信息
         update_chapter_scene(scene_str, 411, chapter['id'])
@@ -430,7 +442,6 @@ def extra_scene_chapter_plish(chapter, transmit, model_map, reference_before_tex
         print(e)
         if 3 == for_num:
             update_chapter_status(4, chapter['id'])
-            return
         else:
             extra_scene_chapter_plish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num + 1)
 
@@ -473,18 +484,18 @@ def extra_framework_chapter_polish(chapter, transmit, model_map, reference_befor
             print(f"番外章节-脉络生成-英文占比校验失败：{for_num}, 英文占比：{english_ratio * 100}%")
             if 3 == for_num:
                 update_chapter_status(4, chapter['id'])
-                return
             else:
                 extra_framework_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num + 1)
+            return
         print(f"番外章节-脉络生成-推理结果完成：{framework_str}")
         # 长度判断
-        if len(framework_str) < 1500:
+        if len(framework_str) < 3500:
             print(f"番外章节-脉络生成-长度低于阈值")
             if 3 == for_num:
                 update_chapter_status(4, chapter['id'])
-                return
             else:
                 extra_framework_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num + 1)
+            return
         # 更新状态
         update_chapter_framework(framework_str, 500, chapter['id'])
         print(f"番外章节-脉络生成-章节信息更新完成")
@@ -492,7 +503,6 @@ def extra_framework_chapter_polish(chapter, transmit, model_map, reference_befor
         print(e)
         if 3 == for_num:
             update_chapter_status(4, chapter['id'])
-            return
         else:
             extra_framework_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num + 1)
 
@@ -522,37 +532,37 @@ def polish_chapter_polish(chapter, transmit, model_map, for_num=1):
             print(f"结果润色-英文占比校验失败：{for_num}, 英文占比：{english_ratio * 100}%")
             if 3 == for_num:
                 update_chapter_status(4, chapter['id'])
-                return
             else:
                 polish_chapter_polish(chapter, transmit, model_map, for_num + 1)
+            return
         print(f"结果润色-推理结果完成：{raw_text}")
         # 长度判断
-        if len(raw_text) < 1500:
+        if len(raw_text) < 3500:
             print(f"结果润色-长度低于阈值")
             if 3 == for_num:
                 update_chapter_status(4, chapter['id'])
-                return
             else:
                 polish_chapter_polish(chapter, transmit, model_map, for_num + 1)
+            return
         # 更新状态
         update_chapter_polish(raw_text, chapter['id'])
         print(f"结果润色-章节信息更新完成")
 
         # 更新角色信息
-        relation_content = json.loads(chapter["relation_content"])
-        print(f"结果润色-角色信息：{relation_content}")
-        if relation_content:
-            character_list = relation_content["character_list"]
+        relation_data = RelationPromptResult.model_validate_json(chapter["relation_content"])
+        print(f"结果润色-角色信息：{relation_data}")
+        if relation_data:
+            character_list = relation_data.character_list
             if character_list:
                 role_name = []
                 for cha in character_list:
-                    name = cha.get("character_name")
+                    name = cha.character_name
                     if name:
                         role_name.append(name)
                 if role_name and len(role_name) > 0:
                     remove_old_role_model(chapter['project_id'], role_name)
                 for cha in character_list:
-                    name = cha.get("character_name")
+                    name = cha.character_name
                     if name:
                         insert_role_model(chapter['project_id'], name, cha)
                 # 关系
@@ -563,17 +573,16 @@ def polish_chapter_polish(chapter, transmit, model_map, for_num=1):
                         for a, b in relation_list:
                             remove_old_role_relation(chapter['project_id'], a, b)
             # 新增关系
-            relationships = relation_content.get("relationships")
+            relationships = relation_data.relationships
             if relationships:
                 for relation in relationships:
-                    role_a = relation.get("character_a")
-                    role_b = relation.get("character_b")
+                    role_a = relation.character_a
+                    role_b = relation.character_b
                     if role_a and role_b:
                         insert_role_relation(chapter['project_id'], role_a, role_b, relation)
     except Exception as e:
         print(e)
         if 3 == for_num:
             update_chapter_status(4, chapter['id'])
-            return
         else:
             polish_chapter_polish(chapter, transmit, model_map, for_num + 1)

@@ -15,35 +15,6 @@ def get_role_prompt_template(inputs) -> ChatPromptTemplate:
     system_template = str(inputs['role_prompt_system'])
     user_template = str(inputs['role_prompt_user'])
     user_template = user_template + """
-            【输出内容】：必须按照下述JSON格式输出且为有效的格式，禁止输出与JSON格式无关内容。
-            {
-                "character_list": [
-                    {
-                        "character_name": "角色的标准名称",
-                        "alias_name": "角色的别称，多数人对其的称呼",
-                        "identify": "角色的身份，如皇帝、公主、大侠、圣女等",
-                        "sex": "角色的性别，如男性、女性、男女同体等",
-                        "type": "角色的类别，如人类、妖兽、精灵等",
-                        "size": "角色的大概身高，如1米5、2米等",
-                        "colour": "角色的肤色，如苍白、咖啡色、白色等",
-                        "chest": "女性角色的胸部特征（半球型（圆型）、水滴型（泪珠型）、圆盘型、圆锥型（鸟嘴型）、下垂型（松弛型/钟型）、扁平型（苗条型/平胸型）、外扩型（东西型））",
-                        "chest_colour": "女性角色的乳晕颜色（粉红、褐红、深红发黑）",
-                        "chest_size": "女性角色的胸部大小（精致小巧、馒头大小、硕大丰盈等）",
-                        "pubes": "女性角色的阴部特征（馒头型、一线天型、蝴蝶型等）",
-                        "pubes_hair": "女性角色的阴部毛发特征（毛发稀疏、毛发浓密、白虎等）",
-                        "pubes_colour": "女性角色的阴部颜色（粉色、褐色、深褐色、黑色）",
-                        "penis": "男性角色的阴茎特征（如蘑菇头型、子弹头型、平头型）",
-                        "core_traits": [
-                            {
-                                "trait_label": "性格标签（如：温柔）",
-                                "evidence": "原文中的具体支撑证据（简述关键情节）",
-                                "motivation": "该行为背后的动机分析"
-                            }
-                        ],
-                        "overall_summary": "对该角色性格的综合一句话总结"
-                    }
-                ]
-            }
             【输出内容规则】：
             - ‘chest’未提及时随机选择，男性角色为NULL。
             - ‘chest_colour’未提及按角色年龄匹配，男性角色为NULL。
@@ -52,6 +23,7 @@ def get_role_prompt_template(inputs) -> ChatPromptTemplate:
             - ‘pubes_hair’以‘pubes’为基础进行推测，男性角色为NULL。
             - ‘pubes_colour’按年龄与身体状态匹配，男性角色为NULL。
             - ‘penis’随机进行选择，女性角色为NULL。
+            - 禁止输出与JSON格式无关内容。
     """
     reference_text = (inputs['reference_text'])
     original_text = (inputs['original_text'])
@@ -71,46 +43,8 @@ def get_relation_prompt_template(inputs) -> ChatPromptTemplate:
     system_template = str(inputs['relation_prompt_system'])
     user_template = str(inputs['relation_prompt_user'])
     user_template = user_template + """
-            【输出内容】：必须按照下述JSON格式输出且为有效的格式，禁止输出与JSON格式无关内容。为每个识别出的角色与角色关系创建一份档案。
-            {
-                "character_list": [
-                    {
-                        "character_name": "角色的标准名称",
-                        "alias_name": "角色的别称，多数人对其的称呼",
-                        "identify": "角色的身份，如皇帝、公主、大侠、圣女等",
-                        "sex": "角色的性别，如男性、女性、男女同体等",
-                        "type": "角色的类别，如人类、妖兽、精灵等",
-                        "size": "角色的大概身高，如1米5、2米等",
-                        "colour": "角色的肤色，如苍白、咖啡色、白色等",
-                        "chest": "女性角色的胸部特征",
-                        "chest_colour": "女性角色的乳晕颜色",
-                        "chest_size": "女性角色的胸部大小",
-                        "pubes": "女性角色的阴部特征",
-                        "pubes_hair": "女性角色的阴部毛发特征",
-                        "pubes_colour": "女性角色的阴部颜色",
-                        "penis": "男性角色的阴茎特征",
-                        "core_traits": [
-                            {
-                                "trait_label": "性格标签（如：温柔）",
-                                "evidence": "原文中的具体支撑证据（简述关键情节）",
-                                "motivation": "该行为背后的动机分析"
-                            }
-                        ],
-                        "overall_summary": "对该角色性格的综合一句话总结"
-                    }
-                ],
-                "relationships": [
-                    {
-                        "character_a": "角色A的标准名称",
-                            "character_b": "角色B的标准名称",
-                            "relation_label": "关系标签（如：宿敌、好友、伴侣、师徒、父女等）",
-                            "interaction_analysis": "基于性格和动机的互动分析（简述为什么他们会形成这种关系）",
-                            "evidence": "原文中的关键情节支撑",
-                        "overall_relation_summary": "对角色关系综合一句话总结"
-                    }
-                ]
-            }
-            【输出内容规则】：
+            【输出要求】：
+            - 禁止输出与JSON格式无关内容。
             - character_a 与 character_b 只允许是单独的角色。
     """
     reference_text = (inputs['reference_text'])
@@ -142,16 +76,10 @@ def get_process_prompt_template(inputs) -> ChatPromptTemplate:
     system_template = str(inputs['process_prompt_system'])
     user_template = str(inputs['process_prompt_user'])
     user_template = user_template + """
-            【输出格式要求】：必须使用下述JSON模版版且为有效的格式，禁止输出与JSON格式无关内容。语言风格保持专业、客观、犀利且富有洞察力。多使用文学评论和心理学的专业术语进行支撑，但解释要通俗易懂。
-            {
-                "extra": "是否可以插入番外(True/False)",
-                "optional_roles": [
-                    {
-                        "role_name": "角色的标准名称",
-                        "role_action": "角色的动作行为，如前往某个地点、会到房间等"
-                    }
-                ]
-            }
+            【输出要求】：
+            - 语言风格保持专业、客观、犀利且富有洞察力。多使用文学评论和心理学的专业术语进行支撑，但解释要通俗易懂。
+            - 禁止输出与JSON格式无关内容。
+            - 'extra' 必须是True或False
     """
     relation_analysis = (inputs['relation_analysis'])
     reference_before_text = (inputs['reference_before_text'])

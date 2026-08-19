@@ -204,7 +204,6 @@ class SqliteDB:
                     cursor.execute(sql, params)
                 else:
                     cursor.execute(sql)
-                conn.commit()
                 return cursor.fetchone()
 
             # 执行SQLite语句
@@ -227,5 +226,4 @@ class SqliteDB:
                     cursor.execute(sql, params)
                 else:
                     cursor.execute(sql)
-                conn.commit()
                 return cursor.fetchall()
