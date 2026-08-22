@@ -6,7 +6,9 @@ from PyQt6.QtWidgets import QMessageBox
 from openai import OpenAI
 
 from config.GlobalMap import APP_STATE, APP_FUTURE, APP_STOP_EVENT
-from sqlite.Sqlite3Utils import query_project_by_id, query_prompt_info_by_id, query_prompt_template, query_model_by_id
+from sqlite.ModelDB import query_model_by_id
+from sqlite.ProjectDB import query_project_by_id
+from sqlite.PromptDB import query_prompt_template, query_prompt_info_by_id
 from windows.polish.NovelPolish import polish
 from windows.project.NovelChapterList import novel_chapter, update_chapter_num
 

@@ -5,9 +5,9 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButt
     QListWidgetItem, QDialog, QPlainTextEdit, QScrollArea, QLineEdit, QFileDialog, QMessageBox
 import json as std_json
 
-from sqlite.Sqlite3Utils import query_all_prompt, save_prompt_info, remove_prompt, query_prompt_info_by_id, \
-    import_prompt_template, query_prompt_template
 from resources.style.StyleSheet import button_style_sheet, title_style_sheet, line_edit_style_sheet
+from sqlite.PromptDB import query_prompt_template, remove_prompt, import_prompt_template, save_prompt_info, \
+    query_prompt_info_by_id, query_all_prompt
 from windows.prompt.InsertPrompt import InsertModel
 
 

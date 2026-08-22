@@ -1,6 +1,7 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QHBoxLayout, QPushButton
-from sqlite.Sqlite3Utils import remove_novel_info
+
+from sqlite.ProjectDB import remove_novel_info
 
 
 class RemoveNovel(QDialog):

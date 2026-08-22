@@ -6,8 +6,8 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QHBoxLayout, QLineEdit
 from openai import OpenAI
 
 from resources.style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet
+from sqlite.ModelDB import insert_model_conf
 from utils.DoubleLineEdit import DoubleLineEdit
-from sqlite.Sqlite3Utils import insert_model_conf
 
 """新增模型"""
 class InsertModel(QDialog):

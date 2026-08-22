@@ -1,9 +1,10 @@
 from langchain_openai import ChatOpenAI
 
 from config.GlobalMap import APP_STOP_EVENT
-from sqlite.Sqlite3Utils import query_wait_polish_chapter, query_chapter_by_id, query_before_chapter, \
-    query_after_chapter, update_chapter_status, update_chapter_sort, insert_extra_chapter, update_chapter_success_num, \
-    count_fail_chapter_num, update_chapter_fail_num, update_chapter_all_num
+from pojo.table.Chapter import sqliteToChapter, ChapterPoint
+from sqlite.ChapterDB import query_wait_polish_chapter, query_chapter_by_id, query_before_chapter, query_after_chapter, \
+    update_chapter_status, update_chapter_sort, insert_extra_chapter, count_fail_chapter_num
+from sqlite.ProjectDB import update_chapter_all_num, update_chapter_fail_num, update_chapter_success_num
 from windows.polish.ChapterPolish import role_chapter_polish, relation_chapter_polish, process_chapter_polish, \
     original_scene_chapter_polish, original_framework_chapter_polish, extra_scene_chapter_plish, polish_chapter_polish, \
     extra_framework_chapter_polish, novel_before_polish
@@ -43,8 +44,10 @@ def polish(params, progress_callback=None):
         ## 获取最新章节信息
         temp_chapter = query_chapter_by_id(chapter['id'])
         print(f"最新章节信息：{str(temp_chapter)}")
-        reference_before_text = get_before_novel(temp_chapter, transmit, model_map)
-        print(f"前述章节字数：{len(reference_before_text)}")
+        chapter_model = sqliteToChapter(temp_chapter)
+        # 前述剧情简述
+        if ChapterPoint.NOVEL_BEFORE_RESUME.value == chapter_model.point:
+            get_before_novel(chapter_model, transmit, model_map)
         ## 获取后几章内容
         reference_after_text = ""
         chapter_after_list = query_after_chapter(temp_chapter['project_id'], temp_chapter['sort'], transmit['polish_after_num'])
@@ -213,14 +216,13 @@ def after_chapter_polish(progress_callback, chapter, transmit, model_map, refere
         update_chapter_fail_num(fail_num, chapter['project_id'])
         print(10.32)
 
-def get_before_novel(temp_chapter, transmit, model_map):
+def get_before_novel(chapter_model, transmit, model_map):
     """
     获取前述剧情
     """
     # 获取前几章内容
     reference_before_text = ""
-    chapter_before_list = query_before_chapter(temp_chapter['project_id'], temp_chapter['sort'], transmit['polish_before_num'])
-    print(chapter_before_list)
+    chapter_before_list = query_before_chapter(chapter_model.project_id, chapter_model.sort, transmit['polish_before_num'])
     if chapter_before_list:
         for chapter_before in chapter_before_list:
             if chapter_before['new_content'] is None or len(chapter_before['new_content']) <= 0:
@@ -232,7 +234,8 @@ def get_before_novel(temp_chapter, transmit, model_map):
         reference_before_text = "-"
 
     # 长度大于1万的话，进行精简来保证token长度与思考长度
-    if len(reference_before_text) > 10000:
-        # 使用脉络生成模型
-        return novel_before_polish(transmit, model_map, reference_before_text)
+    if len(reference_before_text) > 4000:
+        before_novel = novel_before_polish(transmit, model_map, reference_before_text)
+    else:
+        123
     return reference_before_text

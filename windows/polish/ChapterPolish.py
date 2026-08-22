@@ -6,8 +6,9 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda
 from pydantic import Field, BaseModel, ConfigDict
 
-from sqlite.Sqlite3Utils import update_chapter_role, update_chapter_relation, update_chapter_status, \
-    update_chapter_process, update_chapter_scene, update_chapter_framework, update_chapter_polish, query_role_model, \
+from sqlite.ChapterDB import update_chapter_role, update_chapter_status, update_chapter_relation, \
+    update_chapter_process, update_chapter_scene, update_chapter_framework, update_chapter_polish
+from sqlite.Sqlite3Utils import query_role_model, \
     query_role_relation, remove_old_role_model, insert_role_model, remove_old_role_relation, insert_role_relation
 from windows.polish.DynamicPromptTemplate import get_role_prompt_template, get_relation_prompt_template, \
     get_process_prompt_template, get_original_scene_prompt_template, get_original_framework_prompt_template, \
@@ -586,6 +587,8 @@ def polish_chapter_polish(chapter, transmit, model_map, for_num=1):
 def novel_before_polish(transmit, model_map, reference_before_text, for_num=1):
     try:
         print(22.01)
+        print(transmit['framework_model_id'])
+        print(model_map.get(transmit['framework_model_id']))
         before_novel_chain = (
                 RunnableLambda(get_before_novel_template) |
                 model_map.get(transmit['framework_model_id']) |

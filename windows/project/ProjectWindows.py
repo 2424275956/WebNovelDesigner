@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButt
     QFileDialog, QDialog
 
 from resources.style.StyleSheet import button_style_sheet
+from sqlite.ProjectDB import query_all_project
 from . import ImportNovel
 from . import RemoveNovel
 from . import ProjectPolish
@@ -16,7 +17,6 @@ from utils.ClearLayoutRecursive import clear_layout
 
 """添加项目根目录到路径"""
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-from sqlite.Sqlite3Utils import query_all_project
 
 """项目窗口"""
 def project_open_windows(self):
