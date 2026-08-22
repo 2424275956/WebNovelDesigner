@@ -4,7 +4,7 @@ from pathlib import Path
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QFrame, QHBoxLayout, QPushButton, QLineEdit, QGridLayout, QTableWidget, QHeaderView, QTableWidgetItem
 from sqlite.Sqlite3Utils import insert_project_info, insert_project_chapter
-from style.StyleSheet import title_style_sheet, line_edit_style_sheet
+from resources.style.StyleSheet import title_style_sheet, line_edit_style_sheet
 
 
 def split_list_generator(lst, chunk_size):

@@ -6,7 +6,8 @@ from sqlite.Sqlite3Utils import query_wait_polish_chapter, query_chapter_by_id, 
     count_fail_chapter_num, update_chapter_fail_num, update_chapter_all_num
 from windows.polish.ChapterPolish import role_chapter_polish, relation_chapter_polish, process_chapter_polish, \
     original_scene_chapter_polish, original_framework_chapter_polish, extra_scene_chapter_plish, polish_chapter_polish, \
-    extra_framework_chapter_polish
+    extra_framework_chapter_polish, novel_before_polish
+from windows.polish.ChapterRag import novel_rag_store
 
 
 def polish(params, progress_callback=None):
@@ -30,7 +31,8 @@ def polish(params, progress_callback=None):
                          temperature=model['temperature'],
                          max_tokens=model['max_token'],
                          top_p=model['top_p'],
-                         timeout=model['time_out'])
+                         timeout=model['time_out'],
+                         streaming=True)
         model_map[model_id] = llm
 
     # 循环处理
@@ -41,20 +43,7 @@ def polish(params, progress_callback=None):
         ## 获取最新章节信息
         temp_chapter = query_chapter_by_id(chapter['id'])
         print(f"最新章节信息：{str(temp_chapter)}")
-        ## 获取前几章内容
-        reference_before_text = ""
-        chapter_before_list = query_before_chapter(temp_chapter['project_id'], temp_chapter['sort'], transmit['polish_before_num'])
-        print(chapter_before_list)
-        if chapter_before_list:
-            for chapter_before in chapter_before_list:
-                if chapter_before['new_content'] is None or len(chapter_before['new_content']) <= 0:
-                    if chapter_before['old_content']:
-                        reference_before_text = reference_before_text + chapter_before['old_content']
-                else:
-                    reference_before_text = reference_before_text + chapter_before['new_content']
-        else:
-            reference_before_text = "-"
-
+        reference_before_text = get_before_novel(temp_chapter, transmit, model_map)
         print(f"前述章节字数：{len(reference_before_text)}")
         ## 获取后几章内容
         reference_after_text = ""
@@ -97,6 +86,7 @@ def polish(params, progress_callback=None):
         print(10.07)
         temp_chapter300 = query_chapter_by_id(chapter['id'])
         print(10.08)
+        is_extra = False
         if 300 == temp_chapter300['point'] and 4 != temp_chapter300['status']:
             print(10.09)
             is_extra = process_chapter_polish(temp_chapter300, transmit, model_map, reference_before_text, reference_after_text)
@@ -130,6 +120,10 @@ def polish(params, progress_callback=None):
                 print(13.21)
                 return
 
+        if is_extra:
+            temp_chapter_novel = query_chapter_by_id(chapter['id'])
+            reference_before_text = get_before_novel(temp_chapter_novel, transmit, model_map)
+            print(f"前述章节字数：{len(reference_before_text)}")
         ## 后续流程
         after_chapter_polish(progress_callback, chapter, transmit, model_map, reference_before_text, reference_after_text)
         stop_event = APP_STOP_EVENT.get(transmit['project_id'])
@@ -203,6 +197,11 @@ def after_chapter_polish(progress_callback, chapter, transmit, model_map, refere
         print(10.27)
         update_chapter_success_num(chapter['project_id'])
         print(10.28)
+        # RAG内容分析存储
+        try:
+            novel_rag_store(temp_chapter600)
+        except Exception as e:
+            print(f"RAG存储失败：{e}")
     elif 4 == temp_chapter600['status']:
         print(10.29)
         # 获取失败章节
@@ -214,13 +213,26 @@ def after_chapter_polish(progress_callback, chapter, transmit, model_map, refere
         update_chapter_fail_num(fail_num, chapter['project_id'])
         print(10.32)
 
+def get_before_novel(temp_chapter, transmit, model_map):
+    """
+    获取前述剧情
+    """
+    # 获取前几章内容
+    reference_before_text = ""
+    chapter_before_list = query_before_chapter(temp_chapter['project_id'], temp_chapter['sort'], transmit['polish_before_num'])
+    print(chapter_before_list)
+    if chapter_before_list:
+        for chapter_before in chapter_before_list:
+            if chapter_before['new_content'] is None or len(chapter_before['new_content']) <= 0:
+                if chapter_before['old_content']:
+                    reference_before_text = reference_before_text + chapter_before['old_content']
+            else:
+                reference_before_text = reference_before_text + chapter_before['new_content']
+    else:
+        reference_before_text = "-"
 
-# 通用方法：转为 dict
-def row_to_dict(row):
-    """
-    将各种 row 对象转为普通字典
-    """
-    res_items = {}
-    for key in row.keys():
-        res_items[key] = row[key]
-    return res_items
+    # 长度大于1万的话，进行精简来保证token长度与思考长度
+    if len(reference_before_text) > 10000:
+        # 使用脉络生成模型
+        return novel_before_polish(transmit, model_map, reference_before_text)
+    return reference_before_text

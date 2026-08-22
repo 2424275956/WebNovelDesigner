@@ -7,8 +7,7 @@ import json as std_json
 
 from sqlite.Sqlite3Utils import query_all_prompt, save_prompt_info, remove_prompt, query_prompt_info_by_id, \
     import_prompt_template, query_prompt_template
-from style.StyleSheet import button_style_sheet, title_style_sheet, line_edit_style_sheet
-from utils.CustomPlainTextEdit import CustomPlainTextEdit
+from resources.style.StyleSheet import button_style_sheet, title_style_sheet, line_edit_style_sheet
 from windows.prompt.InsertPrompt import InsertModel
 
 

@@ -7,7 +7,7 @@ from sqlite.Sqlite3Utils import query_project_by_id, query_all_model, query_all_
     edit_project_prompt_id, edit_project_role_model_id, edit_project_relation_model_id, edit_project_scene_model_id, \
     edit_project_framework_model_id, edit_project_polish_model_id, edit_polish_before_num, edit_polish_after_num, \
     edit_project_extra_scene_model_id, edit_project_process_model_id, edit_project_extra_framework_model_id
-from style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet, label_style_sheet, \
+from resources.style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet, label_style_sheet, \
     list_widget_style_sheet
 from config.GlobalMap import APP_STATE
 from utils.ClearLayoutRecursive import clear_layout

@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QHBoxLayout, QLineEdit
     QMessageBox
 from openai import OpenAI
 
-from style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet
+from resources.style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet
 from utils.DoubleLineEdit import DoubleLineEdit
 from sqlite.Sqlite3Utils import insert_model_conf
 

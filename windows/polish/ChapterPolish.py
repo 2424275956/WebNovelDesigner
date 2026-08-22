@@ -11,7 +11,8 @@ from sqlite.Sqlite3Utils import update_chapter_role, update_chapter_relation, up
     query_role_relation, remove_old_role_model, insert_role_model, remove_old_role_relation, insert_role_relation
 from windows.polish.DynamicPromptTemplate import get_role_prompt_template, get_relation_prompt_template, \
     get_process_prompt_template, get_original_scene_prompt_template, get_original_framework_prompt_template, \
-    get_polish_prompt_template, get_extra_scene_prompt_template, get_extra_framework_prompt_template
+    get_polish_prompt_template, get_extra_scene_prompt_template, get_extra_framework_prompt_template, \
+    get_before_novel_template
 import json
 
 def json_parse(raw_text):
@@ -74,14 +75,13 @@ class CharacterCoreTraitLabel(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True,
                               extra='ignore' )
     trait_label: str = Field(description="性格标签（如：温柔）")
-    evidence: str = Field(description="原文中的具体支撑证据（简述关键情节）")
-    motivation: str = Field(description="该行为背后的动机分析")
+    evidence: str = Field(description="对该性格的综合一句话总结")
 
 class CharacterInfoResult(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True,
                               extra='ignore' )
     character_name: str = Field(description="角色的标准名称")
-    alias_name: str = Field(description="角色的别称，多数人对其的称呼")
+    alias_name: Optional[str] = Field(default=None, description="角色的别称，多数人对其的称呼")
     identify: str = Field(description="角色的身份，如皇帝、公主、大侠、圣女等")
     sex: str = Field(description="角色的性别，如男性、女性、男女同体等")
     type: str = Field(description="角色的类别，如人类、妖兽、精灵等")
@@ -231,10 +231,10 @@ def relation_chapter_polish(chapter, transmit, model_map, reference_text, for_nu
 
 class RoleOptionalResult(BaseModel):
     role_name: str = Field(description="角色的标准名称")
-    role_action: str = Field(description="角色的动作行为，如前往某个地点、会到房间等")
+    role_action: str = Field(description="角色的事件，可以进行番外扩写的点,一句话总结。如出差、前往目的地过程中、在房间的一段时间")
 
 class ProcessPromptResult(BaseModel):
-    extra: str = Field(description="是否可以插入番外(True/False)")
+    extra: bool = Field(description="是否可以插入番外(True/False)")
     optional_roles: List[RoleOptionalResult] = Field(description="可以选择的角色")
 
 def process_chapter_polish(chapter, transmit, model_map, reference_before_text, reference_after_text, for_num=1):
@@ -243,7 +243,8 @@ def process_chapter_polish(chapter, transmit, model_map, reference_before_text, 
         print("流程控制-LangChain链构建")
         process_chain = (
             RunnableLambda(get_process_prompt_template) |
-            model_map.get(transmit['process_model_id']).with_structured_output(ProcessPromptResult)
+            model_map.get(transmit['process_model_id']) |
+            StrOutputParser()
         )
         print(f"流程控制-LangChain链Invoke数据填充")
         process = process_chain.invoke({
@@ -254,30 +255,24 @@ def process_chapter_polish(chapter, transmit, model_map, reference_before_text, 
             "original_text": chapter['old_content'],
             "reference_after_text": reference_after_text
         })
-        print(123)
-        process_data = ProcessPromptResult.model_validate(process)
+        print(str(process))
+        raw_text = process.content if hasattr(process, 'content') else str(process)
+        process_data = ProcessPromptResult.model_validate_json(raw_text)
         # 判断
         if process_data is None:
             update_chapter_status(4, chapter['id'])
             return False
         # 更新
         print(3.01)
-        print(3.02)
         extra = process_data.extra
-        # 判断
-        if extra is None:
-            update_chapter_status(4, chapter['id'])
-            return False
+        print(3.02)
         # 更新文本
         update_chapter_process(process_data.model_dump_json(), 400, chapter['id'])
         print(f"流程控制-章节信息更新完成")
         # 状态判断
         if "true" in str(extra).lower():
             return True
-        elif "false" in str(extra).lower():
-            return False
         else:
-            update_chapter_status(4, chapter['id'])
             return False
     except Exception as e:
         print(e)
@@ -586,3 +581,35 @@ def polish_chapter_polish(chapter, transmit, model_map, for_num=1):
             update_chapter_status(4, chapter['id'])
         else:
             polish_chapter_polish(chapter, transmit, model_map, for_num + 1)
+
+
+def novel_before_polish(transmit, model_map, reference_before_text, for_num=1):
+    try:
+        print(22.01)
+        before_novel_chain = (
+                RunnableLambda(get_before_novel_template) |
+                model_map.get(transmit['framework_model_id']) |
+                StrOutputParser()
+        )
+        print(22.02)
+        before_novel = before_novel_chain.invoke({
+            "reference_text": reference_before_text
+        })
+        print(22.03)
+        raw_text = before_novel.content if hasattr(before_novel, 'content') else str(before_novel)
+        # 英文含量校验
+        is_valid, english_ratio = is_valid_chinese_text(raw_text)
+        if not is_valid:
+            print(f"前述剧情-英文占比校验失败：{for_num}, 英文占比：{english_ratio * 100}%")
+            if 3 == for_num:
+                return reference_before_text
+            else:
+                return novel_before_polish(transmit, model_map, reference_before_text, for_num + 1)
+        print(f"前述剧情-推理结果完成：{raw_text}")
+        return raw_text
+    except Exception as e:
+        print(f"文本压缩失败：{e}")
+        if 3 == for_num:
+            return reference_before_text
+        else:
+            return novel_before_polish(transmit, model_map, reference_before_text, for_num + 1)

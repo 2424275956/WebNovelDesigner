@@ -13,7 +13,7 @@ class VectorService:
 
     def __new__(cls):
         if cls._instance is None:
-            local_model_path = os.path.join(os.path.dirname(__file__), "models", "BAAI-bge-small-zh-v1.5")
+            local_model_path = os.path.join(os.path.dirname(__file__), "..", "resources/models/embedding", "BAAI-bge-small-zh-v1.5")
             cls._instance = super(VectorService, cls).__new__(cls)
             # 只在第一次调用时初始化模型和数据库
             cls._embeddings = HuggingFaceEmbeddings(
@@ -24,7 +24,6 @@ class VectorService:
             cls._vector_store = SQLiteVSS(
                 embedding=cls._embeddings,
                 table="novel_embedding",
-                db_file="sqlite/db/app_embedding.db",
                 connection=SqliteDB.get_conn()
             )
         return cls._instance

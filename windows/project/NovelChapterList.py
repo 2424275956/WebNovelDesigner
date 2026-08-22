@@ -2,7 +2,7 @@ from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtWidgets import QListWidgetItem, QWidget, QHBoxLayout, QFrame, QVBoxLayout, QLabel
 
 from sqlite.Sqlite3Utils import query_project_chapter_by_id, query_project_by_id
-from style.StyleSheet import label_style_sheet
+from resources.style.StyleSheet import label_style_sheet
 from utils.StatusDot import StatusDot
 
 

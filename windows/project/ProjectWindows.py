@@ -6,7 +6,7 @@ from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QScrollArea, QGridLayout, QFrame, \
     QFileDialog, QDialog
 
-from style.StyleSheet import button_style_sheet
+from resources.style.StyleSheet import button_style_sheet
 from . import ImportNovel
 from . import RemoveNovel
 from . import ProjectPolish
@@ -124,7 +124,7 @@ def create_project_card(self, name, project_id):
     cover_area.setFixedHeight(180)
     cover_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
     # 加载图标
-    pixmap = QPixmap("pics/书籍图标.png")
+    pixmap = QPixmap("resources/pics/书籍图标.png")
     # 如果图标很大，可以限制它的大小，防止撑破布局
     pixmap = pixmap.scaled(80, 120, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
     cover_area.setPixmap(pixmap)
