@@ -1,14 +1,12 @@
 from langchain_openai import ChatOpenAI
 
 from config.GlobalMap import APP_STOP_EVENT
-from pojo.table.Chapter import sqliteToChapter, ChapterPoint
+from pojo.table.Chapter import sqliteToChapter, ChapterPoint, ChapterStatus, ChapterBO
 from sqlite.ChapterDB import query_wait_polish_chapter, query_chapter_by_id, query_before_chapter, query_after_chapter, \
-    update_chapter_status, update_chapter_sort, insert_extra_chapter, count_fail_chapter_num
-from sqlite.ProjectDB import update_chapter_all_num, update_chapter_fail_num, update_chapter_success_num
+    update_chapter_status, update_chapter_sort, insert_extra_chapter, update_original_resume, update_polish_resume
 from windows.polish.ChapterPolish import role_chapter_polish, relation_chapter_polish, process_chapter_polish, \
     original_scene_chapter_polish, original_framework_chapter_polish, extra_scene_chapter_plish, polish_chapter_polish, \
-    extra_framework_chapter_polish, novel_before_polish
-from windows.polish.ChapterRag import novel_rag_store
+    extra_framework_chapter_polish, chapter_novel_resume
 
 
 def polish(params, progress_callback=None):
@@ -40,34 +38,27 @@ def polish(params, progress_callback=None):
     for chapter in chapter_list:
         print(f"开始初始化章节信息")
         # 初始化章节状态
-        update_chapter_status(2, chapter['id'])
+        update_chapter_status(ChapterStatus.RUNNING.value, chapter['id'])
         ## 获取最新章节信息
         temp_chapter = query_chapter_by_id(chapter['id'])
         print(f"最新章节信息：{str(temp_chapter)}")
         chapter_model = sqliteToChapter(temp_chapter)
         # 前述剧情简述
-        if ChapterPoint.NOVEL_BEFORE_RESUME.value == chapter_model.point:
+        print(9.01)
+        if ChapterStatus.RUNNING.value == chapter_model.status:
+            print(9.02)
             get_before_novel(chapter_model, transmit, model_map)
-        ## 获取后几章内容
-        reference_after_text = ""
-        chapter_after_list = query_after_chapter(temp_chapter['project_id'], temp_chapter['sort'], transmit['polish_after_num'])
-        if chapter_after_list:
-            for chapter_after in chapter_after_list:
-                if chapter_after['new_content'] is None or len(chapter_after['new_content']) <= 0:
-                    reference_after_text = reference_after_text + chapter_after['old_content']
-                else:
-                    reference_after_text = reference_after_text + chapter_after['new_content']
-        else:
-            reference_after_text = "-"
+        # 后续剧情简述
+        print(9.03)
+        if ChapterStatus.RUNNING.value == chapter_model.status:
+            print(9.04)
+            get_after_novel(chapter_model, transmit, model_map)
 
-        print(f"后续章节字数：{len(reference_after_text)}")
         ## 角色分析
         print(10.01)
-        temp_chapter100 = query_chapter_by_id(chapter['id'])
-        print(10.02)
-        if 100 == chapter['point']:
+        if ChapterPoint.ROLE_ANALYSIS.value == chapter_model.point and ChapterStatus.RUNNING.value == chapter_model.status:
             print(10.03)
-            role_chapter_polish(temp_chapter100, transmit, model_map, reference_before_text)
+            role_chapter_polish(chapter_model, transmit, model_map)
             print(f"角色分析-处理完成")
             stop_event = APP_STOP_EVENT.get(transmit['project_id'])
             if stop_event and stop_event.is_set():
@@ -75,11 +66,9 @@ def polish(params, progress_callback=None):
 
         ## 关系分析
         print(10.04)
-        temp_chapter200 = query_chapter_by_id(chapter['id'])
-        print(10.05)
-        if 200 == temp_chapter200['point'] and 4 != temp_chapter200['status']:
+        if ChapterPoint.RELATION_ANALYSIS.value == chapter_model.point and ChapterStatus.RUNNING.value == chapter_model.status:
             print(10.06)
-            relation_chapter_polish(temp_chapter200, transmit, model_map, reference_before_text)
+            relation_chapter_polish(chapter_model, transmit, model_map)
             print(f"关系分析-处理完成")
             stop_event = APP_STOP_EVENT.get(transmit['project_id'])
             if stop_event and stop_event.is_set():
@@ -87,34 +76,31 @@ def polish(params, progress_callback=None):
 
         ## 流程控制
         print(10.07)
-        temp_chapter300 = query_chapter_by_id(chapter['id'])
-        print(10.08)
         is_extra = False
-        if 300 == temp_chapter300['point'] and 4 != temp_chapter300['status']:
+        if ChapterPoint.PROCESS_CHOOSES.value == chapter_model.point and ChapterStatus.RUNNING.value == chapter_model.status:
             print(10.09)
-            is_extra = process_chapter_polish(temp_chapter300, transmit, model_map, reference_before_text, reference_after_text)
+            is_extra = process_chapter_polish(chapter_model, transmit, model_map)
             print(f"流程控制-处理完成，当前Chapter：{str(chapter)}")
             if is_extra:
                 print(13.10)
-                temp_extra = query_chapter_by_id(chapter['id'])
-                print(13.11)
-                chapter_sort = temp_extra['sort']
-                print(13.12)
                 ### 更新全部章节序号
-                update_chapter_sort(chapter_sort, temp_extra['project_id'])
+                update_chapter_sort(chapter_model.sort, chapter_model.project_id)
+                chapter_model.sort += 1
                 print(13.13)
                 ### 新增番外章节
-                extra_chapter_id = insert_extra_chapter(temp_extra, chapter_sort)
+                extra_chapter_id = insert_extra_chapter(chapter_model)
                 print(13.14)
-                # 更新章节数量
-                update_chapter_all_num(temp_extra['project_id'])
-                print(13.15)
                 ### 获取番外章节信息
                 extra_chapter = query_chapter_by_id(extra_chapter_id)
+                extra_model = sqliteToChapter(extra_chapter)
                 print(13.16)
                 if extra_chapter:
                     print(13.17)
-                    after_chapter_polish(progress_callback, extra_chapter, transmit, model_map, reference_before_text, reference_after_text)
+                    # 后续剧情-置空，重新处理
+                    chapter_model.after_content = None
+                    get_after_novel(chapter_model, transmit, model_map)
+                    # 处理
+                    after_chapter_polish(progress_callback, extra_model, transmit, model_map)
                     print(13.18)
             print(13.19)
             stop_event = APP_STOP_EVENT.get(transmit['project_id'])
@@ -123,25 +109,23 @@ def polish(params, progress_callback=None):
                 print(13.21)
                 return
 
+        #  前述剧情更新
         if is_extra:
-            temp_chapter_novel = query_chapter_by_id(chapter['id'])
-            reference_before_text = get_before_novel(temp_chapter_novel, transmit, model_map)
-            print(f"前述章节字数：{len(reference_before_text)}")
+            chapter_model.before_content = None
+            get_before_novel(chapter_model, transmit, model_map)
         ## 后续流程
-        after_chapter_polish(progress_callback, chapter, transmit, model_map, reference_before_text, reference_after_text)
+        after_chapter_polish(progress_callback, chapter_model, transmit, model_map)
         stop_event = APP_STOP_EVENT.get(transmit['project_id'])
         if stop_event and stop_event.is_set():
             return
 
-def after_chapter_polish(progress_callback, chapter, transmit, model_map, reference_before_text, reference_after_text):
+def after_chapter_polish(progress_callback, chapter_model: ChapterBO, transmit, model_map):
     """剩余流程章节处理"""
     # 原文改写-场景分析
     print(10.10)
-    temp_chapter400 = query_chapter_by_id(chapter['id'])
-    print(10.11)
-    if 400 == temp_chapter400['point'] and 4 != temp_chapter400['status']:
+    if ChapterPoint.ORIGINAL_SCENE.value == chapter_model.point and ChapterStatus.RUNNING.value == chapter_model.status:
         print(10.12)
-        original_scene_chapter_polish(temp_chapter400, transmit, model_map, reference_before_text, reference_after_text)
+        original_scene_chapter_polish(chapter_model, transmit, model_map)
         print(f"原文改写-场景分析-处理完成")
         stop_event = APP_STOP_EVENT.get(transmit['project_id'])
         if stop_event and stop_event.is_set():
@@ -149,11 +133,9 @@ def after_chapter_polish(progress_callback, chapter, transmit, model_map, refere
 
     # 原文改写-脉络改写
     print(10.13)
-    temp_chapter401 = query_chapter_by_id(chapter['id'])
-    print(10.14)
-    if 401 == temp_chapter401['point'] and 4 != temp_chapter401['status']:
+    if ChapterPoint.ORIGINAL_FRAMEWORK.value == chapter_model.point and ChapterStatus.RUNNING.value == chapter_model.status:
         print(10.15)
-        original_framework_chapter_polish(temp_chapter401, transmit, model_map, reference_before_text, reference_after_text)
+        original_framework_chapter_polish(chapter_model, transmit, model_map)
         print(f"原文改写-脉络改写-处理完成")
         stop_event = APP_STOP_EVENT.get(transmit['project_id'])
         if stop_event and stop_event.is_set():
@@ -161,11 +143,9 @@ def after_chapter_polish(progress_callback, chapter, transmit, model_map, refere
 
     # 番外章节-场景分析
     print(10.16)
-    temp_chapter410 = query_chapter_by_id(chapter['id'])
-    print(10.17)
-    if 410 == temp_chapter410['point'] and 4 != temp_chapter410['status']:
+    if ChapterPoint.EXTRA_SCENE.value == chapter_model.point and ChapterStatus.RUNNING.value == chapter_model.status:
         print(10.18)
-        extra_scene_chapter_plish(temp_chapter410, transmit, model_map, reference_before_text, reference_after_text)
+        extra_scene_chapter_plish(chapter_model, transmit, model_map)
         print(f"番外章节-场景分析-处理完成")
         stop_event = APP_STOP_EVENT.get(transmit['project_id'])
         if stop_event and stop_event.is_set():
@@ -173,11 +153,9 @@ def after_chapter_polish(progress_callback, chapter, transmit, model_map, refere
 
     # 番外章节-脉络生成
     print(10.19)
-    temp_chapter411 = query_chapter_by_id(chapter['id'])
-    print(10.20)
-    if 411 == temp_chapter411['point'] and 4 != temp_chapter411['status']:
+    if ChapterPoint.EXTRA_FRAMEWORK.value == chapter_model.point and ChapterStatus.RUNNING.value == chapter_model.status:
         print(10.21)
-        extra_framework_chapter_polish(temp_chapter411, transmit, model_map, reference_before_text, reference_after_text)
+        extra_framework_chapter_polish(chapter_model, transmit, model_map)
         print(f"番外章节-脉络生成-处理完成")
         stop_event = APP_STOP_EVENT.get(transmit['project_id'])
         if stop_event and stop_event.is_set():
@@ -185,57 +163,110 @@ def after_chapter_polish(progress_callback, chapter, transmit, model_map, refere
 
     # 润色章节
     print(10.22)
-    temp_chapter500 = query_chapter_by_id(chapter['id'])
-    print(10.23)
-    if 500 == temp_chapter500['point'] and 4 != temp_chapter500['status']:
+    if ChapterPoint.POLISH_CONTENT.value == chapter_model.point and ChapterStatus.RUNNING.value == chapter_model.status:
         print(10.24)
-        polish_chapter_polish(temp_chapter500, transmit, model_map)
+        polish_chapter_polish(chapter_model, transmit, model_map)
         print(f"润色章节-处理完成")
 
-    print(10.25)
-    temp_chapter600 = query_chapter_by_id(chapter['id'])
-    print(10.26)
-    if 3 == temp_chapter600['status']:
-        # 更新完成章节数
-        print(10.27)
-        update_chapter_success_num(chapter['project_id'])
-        print(10.28)
-        # RAG内容分析存储
-        try:
-            novel_rag_store(temp_chapter600)
-        except Exception as e:
-            print(f"RAG存储失败：{e}")
-    elif 4 == temp_chapter600['status']:
-        print(10.29)
-        # 获取失败章节
-        result = count_fail_chapter_num(chapter['project_id'])
-        print(10.30)
-        fail_num = result[0] if result else 0
-        print(10.31)
-        # 更新失败章节
-        update_chapter_fail_num(fail_num, chapter['project_id'])
-        print(10.32)
-
-def get_before_novel(chapter_model, transmit, model_map):
+def get_before_novel(chapter_model: ChapterBO, transmit, model_map):
     """
     获取前述剧情
     """
     # 获取前几章内容
-    reference_before_text = ""
+    chapter_model.before_content = ""
     chapter_before_list = query_before_chapter(chapter_model.project_id, chapter_model.sort, transmit['polish_before_num'])
     if chapter_before_list:
         for chapter_before in chapter_before_list:
-            if chapter_before['new_content'] is None or len(chapter_before['new_content']) <= 0:
-                if chapter_before['old_content']:
-                    reference_before_text = reference_before_text + chapter_before['old_content']
-            else:
-                reference_before_text = reference_before_text + chapter_before['new_content']
-    else:
-        reference_before_text = "-"
+            # 转换
+            before_model = sqliteToChapter(chapter_before)
 
-    # 长度大于1万的话，进行精简来保证token长度与思考长度
-    if len(reference_before_text) > 4000:
-        before_novel = novel_before_polish(transmit, model_map, reference_before_text)
-    else:
-        123
-    return reference_before_text
+            # 不存在润色结果内容
+            if before_model.new_content is None or len(before_model.new_content) < 1:
+                ## 不存在原文信息
+                if before_model.old_content is None or len(before_model.old_content) < 1:
+                    continue
+                ## 存在原文信息
+                else:
+                    ### 不存在原文简述
+                    if before_model.original_resume is None or len(before_model.original_resume) < 1:
+                        #### 对原文进行简述
+                        novel_resume = chapter_novel_resume(chapter_model, before_model.old_content, transmit, model_map)
+                        if ChapterStatus.FAIL.value == chapter_model.status:
+                            return
+                        else:
+                            ##### 更新原文简述
+                            update_original_resume(novel_resume, before_model.id)
+                            chapter_model.before_content += novel_resume
+                            continue
+                    ### 存在原文简述
+                    else:
+                        chapter_model.before_content += before_model.original_resume
+                        continue
+            # 存在润色结果内容
+            else:
+                ## 不存在润色简述
+                if before_model.polish_resume is None or len(before_model.polish_resume) < 1:
+                    ### 对结果进行简述
+                    novel_resume = chapter_novel_resume(chapter_model, before_model.new_content, transmit, model_map)
+                    if ChapterStatus.FAIL.value == chapter_model.status:
+                        return
+                    else:
+                        #### 更新结果简述
+                        update_polish_resume(novel_resume, before_model.id)
+                        chapter_model.before_content += novel_resume
+                        continue
+                ## 存在润色简述
+                else:
+                    chapter_model.before_content += before_model.polish_resume
+                    continue
+
+def get_after_novel(chapter_model, transmit, model_map):
+    """
+    获取后续剧情简述
+    """
+    chapter_model.after_content = ""
+    chapter_after_list = query_after_chapter(chapter_model.project_id, chapter_model.sort, transmit['polish_after_num'])
+    if chapter_after_list:
+        for chapter_after in chapter_after_list:
+            # 转换
+            after_model = sqliteToChapter(chapter_after)
+
+            # 不存在润色结果内容
+            if after_model.new_content is None or len(after_model.new_content) < 1:
+                ## 不存在原文信息
+                if after_model.old_content is None or len(after_model.old_content) < 1:
+                    continue
+                ## 存在原文信息
+                else:
+                    ### 不存在原文简述
+                    if after_model.original_resume is None or len(after_model.original_resume) < 1:
+                        #### 对原文进行简述
+                        novel_resume = chapter_novel_resume(chapter_model, after_model.old_content, transmit, model_map)
+                        if ChapterStatus.FAIL.value == chapter_model.status:
+                            return
+                        else:
+                            ##### 更新原文简述
+                            update_original_resume(novel_resume, after_model.id)
+                            chapter_model.after_content += novel_resume
+                            continue
+                    ### 存在原文简述
+                    else:
+                        chapter_model.after_content += after_model.original_resume
+                        continue
+            # 存在润色结果内容
+            else:
+                ## 不存在润色简述
+                if after_model.polish_resume is None or len(after_model.polish_resume) < 1:
+                    ### 对结果进行简述
+                    novel_resume = chapter_novel_resume(chapter_model, after_model.new_content, transmit, model_map)
+                    if ChapterStatus.FAIL.value == chapter_model.status:
+                        return
+                    else:
+                        #### 更新结果简述
+                        update_polish_resume(novel_resume, after_model.id)
+                        chapter_model.after_content += novel_resume
+                        continue
+                ## 存在润色简述
+                else:
+                    chapter_model.after_content += after_model.polish_resume
+                    continue

@@ -1,3 +1,4 @@
+from pojo.table.Chapter import ChapterBO, ChapterType, ChapterStatus, ChapterPoint
 from sqlite.SqliteDB import SqliteDB
 
 # 获取章节信息
@@ -14,7 +15,7 @@ def query_before_chapter(project_id, sort, before_num):
 
 # 获取后几章内容
 def query_after_chapter(project_id, sort, after_num):
-    return SqliteDB.query_execute_batch("SELECT * FROM chapter WHERE project_id = ? and sort > ? ORDER BY sort DESC LIMIT ?", (project_id, sort, after_num))
+    return SqliteDB.query_execute_batch("SELECT * FROM chapter WHERE project_id = ? and sort > ? ORDER BY sort LIMIT ?", (project_id, sort, after_num))
 
 # 保存创建的章节信息
 def insert_project_chapter(project_id, chapters):
@@ -50,17 +51,17 @@ def update_chapter_sort(sort, project_id):
     SqliteDB.execute("UPDATE chapter SET sort = sort + 1 WHERE sort >= ? and project_id = ?", (sort, project_id))
 
 # 新增章节-番外章节
-def insert_extra_chapter(chapter, chapter_sort):
+def insert_extra_chapter(chapter_model: ChapterBO):
     return SqliteDB.execute("INSERT INTO chapter (project_id, title, role_content, relation_content, process_content, type, status, point, sort) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                                  (chapter['project_id'],
-                                   "番外",
-                                   chapter['role_content'],
-                                   chapter['relation_content'],
-                                   chapter['process_content'],
-                                   2,
-                                   1,
-                                   410,
-                                   chapter_sort))
+                                  (chapter_model.project_id,
+                                   f"{chapter_model.title} - 序章",
+                                   chapter_model.role_content,
+                                   chapter_model.relation_content,
+                                   chapter_model.process_content,
+                                   ChapterType.EXTRA_GENERATE.value,
+                                   ChapterStatus.WAIT.value,
+                                   ChapterPoint.EXTRA_SCENE.value,
+                                   chapter_model.sort))
 
 # 更新章节-场景分析
 def update_chapter_scene(scene_text, point, chapter_id):
@@ -77,3 +78,11 @@ def update_chapter_polish(polish_text, chapter_id):
 # 获取失败章节数
 def count_fail_chapter_num(project_id):
     return SqliteDB.query_execute("SELECT count(*) FROM chapter WHERE status = 4 and project_id = ?", (project_id,))
+
+# 更新章节-原文简述
+def update_original_resume(original_resume, chapter_id):
+    SqliteDB.execute("UPDATE chapter SET original_resume = ? WHERE id = ?", (original_resume, chapter_id))
+
+# 更新章节-结果简述
+def update_polish_resume(polish_resume, chapter_id):
+    SqliteDB.execute("UPDATE chapter SET polish_resume = ? WHERE id = ?", (polish_resume, chapter_id))

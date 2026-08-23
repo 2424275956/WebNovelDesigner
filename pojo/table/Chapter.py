@@ -11,6 +11,8 @@ class ChapterBO(BaseModel):
     title: str = Field(description="章节名称")
     before_content: Optional[str] = Field(default=None, description="前述剧情简述")
     after_content: Optional[str] = Field(default=None, description="后续剧情简述")
+    original_resume: Optional[str] = Field(default=None, description="原文剧情简述")
+    polish_resume: Optional[str] = Field(default=None, description="润色内容简述")
     old_content: Optional[str] = Field(default=None, description="原文内容")
     role_content: Optional[str] = Field(default=None, description="角色分析")
     relation_content: Optional[str] = Field(default=None, description="关系分析")
@@ -50,10 +52,6 @@ class ChapterPoint(Enum):
     """
     章节节点
     """
-    # 前述剧情简述
-    NOVEL_BEFORE_RESUME = 10
-    # 后续剧情简述
-    NOVEL_AFTER_RESUME = 20
     # 分析角色模型
     ROLE_ANALYSIS = 100
     # 分析角色关系
@@ -63,15 +61,15 @@ class ChapterPoint(Enum):
     # 原文改写-匹配场景规则
     ORIGINAL_SCENE = 400
     # 原文改写-脉络发展改写
-    ORIGINAL_FRAMEWORK = 410
+    ORIGINAL_FRAMEWORK = 401
     # 番外生成-匹配场景规则
-    EXTRA_SCENE = 600
+    EXTRA_SCENE = 410
     # 番外生成-脉络发展生成
-    EXTRA_FRAMEWORK = 610
+    EXTRA_FRAMEWORK = 411
     # 润色输出内容
-    POLISH_CONTENT = 700
+    POLISH_CONTENT = 500
     # 已完成
-    SUCCESS = 800
+    SUCCESS = 600
 
 def sqliteToChapter(row) -> ChapterBO:
     """

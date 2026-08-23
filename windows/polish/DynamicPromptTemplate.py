@@ -9,7 +9,7 @@ def special_chars_parse(text):
     text = re.sub(r'(?<!})}(?!})', '}}', text)
     return text
 
-def get_before_novel_template(inputs) -> ChatPromptTemplate:
+def get_novel_resume_template(inputs) -> ChatPromptTemplate:
     """
     对前述剧情内容进行压缩
     """
@@ -19,9 +19,8 @@ def get_before_novel_template(inputs) -> ChatPromptTemplate:
     【角色剥离】：你当前唯一身份为资深"文学作家"，拥有20年实战畅销经验。
     【任务目标】：请对以下提供的[文本片段]进行精简，输出一份**精简版文本片段**。
     【核心要求】：
-    - 必须以‘文本片段’内容进行精简，如：今天是个明朗的清晨，我早上吃的包子 -> 今天清晨吃的包子。
-    - 必须保留片段中女性角色的特征，如：白色丝袜、肛塞、身体痕迹、角色着装等。
-    - 语言简洁扼要，保留细节描述。将原文压缩至**原文约30%-40%**的篇幅。
+    - 必须对‘文本片段’内容进行精简，如：今天是个明朗的清晨，我早上吃的包子 -> 今天清晨吃的包子。
+    - 语言简洁扼要，整体脉络通畅，保留关键细节（女性穿着、身体特征）。将原文压缩至**原文约30%-40%**的篇幅。
     """
     print(111.02)
     user_template = """
@@ -225,12 +224,12 @@ def get_polish_prompt_template(inputs) -> ChatPromptTemplate:
     original_text = (inputs['original_text'])
     # 系统提示词
     system_template = (system_template
-                       .replace("{original_text}", str(original_text))
+                       # .replace("{original_text}", str(original_text))
                        .replace("{original_framework_text}", str(original_framework_text)))
     system_template = special_chars_parse(system_template)
     # 用户提示词
     user_template = (user_template
-                     .replace("{original_text}", str(original_text))
+                     # .replace("{original_text}", str(original_text))
                      .replace("{original_framework_text}", str(original_framework_text)))
     user_template = special_chars_parse(user_template)
     template = ChatPromptTemplate.from_messages([

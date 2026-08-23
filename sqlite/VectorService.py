@@ -1,9 +1,6 @@
 import os
 
 from langchain_experimental.text_splitter import SemanticChunker
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.vectorstores import SQLiteVSS
-from sqlite.SqliteDB import SqliteDB
 
 
 class VectorService:
@@ -13,19 +10,20 @@ class VectorService:
 
     def __new__(cls):
         if cls._instance is None:
-            local_model_path = os.path.join(os.path.dirname(__file__), "..", "resources/models/embedding", "BAAI-bge-small-zh-v1.5")
-            cls._instance = super(VectorService, cls).__new__(cls)
-            # 只在第一次调用时初始化模型和数据库
-            cls._embeddings = HuggingFaceEmbeddings(
-                model_name=local_model_path,
-                model_kwargs={'device': 'cpu'},  # 指定运行设备
-                encode_kwargs={"normalize_embeddings": True}
-            )
-            cls._vector_store = SQLiteVSS(
-                embedding=cls._embeddings,
-                table="novel_embedding",
-                connection=SqliteDB.get_conn()
-            )
+            123
+            # local_model_path = os.path.join(os.path.dirname(__file__), "..", "resources/models/embedding", "BAAI-bge-small-zh-v1.5")
+            # cls._instance = super(VectorService, cls).__new__(cls)
+            # # 只在第一次调用时初始化模型和数据库
+            # cls._embeddings = HuggingFaceEmbeddings(
+            #     model_name=local_model_path,
+            #     model_kwargs={'device': 'cpu'},  # 指定运行设备
+            #     encode_kwargs={"normalize_embeddings": True}
+            # )
+            # cls._vector_store = SQLiteVSS(
+            #     embedding=cls._embeddings,
+            #     table="novel_embedding",
+            #     connection=SqliteDB.get_conn()
+            # )
         return cls._instance
 
     def search(self, query: str, k: int = 3):
