@@ -22,17 +22,147 @@ def polish(params, progress_callback=None):
 
     # 模型数组
     model_map = {}
-    # 循环初始化模型
-    for model_id, model in transmit['model_map'].items():
-        llm = ChatOpenAI(model=model['model_id'],
-                         api_key=model['api_key'],
-                         base_url=model['url'],
-                         temperature=model['temperature'],
-                         max_tokens=model['max_token'],
-                         top_p=model['top_p'],
-                         timeout=model['time_out'],
-                         streaming=True)
-        model_map[model_id] = llm
+    # 角色分析
+    role_model = transmit['model_map'][transmit['role_model_id']]
+    model_map[ChapterPoint.ROLE_ANALYSIS.value] = ChatOpenAI(
+        model=role_model['model_id'],
+        api_key=role_model['api_key'],
+        base_url=role_model['url'],
+        temperature=role_model['temperature'],
+        max_tokens=role_model['max_token'],
+        top_p=role_model['top_p'],
+        timeout=role_model['time_out'],
+        streaming=True
+    )
+    # 关系分析
+    relation_model = transmit['model_map'][transmit['relation_model_id']]
+    model_map[ChapterPoint.RELATION_ANALYSIS.value] = ChatOpenAI(
+        model=relation_model['model_id'],
+        api_key=relation_model['api_key'],
+        base_url=relation_model['url'],
+        temperature=relation_model['temperature'],
+        max_tokens=relation_model['max_token'],
+        top_p=relation_model['top_p'],
+        timeout=relation_model['time_out'],
+        streaming=True
+    )
+    # 流程控制
+    process_model = transmit['model_map'][transmit['process_model_id']]
+    model_map[ChapterPoint.PROCESS_CHOOSES.value] = ChatOpenAI(
+        model=process_model['model_id'],
+        api_key=process_model['api_key'],
+        base_url=process_model['url'],
+        temperature=process_model['temperature'],
+        max_tokens=process_model['max_token'],
+        top_p=process_model['top_p'],
+        timeout=process_model['time_out'],
+        streaming=True
+    )
+    # 原文改写-场景分析
+    original_scene_model = transmit['model_map'][transmit['scene_model_id']]
+    model_map[ChapterPoint.ORIGINAL_SCENE.value] = ChatOpenAI(
+        model=original_scene_model['model_id'],
+        api_key=original_scene_model['api_key'],
+        base_url=original_scene_model['url'],
+        temperature=original_scene_model['temperature'],
+        max_tokens=original_scene_model['max_token'],
+        top_p=original_scene_model['top_p'],
+        timeout=original_scene_model['time_out'],
+        streaming=True
+    )
+    stop_list = [
+        # 格式终止符
+        "\n\n\n",                    # 三个换行
+
+        # 防止总结性废话
+        "总之",
+        "综上所述",
+        "通过以上描写可以看出",
+        "这段文字主要描写了",
+
+        # 防止内容重复/循环
+        "如前所述",
+        "正如前文所述",
+        "再次强调",
+        "值得一提的是",
+
+        # 防止过度标点
+        "！？",            # 连续的感叹+问号
+        "？！",
+        "......",          # 省略号过多
+        "！！！！",          # 三个感叹号
+        "？？？？",          # 三个问号
+        "，，，，",
+    ]
+    # 原文改写-脉络改写
+    original_framework_model = transmit['model_map'][transmit['framework_model_id']]
+    model_map[ChapterPoint.ORIGINAL_FRAMEWORK.value] = ChatOpenAI(
+        model=original_framework_model['model_id'],
+        api_key=original_framework_model['api_key'],
+        base_url=original_framework_model['url'],
+        temperature=original_framework_model['temperature'],
+        max_tokens=original_framework_model['max_token'],
+        top_p=original_framework_model['top_p'],
+        timeout=original_framework_model['time_out'],
+        streaming=True,
+        presence_penalty=0.5,      # 全局重复惩罚，防止车轱辘话
+        frequency_penalty=0.4,     # 频率惩罚，抑制高频词
+        stop=stop_list,
+        extra_body={
+            "repetition_penalty":1.05,  # 重复惩罚（注意：不同API参数名不同）
+            "top_k": 40                 # 限制候选词数量
+        }
+    )
+    # 番外生成-场景分析
+    extra_scene_model = transmit['model_map'][transmit['extra_scene_model_id']]
+    model_map[ChapterPoint.EXTRA_SCENE.value] = ChatOpenAI(
+        model=extra_scene_model['model_id'],
+        api_key=extra_scene_model['api_key'],
+        base_url=extra_scene_model['url'],
+        temperature=extra_scene_model['temperature'],
+        max_tokens=extra_scene_model['max_token'],
+        top_p=extra_scene_model['top_p'],
+        timeout=extra_scene_model['time_out'],
+        streaming=True
+    )
+    # 番外生成-脉络生成
+    extra_framework_model = transmit['model_map'][transmit['extra_framework_model_id']]
+    model_map[ChapterPoint.EXTRA_FRAMEWORK.value] = ChatOpenAI(
+        model=extra_framework_model['model_id'],
+        api_key=extra_framework_model['api_key'],
+        base_url=extra_framework_model['url'],
+        temperature=extra_framework_model['temperature'],
+        max_tokens=extra_framework_model['max_token'],
+        top_p=extra_framework_model['top_p'],
+        timeout=extra_framework_model['time_out'],
+        streaming=True,
+        presence_penalty=0.7,      # 全局重复惩罚，防止车轱辘话
+        frequency_penalty=0.5,     # 频率惩罚，抑制高频词
+        stop=stop_list,
+        extra_body={
+            "repetition_penalty":1.08,  # 重复惩罚（注意：不同API参数名不同）
+            "top_k": 60                 # 限制候选词数量
+        }
+    )
+    # 结果润色
+    polish_model = transmit['model_map'][transmit['polish_model_id']]
+    model_map[ChapterPoint.POLISH_CONTENT.value] = ChatOpenAI(
+        model=polish_model['model_id'],
+        api_key=polish_model['api_key'],
+        base_url=polish_model['url'],
+        temperature=polish_model['temperature'],
+        max_tokens=polish_model['max_token'],
+        top_p=polish_model['top_p'],
+        timeout=polish_model['time_out'],
+        streaming=True,
+        presence_penalty=0.15,      # 全局重复惩罚，防止车轱辘话
+        frequency_penalty=0.1,     # 频率惩罚，抑制高频词
+        stop=stop_list,
+        extra_body={
+            "repetition_penalty":1.01,  # 重复惩罚（注意：不同API参数名不同）
+            "top_k": 30                 # 限制候选词数量
+        }
+    )
 
     # 循环处理
     for chapter in chapter_list:
@@ -45,18 +175,18 @@ def polish(params, progress_callback=None):
         chapter_model = sqliteToChapter(temp_chapter)
         # 前述剧情简述
         print(9.01)
-        if ChapterStatus.RUNNING.value == chapter_model.status:
+        if ChapterStatus.FAIL.value != chapter_model.status:
             print(9.02)
             get_before_novel(chapter_model, transmit, model_map)
         # 后续剧情简述
         print(9.03)
-        if ChapterStatus.RUNNING.value == chapter_model.status:
+        if ChapterStatus.FAIL.value != chapter_model.status:
             print(9.04)
             get_after_novel(chapter_model, transmit, model_map)
 
         ## 角色分析
         print(10.01)
-        if ChapterPoint.ROLE_ANALYSIS.value == chapter_model.point and ChapterStatus.RUNNING.value == chapter_model.status:
+        if ChapterPoint.ROLE_ANALYSIS.value == chapter_model.point and ChapterStatus.FAIL.value != chapter_model.status:
             print(10.03)
             role_chapter_polish(chapter_model, transmit, model_map)
             print(f"角色分析-处理完成")
@@ -66,7 +196,7 @@ def polish(params, progress_callback=None):
 
         ## 关系分析
         print(10.04)
-        if ChapterPoint.RELATION_ANALYSIS.value == chapter_model.point and ChapterStatus.RUNNING.value == chapter_model.status:
+        if ChapterPoint.RELATION_ANALYSIS.value == chapter_model.point and ChapterStatus.FAIL.value != chapter_model.status:
             print(10.06)
             relation_chapter_polish(chapter_model, transmit, model_map)
             print(f"关系分析-处理完成")
@@ -77,7 +207,7 @@ def polish(params, progress_callback=None):
         ## 流程控制
         print(10.07)
         is_extra = False
-        if ChapterPoint.PROCESS_CHOOSES.value == chapter_model.point and ChapterStatus.RUNNING.value == chapter_model.status:
+        if ChapterPoint.PROCESS_CHOOSES.value == chapter_model.point and ChapterStatus.FAIL.value != chapter_model.status:
             print(10.09)
             is_extra = process_chapter_polish(chapter_model, transmit, model_map)
             print(f"流程控制-处理完成，当前Chapter：{str(chapter)}")
@@ -123,7 +253,7 @@ def after_chapter_polish(progress_callback, chapter_model: ChapterBO, transmit, 
     """剩余流程章节处理"""
     # 原文改写-场景分析
     print(10.10)
-    if ChapterPoint.ORIGINAL_SCENE.value == chapter_model.point and ChapterStatus.RUNNING.value == chapter_model.status:
+    if ChapterPoint.ORIGINAL_SCENE.value == chapter_model.point and ChapterStatus.FAIL.value != chapter_model.status:
         print(10.12)
         original_scene_chapter_polish(chapter_model, transmit, model_map)
         print(f"原文改写-场景分析-处理完成")
@@ -133,7 +263,7 @@ def after_chapter_polish(progress_callback, chapter_model: ChapterBO, transmit, 
 
     # 原文改写-脉络改写
     print(10.13)
-    if ChapterPoint.ORIGINAL_FRAMEWORK.value == chapter_model.point and ChapterStatus.RUNNING.value == chapter_model.status:
+    if ChapterPoint.ORIGINAL_FRAMEWORK.value == chapter_model.point and ChapterStatus.FAIL.value != chapter_model.status:
         print(10.15)
         original_framework_chapter_polish(chapter_model, transmit, model_map)
         print(f"原文改写-脉络改写-处理完成")
@@ -143,7 +273,7 @@ def after_chapter_polish(progress_callback, chapter_model: ChapterBO, transmit, 
 
     # 番外章节-场景分析
     print(10.16)
-    if ChapterPoint.EXTRA_SCENE.value == chapter_model.point and ChapterStatus.RUNNING.value == chapter_model.status:
+    if ChapterPoint.EXTRA_SCENE.value == chapter_model.point and ChapterStatus.FAIL.value != chapter_model.status:
         print(10.18)
         extra_scene_chapter_plish(chapter_model, transmit, model_map)
         print(f"番外章节-场景分析-处理完成")
@@ -153,7 +283,7 @@ def after_chapter_polish(progress_callback, chapter_model: ChapterBO, transmit, 
 
     # 番外章节-脉络生成
     print(10.19)
-    if ChapterPoint.EXTRA_FRAMEWORK.value == chapter_model.point and ChapterStatus.RUNNING.value == chapter_model.status:
+    if ChapterPoint.EXTRA_FRAMEWORK.value == chapter_model.point and ChapterStatus.FAIL.value != chapter_model.status:
         print(10.21)
         extra_framework_chapter_polish(chapter_model, transmit, model_map)
         print(f"番外章节-脉络生成-处理完成")
@@ -163,7 +293,7 @@ def after_chapter_polish(progress_callback, chapter_model: ChapterBO, transmit, 
 
     # 润色章节
     print(10.22)
-    if ChapterPoint.POLISH_CONTENT.value == chapter_model.point and ChapterStatus.RUNNING.value == chapter_model.status:
+    if ChapterPoint.POLISH_CONTENT.value == chapter_model.point and ChapterStatus.FAIL.value != chapter_model.status:
         print(10.24)
         polish_chapter_polish(chapter_model, transmit, model_map)
         print(f"润色章节-处理完成")

@@ -6,7 +6,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda
 from pydantic import Field, BaseModel, ConfigDict
 
-from pojo.table.Chapter import ChapterBO, ChapterPoint, ChapterStatus
+from pojo.table.Chapter import ChapterBO, ChapterPoint, ChapterStatus, ChapterType
 from sqlite.ChapterDB import update_chapter_role, update_chapter_status, update_chapter_relation, \
     update_chapter_process, update_chapter_scene, update_chapter_framework, update_chapter_polish
 from sqlite.Sqlite3Utils import query_role_model, \
@@ -110,7 +110,7 @@ def role_chapter_polish(chapter_model: ChapterBO, transmit, model_map, for_num=1
         print("角色分析-LangChain链构建")
         role_chain = (
                 RunnableLambda(get_role_prompt_template) |
-                model_map.get(transmit['role_model_id']).with_structured_output(RolePromptResult)
+                model_map.get(ChapterPoint.ROLE_ANALYSIS.value).with_structured_output(RolePromptResult)
         )
         print(f"角色分析-LangChain链Invoke数据填充")
         role = role_chain.invoke({
@@ -147,7 +147,7 @@ class RelationshipsResult(BaseModel):
 
 class RelationPromptResult(BaseModel):
     character_list: List[CharacterInfoResult] = Field(description="每个角色的建模信息")
-    relationships: List[RelationshipsResult] = Field(description="角色与角色之间的关系信息")
+    relationships: Optional[List[RelationshipsResult]] = Field(default=None, description="角色与角色之间的关系信息")
 
 def relation_chapter_polish(chapter_model: ChapterBO, transmit, model_map, for_num=1):
     """关系分析处理"""
@@ -156,7 +156,7 @@ def relation_chapter_polish(chapter_model: ChapterBO, transmit, model_map, for_n
         print("关系分析-LangChain链构建")
         relation_chain = (
             RunnableLambda(get_relation_prompt_template) |
-            model_map.get(transmit['relation_model_id']).with_structured_output(RelationPromptResult)
+            model_map.get(ChapterPoint.RELATION_ANALYSIS.value).with_structured_output(RelationPromptResult)
         )
         # 查询角色信息
         db_role = {}
@@ -251,7 +251,7 @@ def process_chapter_polish(chapter_model: ChapterBO, transmit, model_map, for_nu
         print("流程控制-LangChain链构建")
         process_chain = (
             RunnableLambda(get_process_prompt_template) |
-            model_map.get(transmit['process_model_id']) |
+            model_map.get(ChapterPoint.PROCESS_CHOOSES.value) |
             StrOutputParser()
         )
         print(f"流程控制-LangChain链Invoke数据填充")
@@ -298,7 +298,7 @@ def original_scene_chapter_polish(chapter_model: ChapterBO, transmit, model_map,
         print("原文改写-场景分析-LangChain链构建")
         original_chain = (
             RunnableLambda(get_original_scene_prompt_template) |
-            model_map.get(transmit['scene_model_id']) |
+            model_map.get(ChapterPoint.ORIGINAL_SCENE.value) |
             StrOutputParser()
         )
         print(4.01)
@@ -363,7 +363,7 @@ def original_framework_chapter_polish(chapter_model: ChapterBO, transmit, model_
         print("原文改写-脉络改写-LangChain链构建")
         original_framework_chain = (
             RunnableLambda(get_original_framework_prompt_template) |
-            model_map.get(transmit['framework_model_id']) |
+            model_map.get(ChapterPoint.ORIGINAL_FRAMEWORK.value) |
             StrOutputParser()
         )
         print(f"原文改写-脉络改写-LangChain链Invoke数据填充")
@@ -421,7 +421,7 @@ def extra_scene_chapter_plish(chapter_model: ChapterBO, transmit, model_map, for
         print("番外章节-场景分析-LangChain链构建")
         extra_scene_chain = (
             RunnableLambda(get_extra_scene_prompt_template) |
-            model_map.get(transmit['extra_scene_model_id']) |
+            model_map.get(ChapterPoint.EXTRA_SCENE.value) |
             StrOutputParser()
         )
         print(f"番外章节-场景分析-LangChain链Invoke数据填充")
@@ -477,7 +477,7 @@ def extra_framework_chapter_polish(chapter_model: ChapterBO, transmit, model_map
         print("番外章节-脉络生成-LangChain链构建")
         extra_framework_chain = (
                 RunnableLambda(get_extra_framework_prompt_template) |
-                model_map.get(transmit['framework_model_id']) |
+                model_map.get(ChapterPoint.EXTRA_FRAMEWORK.value) |
                 StrOutputParser()
         )
         print(f"番外章节-脉络生成-LangChain链Invoke数据填充")
@@ -534,7 +534,7 @@ def polish_chapter_polish(chapter_model: ChapterBO, transmit, model_map, for_num
         print("结果润色-LangChain链构建")
         polish_chain = (
             RunnableLambda(get_polish_prompt_template) |
-            model_map.get(transmit['polish_model_id']) |
+            model_map.get(ChapterPoint.POLISH_CONTENT.value) |
             StrOutputParser()
         )
         print(f"结果润色-LangChain链Invoke数据填充")
@@ -621,7 +621,7 @@ def chapter_novel_resume(chapter_model: ChapterBO, novel_content, transmit, mode
         print(22.01)
         novel_resume_chain = (
                 RunnableLambda(get_novel_resume_template) |
-                model_map.get(transmit['framework_model_id']) |
+                model_map.get(ChapterPoint.POLISH_CONTENT.value) |
                 StrOutputParser()
         )
         print(22.02)
