@@ -104,18 +104,18 @@ class GraphManager:
         """
         print(11.1)
         # 创建向量检索器
-        retriever = self.index.as_retriever(
-            retriever_mode="vector",
-            include_text=True,
-            similarity_top_k=5)
+        # retriever = self.index.as_retriever(
+        #     retriever_mode="vector",
+        #     include_text=True,
+        #     similarity_top_k=5)
         print(11.2)
-        # retriever = VectorContextRetriever(
-        #     self.storage_context.property_graph_store,
-        #     embed_model=self.embed_model,
-        #     vector_store=self.vector_store,
-        #     similarity_top_k=5,
-        #     include_text=True
-        # )
+        retriever = VectorContextRetriever(
+            self.storage_context.property_graph_store,
+            embed_model=self.embed_model,
+            vector_store=self.vector_store,
+            similarity_top_k=5,
+            include_text=True
+        )
         return retriever.retrieve(query)
 
 graph_manager = GraphManager()

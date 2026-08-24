@@ -215,10 +215,10 @@ def polish(params, progress_callback=None):
                 print(13.10)
                 ### 更新全部章节序号
                 update_chapter_sort(chapter_model.sort, chapter_model.project_id)
-                chapter_model.sort += 1
                 print(13.13)
                 ### 新增番外章节
                 extra_chapter_id = insert_extra_chapter(chapter_model)
+                chapter_model.sort += 1
                 print(13.14)
                 ### 获取番外章节信息
                 extra_chapter = query_chapter_by_id(extra_chapter_id)
