@@ -1,7 +1,8 @@
-from config.GlobalMap import APP_STOP_EVENT
+from config.GlobalMap import APP_STOP_EVENT, APP_STATE
 from pojo.table.Chapter import sqliteToChapter, ChapterPoint, ChapterStatus, ChapterBO
 from sqlite.ChapterDB import query_wait_polish_chapter, query_chapter_by_id, query_before_chapter, query_after_chapter, \
     update_chapter_status, update_chapter_sort, insert_extra_chapter, update_original_resume, update_polish_resume
+from sqlite.ProjectDB import edit_project_status
 from utils.PolishBridge import PolishBridge
 from windows.polish.ChapterPolish import role_chapter_polish, relation_chapter_polish, process_chapter_polish, \
     original_scene_chapter_polish, original_framework_chapter_polish, extra_scene_chapter_plish, polish_chapter_polish, \
@@ -85,12 +86,16 @@ def polish(transmit, bridge: PolishBridge):
         ## 后续流程
         after_chapter_polish(chapter_model, transmit)
 
-        print("632423")
         stop_event = APP_STOP_EVENT.get(transmit.project_id)
-        print("6324323")
         if stop_event and stop_event.is_set():
-            print("63242423")
             return
+
+    # 更新项目ID
+    edit_project_status(transmit.project_id)
+    # 更行公共状态
+    APP_STATE[transmit.project_id] = 3
+    # 更新列表
+    bridge.progress.emit(transmit.project_id)
 
 def after_chapter_polish(chapter_model: ChapterBO, transmit):
     """剩余流程章节处理"""

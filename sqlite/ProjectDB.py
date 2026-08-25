@@ -42,13 +42,15 @@ def edit_project_extra_framework_model_id(extra_framework_model_id, project_id):
 def edit_project_polish_model_id(polish_model_id, project_id):
     SqliteDB.execute("UPDATE project SET polish_model_id = ? WHERE id = ?", (polish_model_id, project_id))
 
+def edit_project_status(project_id):
+    SqliteDB.execute("UPDATE project SET status = 3 WHERE id = ?", (project_id,))
+
 # 保存新创建的项目信息
 def insert_project_info(project):
     title = project['title']
     author = project['author']
     word_count = project['word_count']
     return SqliteDB.execute("INSERT INTO project (title, author, word_count) VALUES (?, ?, ?)", (title, author, word_count))
-
 
 # 删除项目信息
 def remove_novel_info(project_id):
@@ -60,16 +62,3 @@ def remove_novel_info(project_id):
     SqliteDB.execute("DELETE FROM chapter WHERE project_id = ?", (project_id,))
     # 删除项目信息
     SqliteDB.execute("DELETE FROM project WHERE id = ?", (project_id,))
-
-# 更新项目-完成数
-def update_chapter_success_num(project_id):
-    SqliteDB.execute("UPDATE project SET success_num = success_num + 1 WHERE id = ?", (project_id,))
-
-# 更新项目-失败数
-def update_chapter_fail_num(num, project_id):
-    SqliteDB.execute("UPDATE project SET fail_num = ? WHERE id = ?", (num, project_id))
-
-# 更新项目-章节数
-def update_chapter_all_num(project_id):
-    SqliteDB.execute("UPDATE project SET chapter_num = chapter_num + 1, expansion_num = expansion_num + 1 WHERE id = ?", (project_id,))
-    
