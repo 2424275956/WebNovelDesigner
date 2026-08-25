@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButt
 from openai import OpenAI
 
 from resources.style.StyleSheet import button_style_sheet, title_style_sheet
-from sqlite.ModelDB import remove_model_conf, query_all_model
+from sqlite.ModelDB import remove_model_conf, query_all_model, query_model_by_id
 from . import InsertModel
 from . import ModifyModel
 
@@ -194,16 +194,16 @@ def review_page(self):
     self.conf_page_max_token.setStyleSheet(title_style_sheet())
     self.conf_page.addWidget(self.conf_page_max_token)
 
-    # timeOut
-    conf_page_time_out_title = QLabel("TimeOut(单位秒：s)")
-    conf_page_time_out_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    conf_page_time_out_title.setStyleSheet(title_style_sheet())
-    self.conf_page.addWidget(conf_page_time_out_title)
-    # time
-    self.conf_page_time_out = QLabel("-")
-    self.conf_page_time_out.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    self.conf_page_time_out.setStyleSheet(title_style_sheet())
-    self.conf_page.addWidget(self.conf_page_time_out)
+    # # timeOut
+    # conf_page_time_out_title = QLabel("TimeOut(单位秒：s)")
+    # conf_page_time_out_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    # conf_page_time_out_title.setStyleSheet(title_style_sheet())
+    # self.conf_page.addWidget(conf_page_time_out_title)
+    # # time
+    # self.conf_page_time_out = QLabel("-")
+    # self.conf_page_time_out.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    # self.conf_page_time_out.setStyleSheet(title_style_sheet())
+    # self.conf_page.addWidget(self.conf_page_time_out)
 
     # 数据填充
     if len(self.all_models) > 0:
@@ -237,6 +237,8 @@ def modify_model_conf(self):
     if dialog.exec() == QDialog.DialogCode.Accepted:
         # 对话框成功保存并关闭同时刷新页面
         review_model_list(self.model_list)
+        # 获取最新模型信息
+        model_conf_info(self, query_model_by_id(self.conf_page_id))
 
 
 """模型详情"""
@@ -255,7 +257,7 @@ def model_conf_info(self, model_conf):
         self.conf_page_temperature.setText(str(model_conf['temperature']))
         self.conf_page_top_p.setText(str(model_conf['top_p']))
         self.conf_page_max_token.setText(str(model_conf['max_token']))
-        self.conf_page_time_out.setText(str(model_conf['time_out']))
+        # self.conf_page_time_out.setText(str(model_conf['time_out']))
         self.conf_page_api_key = model_conf['api_key']
         self.conf_page_id = model_conf['id']
 
