@@ -44,9 +44,6 @@ def polish(transmit, bridge: PolishBridge):
             print(10.03)
             role_chapter_polish(chapter_model, transmit)
             print(f"角色分析-处理完成")
-            stop_event = APP_STOP_EVENT.get(transmit.project_id)
-            if stop_event and stop_event.is_set():
-                return
 
         ## 流程控制
         print(10.07)
@@ -78,12 +75,6 @@ def polish(transmit, bridge: PolishBridge):
                     # 处理
                     after_chapter_polish(extra_model, transmit)
                     print(13.18)
-            print(13.19)
-            stop_event = APP_STOP_EVENT.get(chapter_model.project_id)
-            print(13.20)
-            if stop_event and stop_event.is_set():
-                print(13.21)
-                return
 
         #  前述剧情更新
         if is_extra:
@@ -93,8 +84,12 @@ def polish(transmit, bridge: PolishBridge):
             get_before_novel(chapter_model, transmit)
         ## 后续流程
         after_chapter_polish(chapter_model, transmit)
+
+        print("632423")
         stop_event = APP_STOP_EVENT.get(transmit.project_id)
+        print("6324323")
         if stop_event and stop_event.is_set():
+            print("63242423")
             return
 
 def after_chapter_polish(chapter_model: ChapterBO, transmit):
@@ -105,9 +100,6 @@ def after_chapter_polish(chapter_model: ChapterBO, transmit):
         print(10.12)
         original_scene_chapter_polish(chapter_model, transmit)
         print(f"原文改写-场景分析-处理完成")
-        stop_event = APP_STOP_EVENT.get(transmit.project_id)
-        if stop_event and stop_event.is_set():
-            return
 
     # 原文改写-脉络改写
     print(10.13)
@@ -115,9 +107,6 @@ def after_chapter_polish(chapter_model: ChapterBO, transmit):
         print(10.15)
         original_framework_chapter_polish(chapter_model, transmit)
         print(f"原文改写-脉络改写-处理完成")
-        stop_event = APP_STOP_EVENT.get(transmit.project_id)
-        if stop_event and stop_event.is_set():
-            return
 
     # 番外章节-场景分析
     print(10.16)
@@ -125,9 +114,6 @@ def after_chapter_polish(chapter_model: ChapterBO, transmit):
         print(10.18)
         extra_scene_chapter_plish(chapter_model, transmit)
         print(f"番外章节-场景分析-处理完成")
-        stop_event = APP_STOP_EVENT.get(transmit.project_id)
-        if stop_event and stop_event.is_set():
-            return
 
     # 番外章节-脉络生成
     print(10.19)
@@ -135,9 +121,6 @@ def after_chapter_polish(chapter_model: ChapterBO, transmit):
         print(10.21)
         extra_framework_chapter_polish(chapter_model, transmit)
         print(f"番外章节-脉络生成-处理完成")
-        stop_event = APP_STOP_EVENT.get(transmit.project_id)
-        if stop_event and stop_event.is_set():
-            return
 
     # 润色章节
     print(10.22)
@@ -145,9 +128,6 @@ def after_chapter_polish(chapter_model: ChapterBO, transmit):
         print(10.24)
         polish_chapter_polish(chapter_model, transmit)
         print(f"润色章节-处理完成")
-        stop_event = APP_STOP_EVENT.get(transmit.project_id)
-        if stop_event and stop_event.is_set():
-            return
 
     ## 关系分析
     print(10.04)

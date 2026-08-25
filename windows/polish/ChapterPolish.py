@@ -1,11 +1,12 @@
 import re
-from itertools import permutations, combinations
-from typing import List, Optional
+from itertools import combinations
+from typing import List
 
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda
-from pydantic import Field, BaseModel, ConfigDict
+from pydantic import Field, BaseModel
 
+from config.GlobalMap import APP_STOP_EVENT
 from pojo.relation import RelationPromptResult
 from pojo.role import RolePromptResult
 from pojo.table.Chapter import ChapterBO, ChapterPoint, ChapterStatus, ChapterType
@@ -77,33 +78,6 @@ def is_valid_chinese_text(text: str, max_english_ratio: float = 0.3) -> tuple[bo
     is_valid = english_ratio <= max_english_ratio
     return is_valid, english_ratio
 
-class CharacterCoreTraitLabel(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True,
-                              extra='ignore' )
-    trait_label: str = Field(description="性格标签（如：温柔）")
-    evidence: str = Field(description="对该性格的综合一句话总结")
-
-class CharacterInfoResult(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True,
-                              extra='ignore' )
-    character_name: str = Field(description="角色的标准名称")
-    alias_name: Optional[str] = Field(default=None, description="角色的别称，多数人对其的称呼")
-    identify: str = Field(description="角色的身份，如皇帝、公主、大侠、圣女等")
-    sex: str = Field(description="角色的性别，如男性、女性、男女同体等")
-    type: str = Field(description="角色的类别，如人类、妖兽、精灵等")
-    size: str = Field(description="角色的大概身高，如1米5、2米等")
-    colour: str = Field(description="角色的肤色，如苍白、咖啡色、白色等")
-    chest: Optional[str] = Field(default=None, description="女性角色的胸部特征,如：半球型（圆型）、水滴型（泪珠型）、圆盘型、圆锥型（鸟嘴型）、下垂型（松弛型/钟型）、扁平型（苗条型/平胸型）、外扩型（东西型）")
-    chest_colour: Optional[str] = Field(default=None, description="女性角色的乳晕颜色（粉红、褐红、深红发黑）")
-    chest_size: Optional[str] = Field(default=None, description="女性角色的胸部大小（精致小巧、馒头大小、硕大丰盈等）")
-    pubes: Optional[str] = Field(default=None, description="女性角色的阴部特征（馒头型、一线天型、蝴蝶型等）")
-    pubes_hair: Optional[str] = Field(default=None, description="女性角色的阴部毛发特征（毛发稀疏、毛发浓密、白虎等）")
-    pubes_colour: Optional[str] = Field(default=None, description="女性角色的阴部颜色（粉色、褐色、深褐色、黑色）")
-    penis: Optional[str] = Field(default=None, description="男性角色的阴茎特征（如蘑菇头型、子弹头型、平头型）")
-    overall_summary: str = Field(description="对该角色性格的综合一句话总结")
-    core_traits: List[CharacterCoreTraitLabel] = Field(description="角色性格特征")
-
-
 def role_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
     """角色分析处理"""
     # 角色分析
@@ -129,6 +103,11 @@ def role_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
         print(f"角色分析-章节信息更新完成")
     except Exception as e:
         print(e)
+        # 退出循环
+        stop_event = APP_STOP_EVENT.get(transmit.project_id)
+        if stop_event and stop_event.is_set():
+            chapter_model.status = ChapterStatus.FAIL.value
+            return
         if 3 == for_num:
             update_chapter_status(ChapterStatus.FAIL.value, chapter_model.id)
         else:
@@ -185,6 +164,11 @@ def relation_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
         print(f"关系分析-章节信息更新完成")
     except Exception as e:
         print(e)
+        # 退出循环
+        stop_event = APP_STOP_EVENT.get(transmit.project_id)
+        if stop_event and stop_event.is_set():
+            chapter_model.status = ChapterStatus.FAIL.value
+            return
         if 3 == for_num:
             update_chapter_status(4, chapter_model.id)
             chapter_model.status = ChapterStatus.FAIL.value
@@ -298,6 +282,11 @@ def process_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
             return False
     except Exception as e:
         print(e)
+        # 退出循环
+        stop_event = APP_STOP_EVENT.get(transmit.project_id)
+        if stop_event and stop_event.is_set():
+            chapter_model.status = ChapterStatus.FAIL.value
+            return False
         if 3 == for_num:
             update_chapter_status(4, chapter_model.id)
             return False
@@ -347,6 +336,11 @@ def original_scene_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1)
         return True
     except Exception as e:
         print(e)
+        # 退出循环
+        stop_event = APP_STOP_EVENT.get(transmit.project_id)
+        if stop_event and stop_event.is_set():
+            chapter_model.status = ChapterStatus.FAIL.value
+            return False
         if 3 == for_num:
             update_chapter_status(ChapterStatus.FAIL.value, chapter_model.id)
             chapter_model.status = ChapterStatus.FAIL.value
@@ -419,6 +413,11 @@ def original_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_nu
         print(f"原文改写-脉络改写-章节信息更新完成")
     except Exception as e:
         print(e)
+        # 退出循环
+        stop_event = APP_STOP_EVENT.get(transmit.project_id)
+        if stop_event and stop_event.is_set():
+            chapter_model.status = ChapterStatus.FAIL.value
+            return
         if 3 == for_num:
             update_chapter_status(ChapterStatus.FAIL.value, chapter_model.id)
             chapter_model.status = ChapterStatus.FAIL.value
@@ -494,6 +493,11 @@ def extra_scene_chapter_plish(chapter_model: ChapterBO, transmit, for_num=1):
         print(f"番外章节-场景分析-章节信息更新完成")
     except Exception as e:
         print(e)
+        # 退出循环
+        stop_event = APP_STOP_EVENT.get(transmit.project_id)
+        if stop_event and stop_event.is_set():
+            chapter_model.status = ChapterStatus.FAIL.value
+            return
         if 3 == for_num:
             update_chapter_status(ChapterStatus.FAIL.value, chapter_model.id)
             chapter_model.status = ChapterStatus.FAIL.value
@@ -559,6 +563,11 @@ def extra_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1
         print(f"番外章节-脉络生成-章节信息更新完成")
     except Exception as e:
         print(e)
+        # 退出循环
+        stop_event = APP_STOP_EVENT.get(transmit.project_id)
+        if stop_event and stop_event.is_set():
+            chapter_model.status = ChapterStatus.FAIL.value
+            return
         if 3 == for_num:
             update_chapter_status(ChapterStatus.FAIL.value, chapter_model.id)
             chapter_model.status = ChapterStatus.FAIL.value
@@ -607,6 +616,11 @@ def polish_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
         print(f"结果润色-章节信息更新完成")
     except Exception as e:
         print(e)
+        # 退出循环
+        stop_event = APP_STOP_EVENT.get(transmit.project_id)
+        if stop_event and stop_event.is_set():
+            chapter_model.status = ChapterStatus.FAIL.value
+            return
         if 3 == for_num:
             update_chapter_status(ChapterStatus.FAIL.value, chapter_model.id)
             chapter_model.status = ChapterStatus.FAIL.value
@@ -644,6 +658,11 @@ def chapter_novel_resume(chapter_model: ChapterBO, novel_content, transmit, for_
         return raw_text
     except Exception as e:
         print(f"剧情简述-文本压缩失败：{e}")
+        # 退出循环
+        stop_event = APP_STOP_EVENT.get(transmit.project_id)
+        if stop_event and stop_event.is_set():
+            chapter_model.status = ChapterStatus.FAIL.value
+            return None
         if 3 == for_num:
             chapter_model.status = ChapterStatus.FAIL.value
             return novel_content

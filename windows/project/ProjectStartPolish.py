@@ -5,6 +5,8 @@ from PyQt6.QtWidgets import QMessageBox
 from langchain_openai import ChatOpenAI
 from openai import OpenAI
 
+from config import GlobalHttpClient
+from config.GlobalHttpClient import GLOBAL_HTTP_CLIENT
 from config.GlobalMap import APP_STATE, APP_FUTURE, APP_STOP_EVENT
 from pojo.polish import PolishTransmit
 from sqlite.ModelDB import query_model_by_id
@@ -111,6 +113,8 @@ def start(self):
         stop_event = APP_STOP_EVENT.get(transmit.project_id)
         if stop_event:
             stop_event.set()
+        # 停止client
+        GlobalHttpClient.emergency_stop(transmit.project_id)
         return True
 
     # 获取最新项目信息
@@ -296,8 +300,8 @@ def start(self):
         temperature=role_model['temperature'],
         max_tokens=role_model['max_token'],
         top_p=role_model['top_p'],
-        timeout=role_model['time_out'],
-        streaming=True
+        streaming=True,
+        http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )
     # 流程控制
     process_model = model_map[self.project_info['process_model_id']]
@@ -308,8 +312,8 @@ def start(self):
         temperature=process_model['temperature'],
         max_tokens=process_model['max_token'],
         top_p=process_model['top_p'],
-        timeout=process_model['time_out'],
-        streaming=True
+        streaming=True,
+        http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )
     # 原文改写-场景分析
     original_scene_model = model_map[self.project_info['scene_model_id']]
@@ -320,8 +324,8 @@ def start(self):
         temperature=original_scene_model['temperature'],
         max_tokens=original_scene_model['max_token'],
         top_p=original_scene_model['top_p'],
-        timeout=original_scene_model['time_out'],
-        streaming=True
+        streaming=True,
+        http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )
     # 终止符
     stop_list = [
@@ -357,14 +361,14 @@ def start(self):
         temperature=original_framework_model['temperature'],
         max_tokens=original_framework_model['max_token'],
         top_p=original_framework_model['top_p'],
-        timeout=original_framework_model['time_out'],
         streaming=True,
         presence_penalty=0.5,      # 全局重复惩罚，防止车轱辘话
         frequency_penalty=0.4,     # 频率惩罚，抑制高频词
         stop=stop_list,
         extra_body={
             "min_tokens": 8000
-        }
+        },
+        http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )
     # 番外生成-场景分析
     extra_scene_model = model_map[self.project_info['extra_scene_model_id']]
@@ -375,8 +379,8 @@ def start(self):
         temperature=extra_scene_model['temperature'],
         max_tokens=extra_scene_model['max_token'],
         top_p=extra_scene_model['top_p'],
-        timeout=extra_scene_model['time_out'],
-        streaming=True
+        streaming=True,
+        http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )
     # 番外生成-脉络生成
     extra_framework_model = model_map[self.project_info['extra_framework_model_id']]
@@ -387,14 +391,14 @@ def start(self):
         temperature=extra_framework_model['temperature'],
         max_tokens=extra_framework_model['max_token'],
         top_p=extra_framework_model['top_p'],
-        timeout=extra_framework_model['time_out'],
         streaming=True,
         presence_penalty=0.7,      # 全局重复惩罚，防止车轱辘话
         frequency_penalty=0.5,     # 频率惩罚，抑制高频词
         stop=stop_list,
         extra_body={
             "min_tokens": 8000
-        }
+        },
+        http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )
     # 结果润色
     polish_model = model_map[self.project_info['polish_model_id']]
@@ -405,14 +409,14 @@ def start(self):
         temperature=polish_model['temperature'],
         max_tokens=polish_model['max_token'],
         top_p=polish_model['top_p'],
-        timeout=polish_model['time_out'],
         streaming=True,
         presence_penalty=0.15,      # 全局重复惩罚，防止车轱辘话
         frequency_penalty=0.1,     # 频率惩罚，抑制高频词
         stop=stop_list,
         extra_body={
             "min_tokens": 8000
-        }
+        },
+        http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )
     # 关系分析
     relation_model = model_map[self.project_info['relation_model_id']]
@@ -423,8 +427,8 @@ def start(self):
         temperature=relation_model['temperature'],
         max_tokens=relation_model['max_token'],
         top_p=relation_model['top_p'],
-        timeout=relation_model['time_out'],
-        streaming=True
+        streaming=True,
+        http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )
 
     # 处理模型任务
