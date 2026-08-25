@@ -93,7 +93,7 @@ def novel_chapter(self, project_id):
             # 章节字数
             word_count = chapter['old_len']
             new_word_count = chapter['new_len']
-            if 6 == chapter['point']:
+            if chapter['point'] in [600, 700]:
                 word_label = QLabel(f"{word_count}字 -> {new_word_count}字")
             else:
                 word_label = QLabel(f"{word_count}字")
