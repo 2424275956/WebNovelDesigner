@@ -41,8 +41,7 @@ def get_role_prompt_template(inputs) -> ChatPromptTemplate:
     """获取用户分析提示词模版"""
     # 系统提示词
     system_template = str(inputs['role_prompt_system'])
-    user_template = str(inputs['role_prompt_user'])
-    user_template = user_template + """
+    system_template = system_template + """
             【输出内容规则】：
             - ‘chest’未提及时随机选择，男性角色为NULL。
             - ‘chest_colour’未提及按角色年龄匹配，男性角色为NULL。
@@ -58,6 +57,7 @@ def get_role_prompt_template(inputs) -> ChatPromptTemplate:
     system_template = system_template.replace("{reference_text}", reference_text).replace("{original_text}", original_text)
     system_template = special_chars_parse(system_template)
     # 用户提示词
+    user_template = str(inputs['role_prompt_user'])
     user_template = user_template.replace("{reference_text}", reference_text).replace("{original_text}", original_text)
     user_template = special_chars_parse(user_template)
     template = ChatPromptTemplate.from_messages([
@@ -69,8 +69,7 @@ def get_role_prompt_template(inputs) -> ChatPromptTemplate:
 def get_relation_prompt_template(inputs) -> ChatPromptTemplate:
     """获取关系分析提示词模版"""
     system_template = str(inputs['relation_prompt_system'])
-    user_template = str(inputs['relation_prompt_user'])
-    user_template = user_template + """
+    system_template = system_template + """
             【输出要求】：
             - 禁止输出与JSON格式无关内容。
             - character_a 与 character_b 只允许是单独的角色。
@@ -87,6 +86,7 @@ def get_relation_prompt_template(inputs) -> ChatPromptTemplate:
                         .replace("{db_role_json}", db_role_json))
     system_template = special_chars_parse(system_template)
     # 用户提示词
+    user_template = str(inputs['relation_prompt_user'])
     user_template = (user_template
                         .replace("{reference_text}", reference_text)
                         .replace("{original_text}", original_text)
@@ -145,8 +145,7 @@ def get_process_prompt_template(inputs) -> ChatPromptTemplate:
 def get_original_scene_prompt_template(inputs) -> ChatPromptTemplate:
     """获取关系分析提示词模版"""
     system_template = str(inputs['original_scene_prompt_system'])
-    user_template = str(inputs['original_scene_prompt_user'])
-    user_template = user_template + """
+    system_template = system_template + """
             【输出格式】：必须按照下述数据格式生成为有效的数组格式输出，禁止携带无关内容,根据匹配度排序选出最匹配的3个场景。
              ["场景名称","场景名称"]
     """
@@ -164,6 +163,7 @@ def get_original_scene_prompt_template(inputs) -> ChatPromptTemplate:
                        .replace("{scene_list}", str(scene_list)))
     system_template = special_chars_parse(system_template)
     # 用户提示词
+    user_template = str(inputs['original_scene_prompt_user'])
     user_template = (user_template
                      .replace("{relation_analysis}", relation_analysis)
                      .replace("{reference_before_text}", reference_before_text)
