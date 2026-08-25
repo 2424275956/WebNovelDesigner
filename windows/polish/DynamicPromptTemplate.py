@@ -247,7 +247,6 @@ def get_extra_scene_prompt_template(inputs) -> ChatPromptTemplate:
              ["场景名称","场景名称"]
     """
     reference_before_text = (inputs['reference_before_text'])
-    original_text = (inputs['original_text'])
     reference_after_text = (inputs['reference_after_text'])
     relation_analysis = (inputs['relation_analysis'])
     process_analysis = (inputs['process_analysis'])
@@ -255,7 +254,6 @@ def get_extra_scene_prompt_template(inputs) -> ChatPromptTemplate:
     # 系统提示词
     system_template = (system_template
                        .replace("{reference_before_text}", reference_before_text)
-                       .replace("{original_text}", str(original_text))
                        .replace("{reference_after_text}", reference_after_text)
                        .replace("{relation_analysis}", relation_analysis)
                        .replace("{process_analysis}", process_analysis)
@@ -264,7 +262,6 @@ def get_extra_scene_prompt_template(inputs) -> ChatPromptTemplate:
     # 用户提示词
     user_template = (user_template
                      .replace("{reference_before_text}", reference_before_text)
-                     .replace("{original_text}", str(original_text))
                      .replace("{reference_after_text}", reference_after_text)
                      .replace("{relation_analysis}", relation_analysis)
                      .replace("{process_analysis}", process_analysis)

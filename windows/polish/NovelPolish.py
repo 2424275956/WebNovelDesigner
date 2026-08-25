@@ -226,9 +226,9 @@ def polish(params, progress_callback=None):
                 print(13.16)
                 if extra_chapter:
                     print(13.17)
+                    get_before_novel(extra_model, transmit, model_map)
                     # 后续剧情-置空，重新处理
-                    chapter_model.after_content = None
-                    get_after_novel(chapter_model, transmit, model_map)
+                    get_after_novel(extra_model, transmit, model_map)
                     # 处理
                     after_chapter_polish(progress_callback, extra_model, transmit, model_map)
                     print(13.18)
@@ -242,6 +242,8 @@ def polish(params, progress_callback=None):
         #  前述剧情更新
         if is_extra:
             chapter_model.before_content = None
+            chapter_model.after_content = None
+            get_after_novel(chapter_model, transmit, model_map)
             get_before_novel(chapter_model, transmit, model_map)
         ## 后续流程
         after_chapter_polish(progress_callback, chapter_model, transmit, model_map)

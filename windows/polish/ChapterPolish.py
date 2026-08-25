@@ -394,7 +394,7 @@ def original_framework_chapter_polish(chapter_model: ChapterBO, transmit, model_
             return
         print(f"原文改写-脉络改写-推理结果完成：{framework_str}")
         # 长度判断
-        if len(framework_str) < 3500:
+        if len(framework_str) < 3500 or (ChapterType.ORIGINAL_POLISH.value == chapter_model.type and len(raw_text) < len(chapter_model.old_content)):
             print(f"原文改写-脉络改写-长度低于阈值")
             if 3 == for_num:
                 update_chapter_status(ChapterStatus.FAIL.value, chapter_model.id)
@@ -429,7 +429,6 @@ def extra_scene_chapter_plish(chapter_model: ChapterBO, transmit, model_map, for
                 "extra_scene_prompt_system": transmit['extra_scene_system'],
                 "extra_scene_prompt_user": transmit['extra_scene_user'],
                 "reference_before_text": chapter_model.before_content,
-                "original_text": chapter_model.old_content,
                 "reference_after_text": chapter_model.after_content,
                 "relation_analysis": chapter_model.relation_content,
                 "process_analysis": chapter_model.process_content,
@@ -508,7 +507,7 @@ def extra_framework_chapter_polish(chapter_model: ChapterBO, transmit, model_map
             return
         print(f"番外章节-脉络生成-推理结果完成：{framework_str}")
         # 长度判断
-        if len(framework_str) < 3500:
+        if len(framework_str) < 3500 or (ChapterType.ORIGINAL_POLISH.value == chapter_model.type and len(raw_text) < len(chapter_model.old_content)):
             print(f"番外章节-脉络生成-长度低于阈值")
             if 3 == for_num:
                 update_chapter_status(ChapterStatus.FAIL.value, chapter_model.id)
@@ -557,7 +556,7 @@ def polish_chapter_polish(chapter_model: ChapterBO, transmit, model_map, for_num
             return
         print(f"结果润色-推理结果完成：{raw_text}")
         # 长度判断
-        if len(raw_text) < 3500:
+        if len(raw_text) < 3500 or (ChapterType.ORIGINAL_POLISH.value == chapter_model.type and len(raw_text) < len(chapter_model.old_content)):
             print(f"结果润色-长度低于阈值")
             if 3 == for_num:
                 update_chapter_status(ChapterStatus.FAIL.value, chapter_model.id)
