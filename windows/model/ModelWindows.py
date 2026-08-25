@@ -44,8 +44,6 @@ def review_page(self):
     insert_model_btn.setFixedSize(120, 40)
     # 按钮样式
     insert_model_btn.setStyleSheet(button_style_sheet())
-    # 按钮触发函数
-    insert_model_btn.clicked.connect(lambda: insert_model(self))
     header_layout.addWidget(insert_model_btn)
 
     # 加入主架构
@@ -71,6 +69,8 @@ def review_page(self):
     # 渲染列表
     self.all_models = review_model_list(self.model_list)
     self.model_list.itemClicked.connect(lambda item: on_item_clicked(self, item))
+    # 按钮触发函数
+    insert_model_btn.clicked.connect(lambda: insert_model(self))
     # 配置不为空
     if self.model_list.count() > 0:
         self.model_list.setCurrentRow(0)

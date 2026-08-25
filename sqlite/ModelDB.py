@@ -24,10 +24,9 @@ def insert_model_conf(req_json):
 
 # 更新模型配置信息
 def modify_model_conf(req_json):
-    SqliteDB.execute("UPDATE model_info SET name = ?, type = ?, api_key = ?, url = ?, model_id = ?, temperature = ?, top_p = ?, max_token = ?, time_out = ? WHERE id = ?",
+    SqliteDB.execute("UPDATE model_info SET name = ?, type = ?, api_key = ?, url = ?, model_id = ?, temperature = ?, top_p = ?, max_token = ?, time_out = 300 WHERE id = ?",
                            (req_json['name'], req_json['type'], req_json['api_key'], req_json['url'], req_json['model_id'],
                             req_json['temperature'] if req_json['temperature'] is not None else 0.7,
                             req_json['top_p'] if req_json['top_p'] is not None else 0.9,
                             req_json['max_token'] if req_json['max_token'] is not None else 32768,
-                            req_json['time_out'] if req_json['time_out'] is not None else 300,
                             req_json['id']))

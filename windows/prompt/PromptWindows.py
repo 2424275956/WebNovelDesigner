@@ -66,9 +66,9 @@ def prompt_page_info(self, model):
 def delete_prompt(self):
     remove_prompt(self.prompt_id)
     # 渲染左侧列表
-    self.all_models = review_prompt_list(self.model_list)
-    if len(self.all_models) > 0:
-        prompt_page_info(self, self.all_models[0])
+    self.all_prompt = review_prompt_list(self.prompt_list)
+    if len(self.all_prompt) > 0:
+        prompt_page_info(self, self.all_prompt[0])
 
 """导入配置校验"""
 def import_prompt_check(self, rules, msg):
@@ -197,7 +197,7 @@ def import_prompt(self):
             # 保存
             import_prompt_template(req_json)
             # 渲染左侧列表
-            self.all_models = review_prompt_list(self.model_list)
+            self.all_prompt = review_prompt_list(self.prompt_list)
             QMessageBox.warning(self, "错误", f"✅ 导入模版成功")
             return True
     else:
@@ -538,7 +538,7 @@ def prompt_open_windows(self):
 def show_insert_dialog(self):
     dialog = InsertModel(self)
     if dialog.exec() == QDialog.DialogCode.Accepted:
-        review_prompt_list(self.model_list)
+        review_prompt_list(self.prompt_list)
 
 """页面渲染"""
 def review_page(self):
@@ -587,23 +587,23 @@ def review_page(self):
     self.model_lower_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
 
     # 左侧列表创建
-    self.model_list = QListWidget()
-    self.model_list.setContentsMargins(10, 10, 10, 10)
+    self.prompt_list = QListWidget()
+    self.prompt_list.setContentsMargins(10, 10, 10, 10)
     # 设置大小
-    self.model_list.setFixedWidth(200)
-    self.model_list.setItemAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
-    self.model_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    self.prompt_list.setFixedWidth(200)
+    self.prompt_list.setItemAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+    self.prompt_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
     # 渲染列表
-    self.all_models = review_prompt_list(self.model_list)
-    self.model_list.itemClicked.connect(lambda item: on_item_clicked(self, item))
+    self.all_prompt = review_prompt_list(self.prompt_list)
+    self.prompt_list.itemClicked.connect(lambda item: on_item_clicked(self, item))
     # 设置prompt_id
-    if self.all_models and len(self.all_models) > 0:
-        model = self.all_models[0]
+    if self.all_prompt and len(self.all_prompt) > 0:
+        model = self.all_prompt[0]
         self.prompt_id = model['id']
     # 配置不为空
-    if self.model_list.count() > 0:
-        self.model_list.setCurrentRow(0)
-    self.model_lower_layout.addWidget(self.model_list)
+    if self.prompt_list.count() > 0:
+        self.prompt_list.setCurrentRow(0)
+    self.model_lower_layout.addWidget(self.prompt_list)
 
     # 垂直分割线
     vqf = QFrame()
@@ -789,8 +789,8 @@ def review_page(self):
     self.conf_page.addWidget(scroll_area)
 
     # 渲染默认页面
-    if self.all_models:
-        prompt_page_info(self, self.all_models[0])
+    if self.all_prompt:
+        prompt_page_info(self, self.all_prompt[0])
 
     # 尾部插入配置页面
     self.model_lower_layout.addLayout(self.conf_page)

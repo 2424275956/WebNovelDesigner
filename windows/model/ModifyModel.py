@@ -37,7 +37,7 @@ class ModifyModel(QDialog):
         layout_row1_col1.addWidget(name_title)
         # 模型名称输入框
         self.name_edit = QLineEdit()
-        self.name_edit.setText(model.conf_page_model_name.text())
+        self.name_edit.setText(model.conf_page_right_model_name.text())
         self.name_edit.setFixedSize(220, 40)
         self.name_edit.setStyleSheet(line_edit_style_sheet())
         self.name_edit.setAlignment(Qt.AlignmentFlag.AlignLeft)
@@ -59,7 +59,7 @@ class ModifyModel(QDialog):
         self.type_combo.addItem("Local(本地oMLX)", 3)
         self.type_combo.setFixedSize(220, 40)
         self.type_combo.setStyleSheet(line_edit_style_sheet())
-        self.type_combo.setCurrentIndex(model.conf_page_model_type_int - 1)
+        self.type_combo.setCurrentIndex(0)
         self.type_combo.currentTextChanged.connect(lambda : self.update_ui_visibility(self.type_combo.currentText()))
         layout_row1_col2.addWidget(self.type_combo)
         layout_row1.addLayout(layout_row1_col2)
@@ -172,21 +172,21 @@ class ModifyModel(QDialog):
         layout_row10.addLayout(layout_row10_col1)
 
         # 第10行第2列
-        layout_row10_col2 = QVBoxLayout()
-        layout_row10_col2.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        # timeOut
-        time_out_title = QLabel("Timeout（s）")
-        time_out_title.setStyleSheet(title_style_sheet())
-        time_out_title.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        layout_row10_col2.addWidget(time_out_title)
-        # timeOut输入
-        self.time_out_edit = DoubleLineEdit(300, 3600, 0)
-        self.time_out_edit.setFixedSize(220, 40)
-        self.time_out_edit.setText(model.conf_page_time_out.text())
-        self.time_out_edit.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.time_out_edit.setStyleSheet(line_edit_style_sheet())
-        layout_row10_col2.addWidget(self.time_out_edit)
-        layout_row10.addLayout(layout_row10_col2)
+        # layout_row10_col2 = QVBoxLayout()
+        # layout_row10_col2.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        # # timeOut
+        # time_out_title = QLabel("Timeout（s）")
+        # time_out_title.setStyleSheet(title_style_sheet())
+        # time_out_title.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        # layout_row10_col2.addWidget(time_out_title)
+        # # timeOut输入
+        # self.time_out_edit = DoubleLineEdit(300, 3600, 0)
+        # self.time_out_edit.setFixedSize(220, 40)
+        # self.time_out_edit.setText(model.conf_page_time_out.text())
+        # self.time_out_edit.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        # self.time_out_edit.setStyleSheet(line_edit_style_sheet())
+        # layout_row10_col2.addWidget(self.time_out_edit)
+        # layout_row10.addLayout(layout_row10_col2)
         main_layout.addLayout(layout_row10)
 
         # 第十一行分割线
@@ -257,31 +257,31 @@ class ModifyModel(QDialog):
         name = self.name_edit.text()
         if len(name) < 1:
             QMessageBox.warning(self, "错误", f"❌ 模型名称为空")
-            return False
+            return
 
         # 配置类型
         model_type = self.type_combo.currentData()
         if model_type is None:
             QMessageBox.warning(self, "错误", f"❌ 模型类型为空")
-            return False
+            return
 
         # baseUrl
         url = self.base_url.text()
         if url is None:
             QMessageBox.warning(self, "错误", f"❌ BaseURL地址为空")
-            return False
+            return
 
         # api_key
         api_key = self.api_key.text()
         if api_key is None:
             QMessageBox.warning(self, "错误", f"❌ API Key密匙为空")
-            return False
+            return
 
         # model_id
         model_id = self.model_id.text()
         if model_id is None:
             QMessageBox.warning(self, "错误", f"❌ 模型ID为空")
-            return False
+            return
 
         # 保存配置信息
         req_json = {
@@ -293,12 +293,10 @@ class ModifyModel(QDialog):
             "model_id": model_id,
             "temperature": self.temperature_edit.text(),
             "top_p": self.top_p_edit.text(),
-            "max_token": self.token_edit.text(),
-            "time_out": self.time_out_edit.text()
+            "max_token": self.token_edit.text()
         }
         modify_model_conf(req_json)
         self.accept()
-        return True
 
     """根据选择的提供商动态显示或隐藏控件"""
     def update_ui_visibility(self, text:str):
