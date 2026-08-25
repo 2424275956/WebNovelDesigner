@@ -36,7 +36,11 @@ def update_chapter_role(role_text, chapter_id):
 
 # 更新章节-关系分析内容
 def update_chapter_relation(relation_text, chapter_id):
-    SqliteDB.execute("UPDATE chapter SET relation_content = ?, point = 300 WHERE id = ?", (relation_text, chapter_id))
+    SqliteDB.execute("UPDATE chapter SET relation_content = ? WHERE id = ?", (relation_text, chapter_id))
+
+# 更新章节-关系分析内容
+def update_chapter_relation_and_point(relation_text, chapter_id):
+    SqliteDB.execute("UPDATE chapter SET relation_content = ?, status = 3, point = 700 WHERE id = ?", (relation_text, chapter_id))
 
 # 更新章节-状态
 def update_chapter_status(status, chapter_id):
@@ -73,11 +77,23 @@ def update_chapter_framework(framework_content, point, chapter_id):
 
 # 更新章节-完成润色
 def update_chapter_polish(polish_text, chapter_id):
-    SqliteDB.execute("UPDATE chapter SET new_len = ?, new_content = ?, status = 3, point = 600 WHERE id = ?", (len(polish_text), polish_text, chapter_id))
+    SqliteDB.execute("UPDATE chapter SET new_len = ?, new_content = ?, point = 600 WHERE id = ?", (len(polish_text), polish_text, chapter_id))
 
 # 获取失败章节数
 def count_fail_chapter_num(project_id):
     return SqliteDB.query_execute("SELECT count(*) FROM chapter WHERE status = 4 and project_id = ?", (project_id,))
+
+# 获取全部章节
+def count_all_chapter_num(project_id):
+    return SqliteDB.query_execute("SELECT count(*) FROM chapter WHERE project_id = ?", (project_id,))
+
+# 获取完成章节数
+def count_success_chapter_num(project_id):
+    return SqliteDB.query_execute("SELECT count(*) FROM chapter WHERE status = 3 and project_id = ?", (project_id,))
+
+# 获取新增章节数
+def count_extra_chapter_num(project_id):
+    return SqliteDB.query_execute("SELECT count(*) FROM chapter WHERE type = 2 and project_id = ?", (project_id,))
 
 # 更新章节-原文简述
 def update_original_resume(original_resume, chapter_id):
@@ -86,3 +102,5 @@ def update_original_resume(original_resume, chapter_id):
 # 更新章节-结果简述
 def update_polish_resume(polish_resume, chapter_id):
     SqliteDB.execute("UPDATE chapter SET polish_resume = ? WHERE id = ?", (polish_resume, chapter_id))
+
+#

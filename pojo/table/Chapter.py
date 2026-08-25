@@ -54,22 +54,22 @@ class ChapterPoint(Enum):
     """
     # 分析角色模型
     ROLE_ANALYSIS = 100
-    # 分析角色关系
-    RELATION_ANALYSIS = 200
     # 流程控制判断
-    PROCESS_CHOOSES = 300
+    PROCESS_CHOOSES = 200
     # 原文改写-匹配场景规则
-    ORIGINAL_SCENE = 400
+    ORIGINAL_SCENE = 300
     # 原文改写-脉络发展改写
-    ORIGINAL_FRAMEWORK = 401
+    ORIGINAL_FRAMEWORK = 310
     # 番外生成-匹配场景规则
-    EXTRA_SCENE = 410
+    EXTRA_SCENE = 400
     # 番外生成-脉络发展生成
-    EXTRA_FRAMEWORK = 411
+    EXTRA_FRAMEWORK = 410
     # 润色输出内容
     POLISH_CONTENT = 500
+    # 分析角色关系
+    RELATION_ANALYSIS = 600
     # 已完成
-    SUCCESS = 600
+    SUCCESS = 700
 
 def sqliteToChapter(row) -> ChapterBO:
     """

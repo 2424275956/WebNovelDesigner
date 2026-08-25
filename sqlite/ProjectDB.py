@@ -46,9 +46,8 @@ def edit_project_polish_model_id(polish_model_id, project_id):
 def insert_project_info(project):
     title = project['title']
     author = project['author']
-    chapter_num = project['chapter_num']
     word_count = project['word_count']
-    return SqliteDB.execute("INSERT INTO project (title, author, chapter_num, word_count) VALUES (?, ?, ?, ?)", (title, author, chapter_num, word_count))
+    return SqliteDB.execute("INSERT INTO project (title, author, word_count) VALUES (?, ?, ?)", (title, author, word_count))
 
 
 # 删除项目信息

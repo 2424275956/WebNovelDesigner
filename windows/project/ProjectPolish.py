@@ -6,6 +6,8 @@ from PyQt6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame, QListWidge
 from resources.style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet, label_style_sheet, \
     list_widget_style_sheet
 from config.GlobalMap import APP_STATE
+from sqlite.ChapterDB import count_all_chapter_num, count_success_chapter_num, count_fail_chapter_num, \
+    count_extra_chapter_num
 from sqlite.ModelDB import query_all_model
 from sqlite.ProjectDB import edit_project_prompt_id, edit_project_role_model_id, edit_polish_before_num, \
     edit_polish_after_num, edit_project_relation_model_id, edit_project_process_model_id, edit_project_scene_model_id, \
@@ -218,7 +220,9 @@ def polist_page(self, project_id):
         project_status = 1
         APP_STATE.setdefault(project_id, project_status)
         # 获取章节判断
-        if self.project_info['success_num'] >= self.project_info['chapter_num']:
+        all_num = count_all_chapter_num(project_id)
+        success_num = count_success_chapter_num(project_id)
+        if success_num[0] >= all_num[0]:
             project_status = 3
             APP_STATE[project_id] = project_status
     """状态渲染"""
@@ -375,19 +379,19 @@ def polist_page(self, project_id):
     center_right_top_left_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     center_right_top_layout.addLayout(center_right_top_left_layout)
     """章节统计1"""
-    all_chapter = self.project_info['chapter_num']
+    all_chapter = (count_all_chapter_num(project_id))[0]
     self.chapter_count1 = QLabel(f"项目共有 {all_chapter} 章节")
     self.chapter_count1.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     self.chapter_count1.setStyleSheet(label_style_sheet(font_size=20))
     center_right_top_left_layout.addWidget(self.chapter_count1)
     """章节统计2"""
-    success_chapter = self.project_info['success_num']
+    success_chapter = (count_success_chapter_num(project_id))[0]
     self.chapter_count2 = QLabel(f"项目已完成 {success_chapter} 章节")
     self.chapter_count2.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     self.chapter_count2.setStyleSheet(label_style_sheet(font_size=20))
     center_right_top_left_layout.addWidget(self.chapter_count2)
     """章节统计3"""
-    fail_chapter = self.project_info['fail_num']
+    fail_chapter = (count_fail_chapter_num(project_id))[0]
     self.chapter_count3 = QLabel(f"项目已失败 {fail_chapter} 章节")
     self.chapter_count3.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     self.chapter_count3.setStyleSheet(label_style_sheet(font_size=20))
@@ -399,7 +403,8 @@ def polist_page(self, project_id):
     self.chapter_count4.setStyleSheet(label_style_sheet(font_size=20))
     center_right_top_left_layout.addWidget(self.chapter_count4)
     """章节统计5"""
-    self.chapter_count5 = QLabel(f"项目已新增 {self.project_info['expansion_num']} 章节")
+    expansion_num = (count_extra_chapter_num(project_id))[0]
+    self.chapter_count5 = QLabel(f"项目已新增 {expansion_num} 章节")
     self.chapter_count5.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     self.chapter_count5.setStyleSheet(label_style_sheet(font_size=20))
     center_right_top_left_layout.addWidget(self.chapter_count5)

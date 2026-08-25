@@ -49,19 +49,15 @@ class SqliteDB:
                         id INTEGER PRIMARY KEY AUTOINCREMENT,           -- 项目ID
                         title TEXT NOT NULL,                            -- 小说名称
                         author TEXT NOT NULL,                           -- 作者
-                        chapter_num INTEGER NOT NULL,                   -- 全部章节数
-                        success_num INTEGER NOT NULL DEFAULT 0,         -- 已完成章节数
-                        fail_num INTEGER NOT NULL DEFAULT 0,            -- 失败章节数
-                        expansion_num INTEGER NOT NULL DEFAULT 0,       -- 新增扩写章节数
                         prompt_id INTEGER DEFAULT NULL,                 -- 提示词模版ID
                         role_model_id INTEGER DEFAULT NULL,             -- 角色分析模型ID
-                        relation_model_id INTEGER DEFAULT NULL,         -- 角色关系模型ID
                         process_model_id INTEGER DEFAULT NULL,          -- 流程控制模型ID
                         scene_model_id INTEGER DEFAULT NULL,            -- 场景规则模型ID
                         framework_model_id INTEGER DEFAULT NULL,        -- 脉络改写模型ID
                         extra_scene_model_id INTEGER DEFAULT NULL,      -- 番外扩写场景分析模型ID
                         extra_framework_model_id INTEGER DEFAULT NULL,  -- 番外扩写脉络生成模型ID
                         polish_model_id INTEGER DEFAULT NULL,           -- 结果润色模型ID
+                        relation_model_id INTEGER DEFAULT NULL,         -- 角色关系模型ID
                         polish_before_num INTEGER DEFAULT 5,            -- 附带前n章节
                         polish_after_num INTEGER DEFAULT 1,             -- 附带后n章节
                         word_count REAL NOT NULL,                       -- 字数（单位万）
@@ -90,7 +86,7 @@ class SqliteDB:
                         new_content TEXT DEFAULT NULL,                  -- 新章节内容
                         type INTEGER NOT NULL DEFAULT 1,                -- 章节类型（1：润色改写，2：内容扩写）
                         status INTEGER NOT NULL DEFAULT 1,              -- 状态（1：未开始，2：进行中，3：已完成，4：已失败）
-                        point INTEGER NOT NULL DEFAULT 100,             -- 节点（100：分析角色模型，200：分析角色关系，300：流程控制判断，400：改写-匹配场景规则，401：改写-改写发展脉络，410：番外-匹配场景规则，411：番外-生成发展脉络，500：润色输出内容，600：已完成）
+                        point INTEGER NOT NULL DEFAULT 100,             -- 节点（100：分析角色模型，200：流程控制判断，300：改写-匹配场景规则，310：改写-改写发展脉络，400：番外-匹配场景规则，410：番外-生成发展脉络，500：润色输出内容，600：角色关系更新，700：已完成）
                         sort INTEGER NOT NULL DEFAULT 0                 -- 排序
                     );
                     CREATE INDEX IF NOT EXISTS idx_project_id ON chapter(project_id);
@@ -148,6 +144,7 @@ class SqliteDB:
                         id INTEGER PRIMARY KEY AUTOINCREMENT,           -- 角色模型ID
                         project_id INTEGER NOT NULL,                    -- 项目ID
                         role_name TEXT NOT NULL,                        -- 角色名称
+                        protagonist_family INTEGER NOT NULL DEFAULT 2,  -- 是否主角女性亲友(1-是 2-否)
                         role_json TEXT DEFAULT NULL                     -- 角色信息
                     );
                     CREATE INDEX IF NOT EXISTS idx_project_id ON role_model(project_id);
