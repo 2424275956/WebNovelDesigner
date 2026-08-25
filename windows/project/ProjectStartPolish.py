@@ -3,6 +3,7 @@ import time
 
 from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import QMessageBox
+from attr.validators import min_len
 from langchain_openai import ChatOpenAI
 from openai import OpenAI
 
@@ -13,7 +14,7 @@ from sqlite.ProjectDB import query_project_by_id
 from sqlite.PromptDB import query_prompt_template, query_prompt_info_by_id
 from utils.PolishBridge import PolishBridge
 from windows.polish.NovelPolish import polish
-from windows.project.NovelChapterList import novel_chapter, update_chapter_num
+from windows.project.NovelChapterList import novel_chapter, update_chapter_num, update_chapter_title
 
 
 def prompt_rules_parse(self, prompt_id, point_type, prompt_type, title):
@@ -364,8 +365,7 @@ def start(self):
         frequency_penalty=0.4,     # 频率惩罚，抑制高频词
         stop=stop_list,
         extra_body={
-            "repetition_penalty":1.05,  # 重复惩罚（注意：不同API参数名不同）
-            "top_k": 40                 # 限制候选词数量
+            "min_tokens": 8000
         }
     )
     # 番外生成-场景分析
@@ -395,8 +395,7 @@ def start(self):
         frequency_penalty=0.5,     # 频率惩罚，抑制高频词
         stop=stop_list,
         extra_body={
-            "repetition_penalty":1.08,  # 重复惩罚（注意：不同API参数名不同）
-            "top_k": 60                 # 限制候选词数量
+            "min_tokens": 8000
         }
     )
     # 结果润色
@@ -414,8 +413,7 @@ def start(self):
         frequency_penalty=0.1,     # 频率惩罚，抑制高频词
         stop=stop_list,
         extra_body={
-            "repetition_penalty":1.01,  # 重复惩罚（注意：不同API参数名不同）
-            "top_k": 30                 # 限制候选词数量
+            "min_tokens": 8000
         }
     )
     # 关系分析
@@ -472,3 +470,4 @@ def update_progress(self, project_id):
     if self.project_info['id'] == project_id:
         novel_chapter(self, self.project_info['id'])
         update_chapter_num(self, self.project_info['id'])
+        update_chapter_title(self, self.project_info['id'])

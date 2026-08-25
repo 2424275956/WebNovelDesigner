@@ -123,3 +123,15 @@ def update_chapter_num(self, project_id):
     """章节统计5"""
     expansion_num = (count_extra_chapter_num(project_id))[0]
     self.chapter_count5.setText(f"项目已新增 {expansion_num} 章节")
+
+def update_chapter_title(self, project_id):
+    project_status = APP_STATE.get(project_id)
+    if 1 == project_status:
+        self.project_status_color = StatusDot("#9E9E9E")
+        self.project_status_title = QLabel("待开始")
+    elif 2 == project_status:
+        self.project_status_color = StatusDot("#00FF00")
+        self.project_status_title = QLabel("进行中")
+    elif 3 == project_status:
+        self.project_status_color = StatusDot("#00FF00")
+        self.project_status_title = QLabel("已完成")
