@@ -1,9 +1,7 @@
 import threading
 import time
 
-from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import QMessageBox
-from attr.validators import min_len
 from langchain_openai import ChatOpenAI
 from openai import OpenAI
 

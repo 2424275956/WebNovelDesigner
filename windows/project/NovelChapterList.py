@@ -126,12 +126,25 @@ def update_chapter_num(self, project_id):
 
 def update_chapter_title(self, project_id):
     project_status = APP_STATE.get(project_id)
+    color = ""
+    size = 16
+    status_str = ""
     if 1 == project_status:
-        self.project_status_color = StatusDot("#9E9E9E")
-        self.project_status_title = QLabel("待开始")
+        color += "#9E9E9E"
+        status_str += "待开始"
     elif 2 == project_status:
-        self.project_status_color = StatusDot("#00FF00")
-        self.project_status_title = QLabel("进行中")
+        color += "#FFA500"
+        status_str += "进行中"
     elif 3 == project_status:
-        self.project_status_color = StatusDot("#00FF00")
-        self.project_status_title = QLabel("已完成")
+        color += "#00FF00"
+        status_str += "已完成"
+
+    if len(color) > 0:
+        self.project_status_color.setStyleSheet(f"""
+            QLabel {{
+                background-color: {color};
+                border-radius: {size // 2}px;  /* 半径 = 边长一半，形成正圆 */
+                border: 1px solid rgba(0,0,0,0.1);
+            }}
+        """)
+        self.project_status_title.setText(status_str)
