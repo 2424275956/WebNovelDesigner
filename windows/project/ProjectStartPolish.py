@@ -115,6 +115,8 @@ def start(self):
             stop_event.set()
         # 停止client
         GlobalHttpClient.emergency_stop(transmit.project_id)
+        # 更新ui
+        update_progress(self, transmit.project_id)
         return True
 
     # 获取最新项目信息
