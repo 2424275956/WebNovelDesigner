@@ -42,8 +42,8 @@ def edit_project_extra_framework_model_id(extra_framework_model_id, project_id):
 def edit_project_polish_model_id(polish_model_id, project_id):
     SqliteDB.execute("UPDATE project SET polish_model_id = ? WHERE id = ?", (polish_model_id, project_id))
 
-def edit_project_status(project_id):
-    SqliteDB.execute("UPDATE project SET status = 3 WHERE id = ?", (project_id,))
+def edit_project_status(project_id, status):
+    SqliteDB.execute("UPDATE project SET status = ? WHERE id = ?", (status, project_id))
 
 # 保存新创建的项目信息
 def insert_project_info(project):

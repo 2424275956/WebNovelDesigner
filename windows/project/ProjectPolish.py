@@ -1,18 +1,21 @@
+import json
+import os
+
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QIntValidator
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame, QListWidget, QPushButton, QPlainTextEdit, \
-    QComboBox, QListWidgetItem, QLineEdit
+    QComboBox, QListWidgetItem, QLineEdit, QMessageBox, QFileDialog
 
 from resources.style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet, label_style_sheet, \
     list_widget_style_sheet
 from config.GlobalMap import APP_STATE
 from sqlite.ChapterDB import count_all_chapter_num, count_success_chapter_num, count_fail_chapter_num, \
-    count_extra_chapter_num
+    count_extra_chapter_num, query_all_polish_chapter
 from sqlite.ModelDB import query_all_model
 from sqlite.ProjectDB import edit_project_prompt_id, edit_project_role_model_id, edit_polish_before_num, \
     edit_polish_after_num, edit_project_relation_model_id, edit_project_process_model_id, edit_project_scene_model_id, \
     edit_project_extra_scene_model_id, edit_project_framework_model_id, edit_project_extra_framework_model_id, \
-    edit_project_polish_model_id, query_project_by_id
+    edit_project_polish_model_id, query_project_by_id, edit_project_status
 from sqlite.PromptDB import query_prompt_template, query_all_prompt
 from utils.ClearLayoutRecursive import clear_layout
 from utils.StatusDot import StatusDot
@@ -918,8 +921,42 @@ def start_stop_clicked(self,
     elif 2 == old_project_status:
         APP_STATE[self.project_info['id']] = 1
     else:
-        # todo 导出数据
-        return True
+        # 导出文件
+        all_num = count_all_chapter_num(self.project_info['id'])
+        success_num = count_success_chapter_num(self.project_info['id'])
+        if success_num[0] >= all_num[0]:
+            project_txt = ""
+            all_chapter = query_all_polish_chapter(self.project_info['id'])
+            for chapter in all_chapter:
+                project_txt += f"\n\n\n\n{str(chapter['title']).strip()}\n\n\n"
+                new_content = chapter['new_content']
+                if new_content is None or len(chapter['new_content']) < 100:
+                    QMessageBox.warning(self, "", f"章节：{chapter['title']} 字数小于100！！！")
+                    return False
+                for line in str(new_content).splitlines():
+                    if len(line.strip()) < 1:
+                        continue
+                    project_txt += f" {line.strip()}\n\n"
+            # 弹出文件夹选择对话框，让用户选择保存位置
+            folder_path = QFileDialog.getExistingDirectory(self, "请选择导出文件夹")
+            # 检查用户是否选择了文件夹（防止用户直接点击取消）
+            if folder_path:
+                # 拼接完整的文件路径
+                file_path = os.path.join(folder_path, f"{self.project_info['title']}_{self.project_info['author']}.txt")
+                # 将数据写入txt文件
+                try:
+                    with open(file_path, "w", encoding="utf-8") as file:
+                        # indent=4 用于格式化输出，ensure_ascii=False 用于正确保存中文
+                        json.dump(project_txt, file, indent=4, ensure_ascii=False)
+                    QMessageBox.warning(self, "错误", f"✅ 文件导出成功")
+                    return True
+                except Exception as e:
+                    QMessageBox.warning(self, "错误", f"❌ 导出失败")
+                    print(f"导出失败: {e}")
+                    return False
+        else:
+            edit_project_status(self.project_info['id'], 2)
+            APP_STATE[self.project_info['id']] = 2
 
     # 处理操作
     if not ProjectStartPolish.start(self):

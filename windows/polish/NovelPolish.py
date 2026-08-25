@@ -91,7 +91,7 @@ def polish(transmit, bridge: PolishBridge):
             return
 
     # 更新项目ID
-    edit_project_status(transmit.project_id)
+    edit_project_status(transmit.project_id, 3)
     # 更行公共状态
     APP_STATE[transmit.project_id] = 3
     # 更新列表

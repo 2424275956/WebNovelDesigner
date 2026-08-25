@@ -5,6 +5,10 @@ from sqlite.SqliteDB import SqliteDB
 def query_wait_polish_chapter(project_id):
     return SqliteDB.query_execute_batch("SELECT * FROM chapter WHERE status in (1, 2, 4) and project_id = ? ORDER BY sort", (project_id,))
 
+# 获取全部章节信息
+def query_all_polish_chapter(project_id):
+    return SqliteDB.query_execute_batch("SELECT * FROM chapter WHERE project_id = ? ORDER BY sort", (project_id,))
+
 # 获取章节通过id
 def query_chapter_by_id(chapter_id):
     return SqliteDB.query_execute("SELECT * FROM chapter WHERE id = ?", (chapter_id,))
