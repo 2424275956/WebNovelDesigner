@@ -1,13 +1,14 @@
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtWidgets import QListWidgetItem, QWidget, QHBoxLayout, QFrame, QVBoxLayout, QLabel
 
-from sqlite.ChapterDB import query_project_chapter_by_id
+from config.GlobalMap import APP_STATE
+from sqlite.ChapterDB import query_project_chapter_by_id, count_all_chapter_num, count_success_chapter_num, \
+    count_fail_chapter_num, count_extra_chapter_num
 from resources.style.StyleSheet import label_style_sheet
-from sqlite.ProjectDB import query_project_by_id
 from utils.StatusDot import StatusDot
 
 
-def novel_chapter(self, project_id, chapter_id=None):
+def novel_chapter(self, project_id):
     """
     章节列表
     """
@@ -16,6 +17,10 @@ def novel_chapter(self, project_id, chapter_id=None):
 
     """查询章节列表"""
     chapter_list = query_project_chapter_by_id(project_id)
+    is_current_running = False
+    project_status = APP_STATE.get(project_id)
+    if 2 == project_status:
+        is_current_running = True
 
     """循环处理"""
     if chapter_list:
@@ -70,9 +75,9 @@ def novel_chapter(self, project_id, chapter_id=None):
                 chapter_status = StatusDot("#00FF00", size=8)
             elif 4 == chapter['status']:
                 chapter_status = StatusDot("#FF0000", size=8)
-            if chapter_id:
-                if chapter['id'] == chapter_id:
-                    chapter_status = StatusDot("#FFA500", size=8)
+            if is_current_running and 2 == chapter['status']:
+                chapter_status = StatusDot("#FFA500", size=8)
+                is_current_running = False
             frame_layout.addWidget(chapter_status)
 
             # 章节名称
@@ -103,19 +108,18 @@ def novel_chapter(self, project_id, chapter_id=None):
 
 
 def update_chapter_num(self, project_id):
-    project = query_project_by_id(project_id)
-
     """章节统计1"""
-    all_chapter = project['chapter_num']
+    all_chapter = (count_all_chapter_num(project_id))[0]
     self.chapter_count1.setText(f"项目共有 {all_chapter} 章节")
     """章节统计2"""
-    success_chapter = project['success_num']
+    success_chapter = (count_success_chapter_num(project_id))[0]
     self.chapter_count2.setText(f"项目已完成 {success_chapter} 章节")
     """章节统计3"""
-    fail_chapter = self.project_info['fail_num']
+    fail_chapter = (count_fail_chapter_num(project_id))[0]
     self.chapter_count3.setText(f"项目已失败 {fail_chapter} 章节")
     """章节统计4"""
     wait_chapter = all_chapter - success_chapter
     self.chapter_count4.setText(f"项目待完成 {wait_chapter} 章节")
     """章节统计5"""
-    self.chapter_count5.setText(f"项目已新增 {self.project_info['expansion_num']} 章节")
+    expansion_num = (count_extra_chapter_num(project_id))[0]
+    self.chapter_count5.setText(f"项目已新增 {expansion_num} 章节")

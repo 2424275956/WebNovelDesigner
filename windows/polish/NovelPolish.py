@@ -2,14 +2,14 @@ from config.GlobalMap import APP_STOP_EVENT
 from pojo.table.Chapter import sqliteToChapter, ChapterPoint, ChapterStatus, ChapterBO
 from sqlite.ChapterDB import query_wait_polish_chapter, query_chapter_by_id, query_before_chapter, query_after_chapter, \
     update_chapter_status, update_chapter_sort, insert_extra_chapter, update_original_resume, update_polish_resume
+from utils.PolishBridge import PolishBridge
 from windows.polish.ChapterPolish import role_chapter_polish, relation_chapter_polish, process_chapter_polish, \
     original_scene_chapter_polish, original_framework_chapter_polish, extra_scene_chapter_plish, polish_chapter_polish, \
     extra_framework_chapter_polish, chapter_novel_resume
 
 
-def polish(params, progress_callback=None):
+def polish(transmit, bridge: PolishBridge):
     """润色小说"""
-    self, transmit = params
     # 获取全部待完成章节
     chapter_list = query_wait_polish_chapter(transmit.project_id)
     # 没有待处理章节
@@ -25,6 +25,8 @@ def polish(params, progress_callback=None):
         temp_chapter = query_chapter_by_id(chapter['id'])
         print(f"最新章节信息：{str(temp_chapter)}")
         chapter_model = sqliteToChapter(temp_chapter)
+        # 更新列表
+        bridge.progress.emit(chapter_model.project_id)
         # 前述剧情简述
         print(9.01)
         if ChapterStatus.FAIL.value != chapter_model.status:
@@ -67,12 +69,14 @@ def polish(params, progress_callback=None):
                 extra_model = sqliteToChapter(extra_chapter)
                 print(13.16)
                 if extra_chapter:
+                    # 更新列表
+                    bridge.progress.emit(chapter_model.project_id)
                     print(13.17)
                     get_before_novel(extra_model, transmit)
                     # 后续剧情-置空，重新处理
                     get_after_novel(extra_model, transmit)
                     # 处理
-                    after_chapter_polish(progress_callback, extra_model, transmit)
+                    after_chapter_polish(extra_model, transmit)
                     print(13.18)
             print(13.19)
             stop_event = APP_STOP_EVENT.get(chapter_model.project_id)
@@ -88,12 +92,12 @@ def polish(params, progress_callback=None):
             get_after_novel(chapter_model, transmit)
             get_before_novel(chapter_model, transmit)
         ## 后续流程
-        after_chapter_polish(progress_callback, chapter_model, transmit)
+        after_chapter_polish(chapter_model, transmit)
         stop_event = APP_STOP_EVENT.get(transmit.project_id)
         if stop_event and stop_event.is_set():
             return
 
-def after_chapter_polish(progress_callback, chapter_model: ChapterBO, transmit):
+def after_chapter_polish(chapter_model: ChapterBO, transmit):
     """剩余流程章节处理"""
     # 原文改写-场景分析
     print(10.10)

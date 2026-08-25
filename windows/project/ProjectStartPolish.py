@@ -11,6 +11,7 @@ from pojo.polish import PolishTransmit
 from sqlite.ModelDB import query_model_by_id
 from sqlite.ProjectDB import query_project_by_id
 from sqlite.PromptDB import query_prompt_template, query_prompt_info_by_id
+from utils.PolishBridge import PolishBridge
 from windows.polish.NovelPolish import polish
 from windows.project.NovelChapterList import novel_chapter, update_chapter_num
 
@@ -457,29 +458,17 @@ def start(self):
     # 生成新的停止事件
     APP_STOP_EVENT[transmit.project_id] = threading.Event()
     # 创建新的任务
-    params = (self, transmit)
     self.pending_updates = []  # 存储待处理的更新
-    future = self.executor.submit(polish, params, lambda project_id, chapter_id: _safe_progress_callback(self, project_id, chapter_id))
+    bridge = PolishBridge()
+    bridge.progress.connect(lambda project_id: update_progress(self, project_id))
+    future = self.executor.submit(polish, transmit, bridge)
     # 放入全局
     APP_FUTURE[transmit.project_id] = future
     return True
 
-def _safe_progress_callback(self, project_id, chapter_id):
-    # 不直接操作 UI，而是将数据存入队列
-    self.pending_updates.append({project_id: chapter_id})
-    # 触发主线程的更新
-    QTimer.singleShot(0, _process_updates)
 
-def _process_updates(self):
-    """在主线程中处理所有待处理的更新"""
-    while self.pending_updates:
-        time.sleep(10)
-        value = self.pending_updates.pop(0)
-        # ✅ 安全：在主线程中操作 UI
-        update_progress(self, value)
-
-def update_progress(self, value):
+def update_progress(self, project_id):
     """在主线程中执行"""
-    for k, v in value.items():
-        novel_chapter(self, k)
-        update_chapter_num(self, k)
+    if self.project_info['id'] == project_id:
+        novel_chapter(self, self.project_info['id'])
+        update_chapter_num(self, self.project_info['id'])
