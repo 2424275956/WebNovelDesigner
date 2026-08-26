@@ -551,50 +551,13 @@ def polist_page(self, project_id):
     role_prompt_btn_user.clicked.connect(lambda : on_prompt_item_clicked(self, 1, 2))
     role_prompt_conf_layout.addWidget(role_prompt_btn_user)
 
-    # 关系分析提示词-配置
-    ## 关系分析提示词-配置-布局
-    relation_prompt_conf_layout = QHBoxLayout()
-    relation_prompt_conf_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    center_right_layout.addLayout(relation_prompt_conf_layout)
-    ## 关系分析提示词-配置-布局-标题
-    relation_prompt_conf_title = QLabel("2.关系分析提示词/模型配置")
-    relation_prompt_conf_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    relation_prompt_conf_title.setStyleSheet(label_style_sheet())
-    relation_prompt_conf_layout.addWidget(relation_prompt_conf_title)
-    ### 关系分析提示词-配置-布局-模型选择
-    relation_prompt_btn_model = QComboBox()
-    for model in all_model:
-        relation_prompt_btn_model.addItem(model['name'], model['id'])
-    relation_prompt_btn_model.setFixedSize(200, 30)
-    relation_prompt_btn_model.setStyleSheet(line_edit_style_sheet())
-    if self.project_info['relation_model_id']:
-        tool2_model_index = relation_prompt_btn_model.findData(self.project_info['relation_model_id'])
-        relation_prompt_btn_model.setCurrentIndex(tool2_model_index)
-    else:
-        relation_prompt_btn_model.setCurrentIndex(-1)
-        relation_prompt_btn_model.setPlaceholderText("请选择...")
-    relation_prompt_btn_model.textActivated.connect(lambda text : update_project_relation_id(self, relation_prompt_btn_model, text))
-    relation_prompt_conf_layout.addWidget(relation_prompt_btn_model)
-    ### 关系分析提示词-配置-布局-系统提示词
-    tool2_system = QPushButton("系统提示词")
-    tool2_system.setStyleSheet(button_style_sheet())
-    tool2_system.setFixedSize(80, 30)
-    tool2_system.clicked.connect(lambda : on_prompt_item_clicked(self, 2, 1))
-    relation_prompt_conf_layout.addWidget(tool2_system)
-    ### 关系分析提示词-配置-布局-用户提示词
-    tool2_user = QPushButton("用户提示词")
-    tool2_user.setStyleSheet(button_style_sheet())
-    tool2_user.setFixedSize(80, 30)
-    tool2_user.clicked.connect(lambda : on_prompt_item_clicked(self, 2, 2))
-    relation_prompt_conf_layout.addWidget(tool2_user)
-
     # 流程控制提示词-配置
     ## 流程控制提示词-配置-布局
     process_prompt_conf_layout = QHBoxLayout()
     process_prompt_conf_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     center_right_layout.addLayout(process_prompt_conf_layout)
     ## 流程控制提示词-配置-布局-标题
-    process_prompt_conf_title = QLabel("3.流程控制提示词/模型配置")
+    process_prompt_conf_title = QLabel("2.流程控制提示词/模型配置")
     process_prompt_conf_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     process_prompt_conf_title.setStyleSheet(label_style_sheet())
     process_prompt_conf_layout.addWidget(process_prompt_conf_title)
@@ -643,7 +606,7 @@ def polist_page(self, project_id):
     original_scene_prompt_conf_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     center_right_layout.addLayout(original_scene_prompt_conf_layout)
     ## 场景分析提示词-配置-布局-标题
-    original_scene_prompt_conf_title = QLabel("4.场景分析")
+    original_scene_prompt_conf_title = QLabel("3.场景分析")
     original_scene_prompt_conf_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     original_scene_prompt_conf_title.setStyleSheet(label_style_sheet())
     original_scene_prompt_conf_layout.addWidget(original_scene_prompt_conf_title)
@@ -686,7 +649,7 @@ def polist_page(self, project_id):
     original_framework_prompt_conf_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     center_right_layout.addLayout(original_framework_prompt_conf_layout)
     ## 脉络改写提示词-配置-布局-标题
-    original_framework_prompt_conf_title = QLabel("5.脉络改写提示词/模型配置")
+    original_framework_prompt_conf_title = QLabel("4.脉络改写提示词/模型配置")
     original_framework_prompt_conf_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     original_framework_prompt_conf_title.setStyleSheet(label_style_sheet())
     original_framework_prompt_conf_layout.addWidget(original_framework_prompt_conf_title)
@@ -735,7 +698,7 @@ def polist_page(self, project_id):
     extra_scene_prompt_conf_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     center_right_layout.addLayout(extra_scene_prompt_conf_layout)
     ## 场景分析提示词-配置-布局-标题
-    extra_scene_prompt_conf_title = QLabel("4.场景分析")
+    extra_scene_prompt_conf_title = QLabel("3.场景分析")
     extra_scene_prompt_conf_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     extra_scene_prompt_conf_title.setStyleSheet(label_style_sheet())
     extra_scene_prompt_conf_layout.addWidget(extra_scene_prompt_conf_title)
@@ -778,7 +741,7 @@ def polist_page(self, project_id):
     extra_framework_prompt_conf_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     center_right_layout.addLayout(extra_framework_prompt_conf_layout)
     ## 脉络生成提示词-配置-布局-标题
-    extra_framework_prompt_conf_title = QLabel("5.脉络生成提示词/模型配置")
+    extra_framework_prompt_conf_title = QLabel("4.脉络生成提示词/模型配置")
     extra_framework_prompt_conf_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     extra_framework_prompt_conf_title.setStyleSheet(label_style_sheet())
     extra_framework_prompt_conf_layout.addWidget(extra_framework_prompt_conf_title)
@@ -821,7 +784,7 @@ def polist_page(self, project_id):
     polish_prompt_conf_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     center_right_layout.addLayout(polish_prompt_conf_layout)
     ## 结果润色提示词-配置-布局-标题
-    polish_prompt_conf_title = QLabel("6.结果润色提示词/模型配置")
+    polish_prompt_conf_title = QLabel("5.结果润色提示词/模型配置")
     polish_prompt_conf_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     polish_prompt_conf_title.setStyleSheet(label_style_sheet())
     polish_prompt_conf_layout.addWidget(polish_prompt_conf_title)
@@ -851,6 +814,49 @@ def polist_page(self, project_id):
     polish_prompt_btn_user.setFixedSize(80, 30)
     polish_prompt_btn_user.clicked.connect(lambda : on_prompt_item_clicked(self, 5, 2))
     polish_prompt_conf_layout.addWidget(polish_prompt_btn_user)
+
+    # 分割线
+    frame11 = QFrame()
+    frame11.setFrameShape(QFrame.Shape.HLine)
+    frame11.setFrameShadow(QFrame.Shadow.Sunken)
+    center_right_layout.addWidget(frame11)
+
+    # 关系分析提示词-配置
+    ## 关系分析提示词-配置-布局
+    relation_prompt_conf_layout = QHBoxLayout()
+    relation_prompt_conf_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    center_right_layout.addLayout(relation_prompt_conf_layout)
+    ## 关系分析提示词-配置-布局-标题
+    relation_prompt_conf_title = QLabel("6.关系分析提示词/模型配置")
+    relation_prompt_conf_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    relation_prompt_conf_title.setStyleSheet(label_style_sheet())
+    relation_prompt_conf_layout.addWidget(relation_prompt_conf_title)
+    ### 关系分析提示词-配置-布局-模型选择
+    relation_prompt_btn_model = QComboBox()
+    for model in all_model:
+        relation_prompt_btn_model.addItem(model['name'], model['id'])
+    relation_prompt_btn_model.setFixedSize(200, 30)
+    relation_prompt_btn_model.setStyleSheet(line_edit_style_sheet())
+    if self.project_info['relation_model_id']:
+        tool2_model_index = relation_prompt_btn_model.findData(self.project_info['relation_model_id'])
+        relation_prompt_btn_model.setCurrentIndex(tool2_model_index)
+    else:
+        relation_prompt_btn_model.setCurrentIndex(-1)
+        relation_prompt_btn_model.setPlaceholderText("请选择...")
+    relation_prompt_btn_model.textActivated.connect(lambda text : update_project_relation_id(self, relation_prompt_btn_model, text))
+    relation_prompt_conf_layout.addWidget(relation_prompt_btn_model)
+    ### 关系分析提示词-配置-布局-系统提示词
+    tool2_system = QPushButton("系统提示词")
+    tool2_system.setStyleSheet(button_style_sheet())
+    tool2_system.setFixedSize(80, 30)
+    tool2_system.clicked.connect(lambda : on_prompt_item_clicked(self, 2, 1))
+    relation_prompt_conf_layout.addWidget(tool2_system)
+    ### 关系分析提示词-配置-布局-用户提示词
+    tool2_user = QPushButton("用户提示词")
+    tool2_user.setStyleSheet(button_style_sheet())
+    tool2_user.setFixedSize(80, 30)
+    tool2_user.clicked.connect(lambda : on_prompt_item_clicked(self, 2, 2))
+    relation_prompt_conf_layout.addWidget(tool2_user)
 
     """弹开"""
     center_right_layout.addStretch()

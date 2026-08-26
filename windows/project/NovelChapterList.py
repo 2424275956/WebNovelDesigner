@@ -2,6 +2,7 @@ from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtWidgets import QListWidgetItem, QWidget, QHBoxLayout, QFrame, QVBoxLayout, QLabel
 
 from config.GlobalMap import APP_STATE
+from pojo.table.Chapter import ChapterPoint
 from sqlite.ChapterDB import query_project_chapter_by_id, count_all_chapter_num, count_success_chapter_num, \
     count_fail_chapter_num, count_extra_chapter_num
 from resources.style.StyleSheet import label_style_sheet
@@ -65,6 +66,8 @@ def novel_chapter(self, project_id):
             # 将卡片添加到容器（居中）
             container_layout.addWidget(model_frame)
 
+            # 是否处理中章节
+            is_polish_chapter = is_current_running and 2 == chapter['status']
             # 状态提示
             chapter_status = StatusDot("#9E9E9E", size=8)
             chapter_status.setFixedSize(10, 10)
@@ -75,7 +78,7 @@ def novel_chapter(self, project_id):
                 chapter_status = StatusDot("#00FF00", size=8)
             elif 4 == chapter['status']:
                 chapter_status = StatusDot("#FF0000", size=8)
-            if is_current_running and 2 == chapter['status']:
+            if is_polish_chapter:
                 chapter_status = StatusDot("#FFA500", size=8)
                 is_current_running = False
             frame_layout.addWidget(chapter_status)
@@ -93,10 +96,30 @@ def novel_chapter(self, project_id):
             # 章节字数
             word_count = chapter['old_len']
             new_word_count = chapter['new_len']
-            if chapter['point'] in [600, 700]:
-                word_label = QLabel(f"{word_count}字 -> {new_word_count}字")
+            word_label = QLabel(f"{word_count}字")
+            if is_polish_chapter:
+                is_current_running = False
+                if ChapterPoint.ROLE_ANALYSIS.value == chapter['point']:
+                    word_label.setText(f"场景角色分析中···")
+                elif ChapterPoint.PROCESS_CHOOSES.value == chapter['point']:
+                    word_label.setText(f"流程控制判断中···")
+                elif ChapterPoint.ORIGINAL_SCENE.value ==  chapter['point']:
+                    word_label.setText(f"原文改写场景匹配中···")
+                elif ChapterPoint.ORIGINAL_FRAMEWORK.value == chapter['point']:
+                    word_label = QLabel(f"原文改写脉络扩写中···")
+                elif ChapterPoint.EXTRA_SCENE.value == chapter['point']:
+                    word_label = QLabel(f"番外生成场景匹配中···")
+                elif ChapterPoint.EXTRA_FRAMEWORK.value == chapter['point']:
+                    word_label = QLabel(f"番外生成脉络撰写中···")
+                elif ChapterPoint.POLISH_CONTENT.value == chapter['point']:
+                    word_label = QLabel(f"脉络内容润色中···")
+                elif ChapterPoint.RELATION_ANALYSIS.value == chapter['point']:
+                    word_label = QLabel(f"更新角色档案中···")
+                else:
+                    word_label = QLabel(f"{word_count}字 -> {new_word_count}字")
             else:
-                word_label = QLabel(f"{word_count}字")
+                if chapter['point'] in [ChapterPoint.SUCCESS.value, ChapterPoint.RELATION_ANALYSIS.value]:
+                    word_label.setText(f"{word_count}字 -> {new_word_count}字")
             word_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
             word_label.setStyleSheet(label_style_sheet("white", font_size=12))
             chapter_layout.addWidget(word_label)
