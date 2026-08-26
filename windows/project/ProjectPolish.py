@@ -10,7 +10,7 @@ from resources.style.StyleSheet import title_style_sheet, line_edit_style_sheet,
     list_widget_style_sheet
 from config.GlobalMap import APP_STATE
 from sqlite.ChapterDB import count_all_chapter_num, count_success_chapter_num, count_fail_chapter_num, \
-    count_extra_chapter_num, query_all_polish_chapter
+    count_extra_chapter_num, query_all_polish_chapter, query_chapter_by_id
 from sqlite.ModelDB import query_all_model
 from sqlite.ProjectDB import edit_project_prompt_id, edit_project_role_model_id, edit_polish_before_num, \
     edit_polish_after_num, edit_project_relation_model_id, edit_project_process_model_id, edit_project_scene_model_id, \
@@ -19,8 +19,8 @@ from sqlite.ProjectDB import edit_project_prompt_id, edit_project_role_model_id,
 from sqlite.PromptDB import query_prompt_template, query_all_prompt
 from utils.ClearLayoutRecursive import clear_layout
 from utils.StatusDot import StatusDot
-from . import NovelChapterList
-from . import ProjectStartPolish
+from windows.project import NovelChapterList
+from windows.project import ProjectStartPolish
 
 def on_prompt_item_clicked(self, point_type, prompt_type):
     choose_project_id = self.prompt_combo.currentData()
@@ -55,51 +55,58 @@ def polish_btn_clicked(self):
     """润色内容按钮触发"""
     if self.chapter_info is None:
         return
-    self.text_content.setPlainText(self.chapter_info['new_content'])
+    chapter = query_chapter_by_id(self.chapter_info['id'])
+    self.text_content.setPlainText(chapter['new_content'])
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
 def framework_btn_clicked(self):
     """脉络内容按钮触发"""
     if self.chapter_info is None:
         return
-    self.text_content.setPlainText(self.chapter_info['framework_content'])
+    chapter = query_chapter_by_id(self.chapter_info['id'])
+    self.text_content.setPlainText(chapter['framework_content'])
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
 def scene_btn_clicked(self):
     """场景规则按钮触发"""
     if self.chapter_info is None:
         return
-    self.text_content.setPlainText(self.chapter_info['scene_content'])
+    chapter = query_chapter_by_id(self.chapter_info['id'])
+    self.text_content.setPlainText(chapter['scene_content'])
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
 def relation_btn_clicked(self):
     """关系分析按钮触发"""
     if self.chapter_info is None:
         return
-    self.text_content.setPlainText(self.chapter_info['relation_content'])
+    chapter = query_chapter_by_id(self.chapter_info['id'])
+    self.text_content.setPlainText(chapter['relation_content'])
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
 def process_btn_clicked(self):
     """流程控制按钮触发"""
     if self.chapter_info is None:
         return
-    self.text_content.setPlainText(self.chapter_info['process_content'])
+    chapter = query_chapter_by_id(self.chapter_info['id'])
+    self.text_content.setPlainText(chapter['process_content'])
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
 def role_btn_clicked(self):
     """角色分析按钮触发"""
     if self.chapter_info is None:
         return
-    self.text_content.setPlainText(self.chapter_info['role_content'])
+    chapter = query_chapter_by_id(self.chapter_info['id'])
+    self.text_content.setPlainText(chapter['role_content'])
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
 def original_btn_clicked(self):
     """原文按钮触发"""
     if self.chapter_info is None:
         return
+    chapter = query_chapter_by_id(self.chapter_info['id'])
     self.text_content.setPlainText("")
-    if self.chapter_info['old_content']:
-        for line in self.chapter_info['old_content'].split('\\n'):
+    if chapter['old_content']:
+        for line in chapter['old_content'].split('\\n'):
             self.text_content.appendPlainText(line)
         QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
