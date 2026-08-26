@@ -3,7 +3,7 @@ from sqlite.SqliteDB import SqliteDB
 # 项目详情
 def query_role_model(project_id, role_names):
     if not role_names:
-        return  # 如果列表为空，直接返回，避免生成无效的 SQL
+        return  [] # 如果列表为空，直接返回，避免生成无效的 SQL
     # 动态生成占位符：'?,?,?'
     placeholders = ','.join('?' * len(role_names))
 
@@ -13,7 +13,7 @@ def query_role_model(project_id, role_names):
     # 注意：参数必须解包，project_id 和 role_names 中的每个元素都要作为独立参数传入
     params = [project_id] + role_names
 
-    SqliteDB.query_execute_batch(sql, params)
+    return SqliteDB.query_execute_batch(sql, tuple(params))
 
 def query_role_relation(project_id, role_a, role_b):
     return SqliteDB.query_execute("SELECT relation FROM role_relation WHERE project_id = ? and role_a_name in (?, ?) and role_b_name in (?, ?)", (project_id, role_a, role_b, role_a, role_b))

@@ -24,6 +24,9 @@ def edit_polish_before_num(num, project_id):
 def edit_polish_after_num(num, project_id):
     SqliteDB.execute("UPDATE project SET polish_after_num = ? WHERE id = ?", (num, project_id))
 
+def edit_extra_start_num(num, project_id):
+    SqliteDB.execute("UPDATE project SET extra_start_num = ? WHERE id = ?", (num, project_id))
+
 def edit_project_scene_model_id(scene_model_id, project_id):
     SqliteDB.execute("UPDATE project SET scene_model_id = ? WHERE id = ?", (scene_model_id, project_id))
 

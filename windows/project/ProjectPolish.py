@@ -15,7 +15,7 @@ from sqlite.ModelDB import query_all_model
 from sqlite.ProjectDB import edit_project_prompt_id, edit_project_role_model_id, edit_polish_before_num, \
     edit_polish_after_num, edit_project_relation_model_id, edit_project_process_model_id, edit_project_scene_model_id, \
     edit_project_extra_scene_model_id, edit_project_framework_model_id, edit_project_extra_framework_model_id, \
-    edit_project_polish_model_id, query_project_by_id, edit_project_status
+    edit_project_polish_model_id, query_project_by_id, edit_project_status, edit_extra_start_num
 from sqlite.PromptDB import query_prompt_template, query_all_prompt
 from utils.ClearLayoutRecursive import clear_layout
 from utils.StatusDot import StatusDot
@@ -148,6 +148,13 @@ def update_polish_after_num(self, chapter_after_num):
     if len(chapter_after_num.text()) > 0:
         num = int(chapter_after_num.text())
     edit_polish_after_num(num, self.project_info['id'])
+
+def update_extra_start_num(self, extra_start_num):
+    """更新番外插入开始章节数"""
+    num = 5
+    if len(extra_start_num.text()) > 0:
+        num = int(extra_start_num.text())
+    edit_extra_start_num(num, self.project_info['id'])
 
 def update_project_relation_id(self, combo, text):
     """更新索引"""
@@ -484,11 +491,11 @@ def polist_page(self, project_id):
     chapter_before_num_layout = QHBoxLayout()
     chapter_before_num_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     center_right_top_col2.addLayout(chapter_before_num_layout)
-    ## 标题
-    chapter_before_num_title = QLabel("改写（撰写）附带前n章节数：")
-    chapter_before_num_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    chapter_before_num_title.setStyleSheet(label_style_sheet())
-    chapter_before_num_layout.addWidget(chapter_before_num_title)
+    ## 标题1-1
+    chapter_before1_num_title = QLabel("改写（撰写）附带前述")
+    chapter_before1_num_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    chapter_before1_num_title.setStyleSheet(label_style_sheet())
+    chapter_before_num_layout.addWidget(chapter_before1_num_title)
     ## 编辑框
     chapter_before_num = QLineEdit()
     chapter_before_num.setText("5")
@@ -500,16 +507,21 @@ def polist_page(self, project_id):
     chapter_before_num.setValidator(int_validator)
     chapter_before_num.textChanged.connect(lambda : update_polish_before_num(self, chapter_before_num))
     chapter_before_num_layout.addWidget(chapter_before_num)
+    ## 标题1-2
+    chapter_before2_num_title = QLabel("章节剧情")
+    chapter_before2_num_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    chapter_before2_num_title.setStyleSheet(label_style_sheet())
+    chapter_before_num_layout.addWidget(chapter_before2_num_title)
 
     # 附带当前章节后数量
     chapter_after_num_layout = QHBoxLayout()
     chapter_after_num_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     center_right_top_col2.addLayout(chapter_after_num_layout)
-    ## 标题
-    chapter_after_num_title = QLabel("改写（撰写）附带后n章节数：")
-    chapter_after_num_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-    chapter_after_num_title.setStyleSheet(label_style_sheet())
-    chapter_after_num_layout.addWidget(chapter_after_num_title)
+    ## 标题2-1
+    chapter_after1_num_title = QLabel("改写（撰写）附带后续")
+    chapter_after1_num_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    chapter_after1_num_title.setStyleSheet(label_style_sheet())
+    chapter_after_num_layout.addWidget(chapter_after1_num_title)
     ## 编辑框
     chapter_after_num = QLineEdit()
     chapter_after_num.setText("1")
@@ -520,12 +532,43 @@ def polist_page(self, project_id):
     chapter_after_num.setValidator(int_validator)
     chapter_after_num.textChanged.connect(lambda : update_polish_after_num(self, chapter_after_num))
     chapter_after_num_layout.addWidget(chapter_after_num)
+    ## 标题2-2
+    chapter_after2_num_title = QLabel("章节剧情")
+    chapter_after2_num_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    chapter_after2_num_title.setStyleSheet(label_style_sheet())
+    chapter_after_num_layout.addWidget(chapter_after2_num_title)
 
     """分割线"""
     frame12 = QFrame()
     frame12.setFrameShape(QFrame.Shape.HLine)
     frame12.setFrameShadow(QFrame.Shadow.Sunken)
     center_right_top_col2.addWidget(frame12)
+
+    """番外插入"""
+    # 番外插入开始章节
+    extra_insert_num_layout = QHBoxLayout()
+    extra_insert_num_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    center_right_top_col2.addLayout(extra_insert_num_layout)
+    ## 标题2-1
+    extra_insert1_num_title = QLabel("番外剧情插入从")
+    extra_insert1_num_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    extra_insert1_num_title.setStyleSheet(label_style_sheet())
+    extra_insert_num_layout.addWidget(extra_insert1_num_title)
+    ## 编辑框
+    extra_insert_num = QLineEdit()
+    extra_insert_num.setText("5")
+    if self.project_info['extra_start_num']:
+        extra_insert_num.setText(str(self.project_info['extra_start_num']))
+    extra_insert_num.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    extra_insert_num.setStyleSheet(line_edit_style_sheet())
+    extra_insert_num.setValidator(int_validator)
+    extra_insert_num.textChanged.connect(lambda : update_extra_start_num(self, extra_insert_num))
+    extra_insert_num_layout.addWidget(extra_insert_num)
+    ## 标题2-2
+    extra_insert2_num_title = QLabel("章节开始")
+    extra_insert2_num_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    extra_insert2_num_title.setStyleSheet(label_style_sheet())
+    extra_insert_num_layout.addWidget(extra_insert2_num_title)
 
     """插入分割线"""
     frame5 = QFrame()
@@ -903,7 +946,8 @@ def polist_page(self, project_id):
                                                                     extra_framework_prompt_conf_model,
                                                                     polish_prompt_conf_model,
                                                                     chapter_before_num,
-                                                                    chapter_after_num))
+                                                                    chapter_after_num,
+                                                                    extra_insert_num))
     start_stop_layout.addWidget(self.start_stop_btn)
     """开始按钮控制"""
     if 1 == project_status:
@@ -929,7 +973,8 @@ def polist_page(self, project_id):
                                      extra_framework_prompt_conf_model,
                                      polish_prompt_conf_model,
                                      chapter_before_num,
-                                     chapter_after_num)
+                                     chapter_after_num,
+                                     extra_insert_num)
 
 def start_stop_clicked(self,
                        role_prompt_conf_model,
@@ -941,7 +986,8 @@ def start_stop_clicked(self,
                        extra_framework_prompt_conf_model,
                        polish_prompt_conf_model,
                        chapter_before_num,
-                       chapter_after_num):
+                       chapter_after_num,
+                       extra_insert_num):
     # 获取状态
     old_project_status = APP_STATE.get(self.project_info['id'])
     if 1 == old_project_status:
@@ -1011,7 +1057,8 @@ def start_stop_clicked(self,
                                      extra_framework_prompt_conf_model,
                                      polish_prompt_conf_model,
                                      chapter_before_num,
-                                     chapter_after_num)
+                                     chapter_after_num,
+                                     extra_insert_num)
     return True
 
 
@@ -1027,7 +1074,8 @@ def disable_enable_prompt_model_conf(project_id,
                                      extra_framework_prompt_conf_model,
                                      polish_prompt_conf_model,
                                      chapter_before_num,
-                                     chapter_after_num):
+                                     chapter_after_num,
+                                     extra_insert_num):
     # 获取状态
     project_status = APP_STATE.get(project_id)
     if 1 == project_status:
@@ -1043,6 +1091,7 @@ def disable_enable_prompt_model_conf(project_id,
         polish_prompt_conf_model.setEnabled(True)
         chapter_before_num.setEnabled(True)
         chapter_after_num.setEnabled(True)
+        extra_insert_num.setEnabled(True)
     else:
         # 不可选
         prompt_combo.setEnabled(False)
@@ -1056,3 +1105,4 @@ def disable_enable_prompt_model_conf(project_id,
         polish_prompt_conf_model.setEnabled(False)
         chapter_before_num.setEnabled(False)
         chapter_after_num.setEnabled(False)
+        extra_insert_num.setEnabled(False)

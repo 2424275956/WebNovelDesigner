@@ -208,9 +208,9 @@ def get_current_role_relation(chapter_model: ChapterBO):
                 print(321.11)
                 for role in role_list:
                     print(321.12)
-                    if role and role.get('role_json'):
+                    if role and role['role_json']:
                         print(321.13)
-                        relation_data.角色数组.append(RelationPromptResult.CharacterResult.model_validate_json(role.get('role_json')))
+                        relation_data.角色数组.append(RelationPromptResult.CharacterResult.model_validate_json(role['role_json']))
                         print(321.14)
         ### 关联关系补充
         print(321.15)
@@ -268,7 +268,7 @@ def process_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
         # 更新
         print(3.01)
         extra = process_data.extra
-        if chapter_model.sort <= 5:
+        if chapter_model.sort <= transmit.extra_start_num:
             extra = "false"
         print(3.02)
         # 更新文本

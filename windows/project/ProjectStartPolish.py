@@ -6,7 +6,6 @@ from langchain_openai import ChatOpenAI
 from openai import OpenAI
 
 from config import GlobalHttpClient
-from config.GlobalHttpClient import GLOBAL_HTTP_CLIENT
 from config.GlobalMap import APP_STATE, APP_FUTURE, APP_STOP_EVENT
 from pojo.polish import PolishTransmit
 from sqlite.ModelDB import query_model_by_id
@@ -256,11 +255,15 @@ def start(self):
     """章节附带数"""
     transmit.polish_before_num = self.project_info['polish_before_num']
     if transmit.polish_before_num is None:
-        QMessageBox.warning(self, "", "改写（撰写）附带前n篇数量为空")
+        QMessageBox.warning(self, "", "改写（撰写）附带前述章节数量为空")
         return False
     transmit.polish_after_num = self.project_info['polish_after_num']
     if transmit.polish_after_num is None:
-        QMessageBox.warning(self, "", "改写（撰写）附带后n篇数量为空")
+        QMessageBox.warning(self, "", "改写（撰写）附带后续章节数量为空")
+        return False
+    transmit.extra_start_num = self.project_info['extra_start_num']
+    if transmit.extra_start_num is None:
+        QMessageBox.warning(self, "", "番外剧情插入章节数为空")
         return False
 
     """模型配置"""
