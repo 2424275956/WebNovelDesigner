@@ -18,14 +18,9 @@ def query_role_model(project_id, role_names):
 def query_role_relation(project_id, role_a, role_b):
     return SqliteDB.query_execute("SELECT relation FROM role_relation WHERE project_id = ? and role_a_name in (?, ?) and role_b_name in (?, ?)", (project_id, role_a, role_b, role_a, role_b))
 
-def remove_old_role_model(project_id, role_names):
-    if not role_names:
-        return  # 如果列表为空，直接返回，避免生成无效的 SQL
-    # 动态生成占位符：'?,?,?'
-    placeholders = ','.join('?' * len(role_names))
+def remove_old_role_model(project_id, role_name):
     # 注意：参数必须解包，project_id 和 role_names 中的每个元素都要作为独立参数传入
-    params = [project_id] + role_names
-    SqliteDB.execute_batch(f"DELETE FROM role_model WHERE project_id = ? and role_name in ({placeholders})", [params])
+    SqliteDB.execute(f"DELETE FROM role_model WHERE project_id = ? and role_name = ?", [project_id, role_name])
 
 def insert_role_model(project_id, role_name, is_family, role_json):
     SqliteDB.execute("INSERT INTO role_model (project_id, role_name, protagonist_family, role_json) VALUES (?, ?, ?, ?)", (project_id, str(role_name), is_family, str(role_json)))

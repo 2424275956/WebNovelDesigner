@@ -127,7 +127,6 @@ def relation_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
         # 查询
         print(f"关系分析-LangChain链Invoke数据填充")
         relation = relation_chain.invoke({
-            "role_analysis": chapter_model.role_content,
             "relation_prompt_system": transmit.relation_system,
             "relation_prompt_user": transmit.relation_user,
             "reference_text": chapter_model.before_content,
@@ -225,7 +224,7 @@ def get_current_role_relation(chapter_model: ChapterBO):
                 print(321.19)
                 if relation_json:
                     print(321.2)
-                    relation_data.角色关系.append(RelationPromptResult.RelationResult.model_validate_json(relation_json))
+                    relation_data.角色关系.append(RelationPromptResult.RelationResult.model_validate_json(relation_json['relation']))
                     print(321.21)
     return relation_data.model_dump_json()
 
@@ -269,6 +268,8 @@ def process_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
         # 更新
         print(3.01)
         extra = process_data.extra
+        if chapter_model.sort <= 5:
+            extra = "false"
         print(3.02)
         # 更新文本
         update_chapter_process(process_data.model_dump_json(), ChapterPoint.ORIGINAL_SCENE.value, chapter_model.id)
