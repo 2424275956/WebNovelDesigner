@@ -45,6 +45,18 @@ def on_prompt_item_clicked(self, point_type, prompt_type):
     self.text_content.setPlainText(prompt_text)
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
+def text_json_formatted(content: str):
+    if content is None or len(content) < 1:
+        return content
+    try:
+        json_obj = json.loads(content)
+
+        formatted_json = json.dumps(json_obj, indent=4, ensure_ascii=False)
+
+        return formatted_json
+    except:
+        return content
+
 
 def on_item_clicked(self, item: QListWidgetItem):
     """触发事件"""
@@ -80,7 +92,7 @@ def relation_btn_clicked(self):
     if self.chapter_info is None:
         return
     chapter = query_chapter_by_id(self.chapter_info['id'])
-    self.text_content.setPlainText(chapter['relation_content'])
+    self.text_content.setPlainText(text_json_formatted(chapter['relation_content']))
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
 def process_btn_clicked(self):
@@ -88,7 +100,7 @@ def process_btn_clicked(self):
     if self.chapter_info is None:
         return
     chapter = query_chapter_by_id(self.chapter_info['id'])
-    self.text_content.setPlainText(chapter['process_content'])
+    self.text_content.setPlainText(text_json_formatted(chapter['process_content']))
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
 def role_btn_clicked(self):
@@ -96,7 +108,7 @@ def role_btn_clicked(self):
     if self.chapter_info is None:
         return
     chapter = query_chapter_by_id(self.chapter_info['id'])
-    self.text_content.setPlainText(chapter['role_content'])
+    self.text_content.setPlainText(text_json_formatted(chapter['role_content']))
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
 def original_btn_clicked(self):
@@ -107,7 +119,7 @@ def original_btn_clicked(self):
     self.text_content.setPlainText("")
     if chapter['old_content']:
         for line in chapter['old_content'].split('\\n'):
-            self.text_content.appendPlainText(line)
+            self.text_content.appendPlainText(f"        {line}")
         QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
 def update_project_prompt_id(self, text):
