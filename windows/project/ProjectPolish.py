@@ -62,12 +62,13 @@ def on_item_clicked(self, item: QListWidgetItem):
     """触发事件"""
     chapter = item.data(Qt.ItemDataRole.UserRole)
     self.chapter_info = chapter
+    self.chapter_list_choose_id = chapter['id']
 
 def polish_btn_clicked(self):
     """润色内容按钮触发"""
     if self.chapter_info is None:
         return
-    chapter = query_chapter_by_id(self.chapter_info['id'])
+    chapter = query_chapter_by_id(self.chapter_list_choose_id)
     self.text_content.setPlainText(chapter['new_content'])
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
@@ -75,7 +76,7 @@ def framework_btn_clicked(self):
     """脉络内容按钮触发"""
     if self.chapter_info is None:
         return
-    chapter = query_chapter_by_id(self.chapter_info['id'])
+    chapter = query_chapter_by_id(self.chapter_list_choose_id)
     self.text_content.setPlainText(chapter['framework_content'])
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
@@ -83,7 +84,7 @@ def scene_btn_clicked(self):
     """场景规则按钮触发"""
     if self.chapter_info is None:
         return
-    chapter = query_chapter_by_id(self.chapter_info['id'])
+    chapter = query_chapter_by_id(self.chapter_list_choose_id)
     self.text_content.setPlainText(chapter['scene_content'])
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
@@ -91,7 +92,7 @@ def relation_btn_clicked(self):
     """关系分析按钮触发"""
     if self.chapter_info is None:
         return
-    chapter = query_chapter_by_id(self.chapter_info['id'])
+    chapter = query_chapter_by_id(self.chapter_list_choose_id)
     self.text_content.setPlainText(text_json_formatted(chapter['relation_content']))
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
@@ -99,7 +100,7 @@ def process_btn_clicked(self):
     """流程控制按钮触发"""
     if self.chapter_info is None:
         return
-    chapter = query_chapter_by_id(self.chapter_info['id'])
+    chapter = query_chapter_by_id(self.chapter_list_choose_id)
     self.text_content.setPlainText(text_json_formatted(chapter['process_content']))
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
@@ -107,7 +108,7 @@ def role_btn_clicked(self):
     """角色分析按钮触发"""
     if self.chapter_info is None:
         return
-    chapter = query_chapter_by_id(self.chapter_info['id'])
+    chapter = query_chapter_by_id(self.chapter_list_choose_id)
     self.text_content.setPlainText(text_json_formatted(chapter['role_content']))
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
 
@@ -115,7 +116,7 @@ def original_btn_clicked(self):
     """原文按钮触发"""
     if self.chapter_info is None:
         return
-    chapter = query_chapter_by_id(self.chapter_info['id'])
+    chapter = query_chapter_by_id(self.chapter_list_choose_id)
     self.text_content.setPlainText("")
     if chapter['old_content']:
         for line in chapter['old_content'].split('\\n'):
@@ -198,6 +199,8 @@ def polist_page(self, project_id):
 
     """章节信息"""
     self.chapter_info = None
+    # 章节列表选择的ID
+    self.chapter_list_choose_id = None
 
     # 存在数据则销毁
     if self.project_win_layout:

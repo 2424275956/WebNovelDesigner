@@ -34,8 +34,8 @@ def novel_chapter(self, project_id):
             self.chapter_list.addItem(chapter_item)
 
             # 判断是否当前选择的章节
-            if self.chapter_info:
-                if self.chapter_info['id'] == chapter['id']:
+            if self.chapter_list_choose_id:
+                if self.chapter_list_choose_id == chapter['id']:
                     self.chapter_list.setCurrentItem(chapter_item)
 
             # ===== 关键：创建一个居中容器 =====
