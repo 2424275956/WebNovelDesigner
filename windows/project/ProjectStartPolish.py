@@ -334,22 +334,7 @@ def start(self):
         # 格式终止符
         "\n\n\n",                    # 三个换行
 
-        # 防止总结性废话
-        "总之",
-        "综上所述",
-        "通过以上描写可以看出",
-        "这段文字主要描写了",
-
-        # 防止内容重复/循环
-        "如前所述",
-        "正如前文所述",
-        "再次强调",
-        "值得一提的是",
-
         # 防止过度标点
-        "！？",            # 连续的感叹+问号
-        "？！",
-        "......",          # 省略号过多
         "！！！！",          # 三个感叹号
         "？？？？",          # 三个问号
         "，，，，",
@@ -364,11 +349,12 @@ def start(self):
         max_tokens=original_framework_model['max_token'],
         top_p=original_framework_model['top_p'],
         streaming=True,
-        presence_penalty=0.5,      # 全局重复惩罚，防止车轱辘话
-        frequency_penalty=0.4,     # 频率惩罚，抑制高频词
+        presence_penalty=-0.1,      # 全局重复惩罚，防止车轱辘话
+        frequency_penalty=0.3,     # 频率惩罚，抑制高频词
         stop=stop_list,
         extra_body={
-            "min_tokens": 8000
+            "top_k": 50,        # 限制选词范围，保准精确性
+            "repetition_penalty": 0.98  #
         },
         http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )
@@ -394,11 +380,12 @@ def start(self):
         max_tokens=extra_framework_model['max_token'],
         top_p=extra_framework_model['top_p'],
         streaming=True,
-        presence_penalty=0.7,      # 全局重复惩罚，防止车轱辘话
-        frequency_penalty=0.5,     # 频率惩罚，抑制高频词
+        presence_penalty=0.5,      # 全局重复惩罚，防止车轱辘话
+        frequency_penalty=0.4,     # 频率惩罚，抑制高频词
         stop=stop_list,
         extra_body={
-            "min_tokens": 8000
+            "top_k": 65,        # 限制选词范围，保准精确性
+            "repetition_penalty": 1.08
         },
         http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )
@@ -412,11 +399,12 @@ def start(self):
         max_tokens=polish_model['max_token'],
         top_p=polish_model['top_p'],
         streaming=True,
-        presence_penalty=0.15,      # 全局重复惩罚，防止车轱辘话
-        frequency_penalty=0.1,     # 频率惩罚，抑制高频词
+        presence_penalty=0,      # 全局重复惩罚，防止车轱辘话
+        frequency_penalty=0.2,     # 频率惩罚，抑制高频词
         stop=stop_list,
         extra_body={
-            "min_tokens": 8000
+            "top_k": 40,        # 限制选词范围，保准精确性
+            "repetition_penalty": 1.03
         },
         http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )

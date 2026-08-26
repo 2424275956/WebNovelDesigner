@@ -770,8 +770,8 @@ def polist_page(self, project_id):
         extra_framework_prompt_conf_model.addItem(model['name'], model['id'])
     extra_framework_prompt_conf_model.setFixedSize(200, 30)
     extra_framework_prompt_conf_model.setStyleSheet(line_edit_style_sheet())
-    if self.project_info['framework_model_id']:
-        tool4_col1_row1_model_index = extra_framework_prompt_conf_model.findData(self.project_info['framework_model_id'])
+    if self.project_info['extra_framework_model_id']:
+        tool4_col1_row1_model_index = extra_framework_prompt_conf_model.findData(self.project_info['extra_framework_model_id'])
         extra_framework_prompt_conf_model.setCurrentIndex(tool4_col1_row1_model_index)
     else:
         extra_framework_prompt_conf_model.setCurrentIndex(-1)
