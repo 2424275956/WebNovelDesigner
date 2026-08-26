@@ -109,13 +109,13 @@ def novel_chapter(self, project_id):
                 elif ChapterPoint.PROCESS_CHOOSES.value == chapter['point']:
                     word_label.setText(f"流程控制判断中···")
                 elif ChapterPoint.ORIGINAL_SCENE.value ==  chapter['point']:
-                    word_label.setText(f"原文改写场景匹配中···")
+                    word_label.setText(f"原文场景匹配中···")
                 elif ChapterPoint.ORIGINAL_FRAMEWORK.value == chapter['point']:
-                    word_label = QLabel(f"原文改写脉络扩写中···")
+                    word_label = QLabel(f"原文脉络改写中···")
                 elif ChapterPoint.EXTRA_SCENE.value == chapter['point']:
-                    word_label = QLabel(f"番外生成场景匹配中···")
+                    word_label = QLabel(f"番外场景筛选中···")
                 elif ChapterPoint.EXTRA_FRAMEWORK.value == chapter['point']:
-                    word_label = QLabel(f"番外生成脉络撰写中···")
+                    word_label = QLabel(f"番外脉络撰写中···")
                 elif ChapterPoint.POLISH_CONTENT.value == chapter['point']:
                     word_label = QLabel(f"脉络内容润色中···")
                 elif ChapterPoint.RELATION_ANALYSIS.value == chapter['point']:

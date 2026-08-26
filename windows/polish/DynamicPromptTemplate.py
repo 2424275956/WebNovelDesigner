@@ -231,12 +231,10 @@ def get_polish_prompt_template(inputs) -> ChatPromptTemplate:
     original_framework_text = (inputs['original_framework_text'])
     # 系统提示词
     system_template = (system_template
-                       # .replace("{original_text}", str(original_text))
                        .replace("{original_framework_text}", str(original_framework_text)))
     system_template = special_chars_parse(system_template)
     # 用户提示词
     user_template = (user_template
-                     # .replace("{original_text}", str(original_text))
                      .replace("{original_framework_text}", str(original_framework_text)))
     user_template = special_chars_parse(user_template)
     template = ChatPromptTemplate.from_messages([
