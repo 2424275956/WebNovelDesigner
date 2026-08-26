@@ -33,6 +33,11 @@ def novel_chapter(self, project_id):
             chapter_item.setData(Qt.ItemDataRole.UserRole, chapter)
             self.chapter_list.addItem(chapter_item)
 
+            # 判断是否当前选择的章节
+            if self.chapter_info:
+                if self.chapter_info['id'] == chapter['id']:
+                    self.chapter_list.setCurrentItem(chapter_item)
+
             # ===== 关键：创建一个居中容器 =====
             container = QWidget()
             container.setFixedWidth(240)  # 与列表宽度一致
