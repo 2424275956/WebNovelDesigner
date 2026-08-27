@@ -15,7 +15,7 @@ class CharacterResult(BaseModel):
     身高: str | None = Field(description="角色身高")
     身材: str | None = Field(description="角色身材")
     肤色: str | None = Field(description="角色肤色")
-    主角女性亲友: bool | None = Field(description="女性角色是否是主角的亲友")
+    主角女性亲友: bool | None = Field(description="是否是主角的女性角色亲友")
     面对敌人性格: Optional[List[str]] = Field(default=[], description="面对敌人的性格特征，如：冷酷、卑鄙、残忍等")
     面对陌生人性格: Optional[List[str]] = Field(default=[], description="面对陌生人的性格特征，如：虚假、冷淡、温柔、妩媚等")
     面对亲友性格: Optional[List[str]] = Field(default=[], description="面对亲友的性格特征，如：温柔、冷淡等")

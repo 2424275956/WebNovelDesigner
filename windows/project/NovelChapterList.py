@@ -25,7 +25,7 @@ def novel_chapter(self, project_id):
 
     """循环处理"""
     if chapter_list:
-        for index, chapter in enumerate(chapter_list):
+        for chapter in chapter_list:
             # 创建item占位
             chapter_item = QListWidgetItem()
             # 设置高度（宽度由列表控制）
@@ -146,7 +146,7 @@ def update_chapter_num(self, project_id):
     fail_chapter = (count_fail_chapter_num(project_id))[0]
     self.chapter_count3.setText(f"项目已失败 {fail_chapter} 章节")
     """章节统计4"""
-    wait_chapter = all_chapter - success_chapter
+    wait_chapter = all_chapter - success_chapter - fail_chapter
     self.chapter_count4.setText(f"项目待完成 {wait_chapter} 章节")
     """章节统计5"""
     expansion_num = (count_extra_chapter_num(project_id))[0]

@@ -1,6 +1,7 @@
 import threading
 import time
 
+from PyQt6 import sip
 from PyQt6.QtWidgets import QMessageBox
 from langchain_openai import ChatOpenAI
 from openai import OpenAI
@@ -463,6 +464,24 @@ def start(self):
 def update_progress(self, project_id):
     """在主线程中执行"""
     if self.project_info['id'] == project_id:
+        # 判断对象是否销毁
+        if not hasattr(self, 'chapter_list') or sip.isdeleted(self.chapter_list):
+            return
+        if not hasattr(self, 'chapter_count1') or sip.isdeleted(self.chapter_count1):
+            return
+        if not hasattr(self, 'chapter_count2') or sip.isdeleted(self.chapter_count2):
+            return
+        if not hasattr(self, 'chapter_count3') or sip.isdeleted(self.chapter_count3):
+            return
+        if not hasattr(self, 'chapter_count4') or sip.isdeleted(self.chapter_count4):
+            return
+        if not hasattr(self, 'chapter_count5') or sip.isdeleted(self.chapter_count5):
+            return
+        if not hasattr(self, 'project_status_color') or sip.isdeleted(self.project_status_color):
+            return
+        if not hasattr(self, 'project_status_title') or sip.isdeleted(self.project_status_title):
+            return
+        # 更新信息
         novel_chapter(self, self.project_info['id'])
         update_chapter_num(self, self.project_info['id'])
         update_chapter_title(self, self.project_info['id'])

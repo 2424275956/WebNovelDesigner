@@ -8,10 +8,10 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButt
 
 from resources.style.StyleSheet import button_style_sheet
 from sqlite.ProjectDB import query_all_project
-from . import ImportNovel
-from . import RemoveNovel
-from . import ProjectPolish
-from . import ClickableFrame
+from windows.project import ImportNovel
+from windows.project import RemoveNovel
+from windows.project import ProjectPolish
+from windows.project import ClickableFrame
 from utils.ClearLayoutRecursive import clear_layout
 
 

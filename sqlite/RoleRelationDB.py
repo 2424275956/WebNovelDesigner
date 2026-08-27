@@ -38,8 +38,12 @@ def query_family_role(project_id):
 # 获取角色关联关系
 def query_family_relation_name_a(project_id, names):
     placeholders = ','.join(['?'] * len(names))
-    return SqliteDB.query_execute_batch(f"SELECT * FROM role_relation WHERE project_id = ? and role_a_name in ({placeholders})", (project_id,))
+    params = [project_id] + names
+    req = tuple(params)
+    return SqliteDB.query_execute_batch(f"SELECT * FROM role_relation WHERE project_id = ? and role_a_name in ({placeholders})", req)
 # 获取角色关联关系
 def query_family_relation_name_b(project_id, names):
     placeholders = ','.join(['?'] * len(names))
-    return SqliteDB.query_execute_batch(f"SELECT * FROM role_relation WHERE project_id = ? and role_b_name in ({placeholders})", (project_id, [names]))
+    params = [project_id] + names
+    req = tuple(params)
+    return SqliteDB.query_execute_batch(f"SELECT * FROM role_relation WHERE project_id = ? and role_b_name in ({placeholders})", req)

@@ -7,8 +7,8 @@ from openai import OpenAI
 
 from resources.style.StyleSheet import button_style_sheet, title_style_sheet
 from sqlite.ModelDB import remove_model_conf, query_all_model, query_model_by_id
-from . import InsertModel
-from . import ModifyModel
+from windows.model import InsertModel
+from windows.model import ModifyModel
 
 """模型窗口"""
 def model_open_windows(self):

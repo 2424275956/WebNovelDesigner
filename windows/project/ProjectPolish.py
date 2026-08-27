@@ -429,7 +429,7 @@ def polist_page(self, project_id):
     self.chapter_count3.setStyleSheet(label_style_sheet(font_size=20))
     center_right_top_left_layout.addWidget(self.chapter_count3)
     """章节统计4"""
-    wait_chapter = all_chapter - success_chapter
+    wait_chapter = all_chapter - success_chapter - fail_chapter
     self.chapter_count4 = QLabel(f"项目待完成 {wait_chapter} 章节")
     self.chapter_count4.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     self.chapter_count4.setStyleSheet(label_style_sheet(font_size=20))

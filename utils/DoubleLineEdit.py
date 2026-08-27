@@ -1,6 +1,6 @@
 from PyQt6.QtGui import QValidator
 from PyQt6.QtWidgets import QLineEdit
-from . import CustomDoubleValidator
+from utils import CustomDoubleValidator
 
 class DoubleLineEdit(QLineEdit):
     """增强的 QLineEdit，自动修正范围"""
