@@ -1,8 +1,8 @@
 import threading
 import time
 
-from PyQt6 import sip
-from PyQt6.QtWidgets import QMessageBox
+import shiboken6
+from PySide6.QtWidgets import QMessageBox
 from langchain_openai import ChatOpenAI
 from openai import OpenAI
 
@@ -354,11 +354,10 @@ def start(self):
         top_p=original_framework_model['top_p'],
         streaming=True,
         presence_penalty=-0.1,      # 全局重复惩罚，防止车轱辘话
-        frequency_penalty=0.3,     # 频率惩罚，抑制高频词
+        frequency_penalty=0.25,     # 频率惩罚，抑制高频词
         stop=stop_list,
         extra_body={
-            "top_k": 50,        # 限制选词范围，保准精确性
-            "repetition_penalty": 0.98  #
+            "repetition_penalty": 0.99  #
         },
         http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )
@@ -384,12 +383,11 @@ def start(self):
         max_tokens=extra_framework_model['max_token'],
         top_p=extra_framework_model['top_p'],
         streaming=True,
-        presence_penalty=0.5,      # 全局重复惩罚，防止车轱辘话
-        frequency_penalty=0.4,     # 频率惩罚，抑制高频词
+        presence_penalty=0.1,      # 全局重复惩罚，防止车轱辘话
+        frequency_penalty=0.0,     # 频率惩罚，抑制高频词
         stop=stop_list,
         extra_body={
-            "top_k": 65,        # 限制选词范围，保准精确性
-            "repetition_penalty": 1.08
+            "repetition_penalty": 1.01
         },
         http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )
@@ -403,12 +401,11 @@ def start(self):
         max_tokens=polish_model['max_token'],
         top_p=polish_model['top_p'],
         streaming=True,
-        presence_penalty=0,      # 全局重复惩罚，防止车轱辘话
-        frequency_penalty=0.2,     # 频率惩罚，抑制高频词
+        presence_penalty=0.0,      # 全局重复惩罚，防止车轱辘话
+        frequency_penalty=0.0,     # 频率惩罚，抑制高频词
         stop=stop_list,
         extra_body={
-            "top_k": 40,        # 限制选词范围，保准精确性
-            "repetition_penalty": 1.03
+            "repetition_penalty": 1.00
         },
         http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )
@@ -465,21 +462,21 @@ def update_progress(self, project_id):
     """在主线程中执行"""
     if self.project_info['id'] == project_id:
         # 判断对象是否销毁
-        if not hasattr(self, 'chapter_list') or sip.isdeleted(self.chapter_list):
+        if not hasattr(self, 'chapter_list') or not shiboken6.isValid(self.chapter_list):
             return
-        if not hasattr(self, 'chapter_count1') or sip.isdeleted(self.chapter_count1):
+        if not hasattr(self, 'chapter_count1') or not shiboken6.isValid(self.chapter_count1):
             return
-        if not hasattr(self, 'chapter_count2') or sip.isdeleted(self.chapter_count2):
+        if not hasattr(self, 'chapter_count2') or not shiboken6.isValid(self.chapter_count2):
             return
-        if not hasattr(self, 'chapter_count3') or sip.isdeleted(self.chapter_count3):
+        if not hasattr(self, 'chapter_count3') or not shiboken6.isValid(self.chapter_count3):
             return
-        if not hasattr(self, 'chapter_count4') or sip.isdeleted(self.chapter_count4):
+        if not hasattr(self, 'chapter_count4') or not shiboken6.isValid(self.chapter_count4):
             return
-        if not hasattr(self, 'chapter_count5') or sip.isdeleted(self.chapter_count5):
+        if not hasattr(self, 'chapter_count5') or not shiboken6.isValid(self.chapter_count5):
             return
-        if not hasattr(self, 'project_status_color') or sip.isdeleted(self.project_status_color):
+        if not hasattr(self, 'project_status_color') or not shiboken6.isValid(self.project_status_color):
             return
-        if not hasattr(self, 'project_status_title') or sip.isdeleted(self.project_status_title):
+        if not hasattr(self, 'project_status_title') or not shiboken6.isValid(self.project_status_title):
             return
         # 更新信息
         novel_chapter(self, self.project_info['id'])

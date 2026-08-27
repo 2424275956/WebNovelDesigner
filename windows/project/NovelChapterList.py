@@ -1,5 +1,5 @@
-from PyQt6.QtCore import Qt, QSize
-from PyQt6.QtWidgets import QListWidgetItem, QWidget, QHBoxLayout, QFrame, QVBoxLayout, QLabel
+from PySide6.QtCore import Qt, QSize
+from PySide6.QtWidgets import QListWidgetItem, QWidget, QHBoxLayout, QFrame, QVBoxLayout, QLabel
 
 from config.GlobalMap import APP_STATE
 from pojo.table.Chapter import ChapterPoint

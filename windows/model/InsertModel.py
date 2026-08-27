@@ -1,7 +1,7 @@
 import time
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QHBoxLayout, QLineEdit, QComboBox, QFrame, QPushButton, \
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QHBoxLayout, QLineEdit, QComboBox, QFrame, QPushButton, \
     QMessageBox
 from openai import OpenAI
 

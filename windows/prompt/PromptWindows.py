@@ -1,7 +1,7 @@
 import os
 
-from PyQt6.QtCore import Qt, QSize
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QListWidget, \
+from PySide6.QtCore import Qt, QSize
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QListWidget, \
     QListWidgetItem, QDialog, QPlainTextEdit, QScrollArea, QLineEdit, QFileDialog, QMessageBox
 import json as std_json
 

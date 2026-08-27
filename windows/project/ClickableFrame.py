@@ -1,14 +1,14 @@
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QMouseEvent
-from PyQt6.QtWidgets import QFrame
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QMouseEvent
+from PySide6.QtWidgets import QFrame
 
 
 class ClickableFrame(QFrame):
-    clicked = pyqtSignal()
+    clicked = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        # 设置鼠标悬停时变为小手 (PyQt6 需要写全枚举路径)
+        # 设置鼠标悬停时变为小手 (PySide6 需要写全枚举路径)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
     def mousePressEvent(self, event: QMouseEvent):

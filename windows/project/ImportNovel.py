@@ -1,8 +1,8 @@
 import re
 from pathlib import Path
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QFrame, QHBoxLayout, QPushButton, QLineEdit, QGridLayout, QTableWidget, QHeaderView, QTableWidgetItem
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QFrame, QHBoxLayout, QPushButton, QLineEdit, QGridLayout, QTableWidget, QHeaderView, QTableWidgetItem
 
 from sqlite.ChapterDB import insert_project_chapter
 from resources.style.StyleSheet import title_style_sheet, line_edit_style_sheet

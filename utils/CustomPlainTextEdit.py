@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QPlainTextEdit
+from PySide6.QtWidgets import QPlainTextEdit
 
 
 class CustomPlainTextEdit(QPlainTextEdit):

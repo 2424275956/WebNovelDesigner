@@ -1,9 +1,9 @@
 import json
 import os
 
-from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QIntValidator
-from PyQt6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame, QListWidget, QPushButton, QPlainTextEdit, \
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QIntValidator
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame, QListWidget, QPushButton, QPlainTextEdit, \
     QComboBox, QListWidgetItem, QLineEdit, QMessageBox, QFileDialog
 
 from resources.style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet, label_style_sheet, \

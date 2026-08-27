@@ -1,5 +1,5 @@
-from PyQt6.QtGui import QValidator
-from PyQt6.QtWidgets import QLineEdit
+from PySide6.QtGui import QValidator
+from PySide6.QtWidgets import QLineEdit
 from utils import CustomDoubleValidator
 
 class DoubleLineEdit(QLineEdit):
