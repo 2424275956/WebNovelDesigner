@@ -252,7 +252,7 @@ def save_prompt_conf(self):
     if not prompt_check(self, self.scene_user_prompt, "改写-场景分析用户"):
         return False
     # 场景规则 循环获取
-    if len(self.scene_prompt_list) <= 0:
+    if self.scene_prompt_list.count() <= 0:
         QMessageBox.warning(self, "错误", f"❌ 改写-场景提示词模版为空")
         return False
     scene = []
@@ -316,7 +316,7 @@ def save_prompt_conf(self):
     if not prompt_check(self, self.extra_scene_user_prompt, "番外-场景分析用户"):
         return False
     # 场景规则 循环获取
-    if len(self.extra_scene_prompt_list) <= 0:
+    if self.extra_scene_prompt_list.count() <= 0:
         QMessageBox.warning(self, "错误", f"❌ 番外-场景提示词模版为空")
         return False
     extra_scene = []

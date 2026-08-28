@@ -13,6 +13,9 @@ def novel_chapter(self, project_id):
     """
     章节列表
     """
+    # 记录当前状态
+    scroll_pos = self.chapter_list.verticalScrollBar().value()
+
     """清空列表"""
     self.chapter_list.clear()
 
@@ -131,6 +134,9 @@ def novel_chapter(self, project_id):
 
             # 将容器设置为列表项
             self.chapter_list.setItemWidget(chapter_item, container)
+
+        # 更新都当前滑动条
+        self.chapter_list.verticalScrollBar().setValue(scroll_pos)
 
     return chapter_list
 
