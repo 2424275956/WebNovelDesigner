@@ -245,6 +245,7 @@ def get_original_framework_prompt_template(inputs) -> ChatPromptTemplate:
     # 系统提示词
     system_template = str(inputs['system_prompt'])
     system_template += """
+    【绝对规则】：以‘待改写段落’内容为核心，保留完整剧情对话并融入其他设定，必须新增大量的性交互动作与对话。禁止将参考片段内容添加其中。
     【输出内容】:只输出脉络内容，禁止携带与内容无关输出
     [脉络改写完成后的内容]
     """
@@ -329,6 +330,7 @@ def get_extra_framework_prompt_template(inputs) -> ChatPromptTemplate:
     # 系统提示词
     system_template = str(inputs['system_prompt'])
     system_template += """
+    【绝对规则】： 以‘参考片段’时间轴与剧情为核心，融入多种设定与角色生成新的剧情脉络，必须新增大量的性交互动作与对话。禁止将参考片段内容添加其中。
     【输出内容】: 只输出脉络内容，禁止携带与内容无关输出
     [脉络生成的内容]
     """
