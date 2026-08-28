@@ -1,5 +1,6 @@
 from typing import Callable, Optional
 
+from config.GlobalMap import APP_STATE
 from stream.LlmRejectTemplate import is_refusal
 from stream.LlmStreamValidator import StreamingValidator
 
@@ -14,6 +15,7 @@ class RetryableStreamChain:
             self,
             chain,
             validator_factory: Callable[[], StreamingValidator],
+            project_id,
             max_retries: int = 3,
             on_chunk: Optional[Callable[[str], None]] = None,  # 实时回调（如更新 UI）
             on_retry: Optional[Callable[[str, str], None]] = None  # 重试通知
@@ -23,6 +25,7 @@ class RetryableStreamChain:
         self.max_retries = max_retries
         self.on_chunk = on_chunk
         self.on_retry = on_retry
+        self.project_id = project_id
 
     async def ainvoke_with_retry(self, inputs: dict, old_len: int=0, target_len: int=3500) -> str:
         """
@@ -40,6 +43,9 @@ class RetryableStreamChain:
             try:
 
                 async for chunk in a_stream:
+                    if 1 == APP_STATE.get(self.project_id):
+                        return ""
+
                     text = chunk if isinstance(chunk, str) else str(chunk)
 
                     # 实时校验
@@ -61,9 +67,10 @@ class RetryableStreamChain:
                     if before_refusal_check:
                         if text is not None and len(text) > 0:
                             if len(validator.total_valid_text) > 30:
-                                if is_refusal(validator.total_valid_text):
+                                refusal, reason_str = is_refusal(validator.total_valid_text)
+                                if refusal:
+                                    self.on_retry(f"伦理拒绝 {attempt + 1}/3", f"对话请求被模型伦理拒绝,{reason_str}")
                                     break
-                                self.on_retry(f"伦理拒绝 {attempt + 1}/3", "对话请求被模型伦理拒绝")
                                 before_refusal_check = False
 
 

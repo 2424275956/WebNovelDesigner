@@ -373,7 +373,7 @@ def original_scene_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1)
         else:
             return original_scene_chapter_polish(chapter_model, transmit, for_num + 1)
 
-async def generate_stream_polish(chain, inputs, old_len, msg):
+async def generate_stream_polish(chain, inputs, old_len, project_id, msg):
     print(f"{msg}-流式链启动")
     stream_chain = RetryableStreamChain(
         chain=chain,
@@ -383,7 +383,8 @@ async def generate_stream_polish(chain, inputs, old_len, msg):
             max_repeat_streak=2
         ),
         on_chunk=lambda text: print(text, end="", flush=True), # 实时打印
-        on_retry=lambda attempt, reason: print(f"\n{msg}【{attempt}] {reason}\n")
+        on_retry=lambda attempt, reason: print(f"\n{msg}【{attempt}] {reason}\n"),
+        project_id=project_id
     )
     try:
         result = await stream_chain.ainvoke_with_retry(inputs, old_len=old_len)
@@ -430,7 +431,7 @@ def original_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_nu
         }
         print(5.06)
         old_len = len(chapter_model.old_content) if chapter_model.old_content is not None else 0
-        raw_text = asyncio.run(generate_stream_polish(original_framework_chain, inputs, old_len, "原文改写-脉络改写"))
+        raw_text = asyncio.run(generate_stream_polish(original_framework_chain, inputs, old_len, chapter_model.project_id, "原文改写-脉络改写"))
         # 英文含量校验
         print(5.07)
         framework_str = json_parse(raw_text)
@@ -583,7 +584,7 @@ def extra_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1
         }
         print(5.06)
         old_len = len(chapter_model.old_content) if chapter_model.old_content is not None else 0
-        raw_text = asyncio.run(generate_stream_polish(extra_framework_chain, inputs, old_len, "番外章节-脉络生成"))
+        raw_text = asyncio.run(generate_stream_polish(extra_framework_chain, inputs, old_len, chapter_model.project_id, "番外章节-脉络生成"))
         print(322)
         framework_str = json_parse(raw_text)
         print(f"番外章节-脉络生成-推理结果转换完成")
@@ -642,7 +643,7 @@ def polish_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
         }
         print(5.06)
         old_len = len(chapter_model.old_content) if chapter_model.old_content is not None else 0
-        raw_text = asyncio.run(generate_stream_polish(polish_chain, inputs, old_len, "结果润色"))
+        raw_text = asyncio.run(generate_stream_polish(polish_chain, inputs, old_len, chapter_model.project_id, "结果润色"))
         is_valid, english_ratio = is_valid_chinese_text(raw_text)
         if not is_valid:
             print(f"结果润色-英文占比校验失败：{for_num}, 英文占比：{english_ratio * 100}%")
