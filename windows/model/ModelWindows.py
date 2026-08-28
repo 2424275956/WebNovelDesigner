@@ -271,7 +271,9 @@ def test_connection(self):
             return False
 
         # 是否 ollama
-        is_ollama = "ollama" in self.conf_page_api_key.lower()
+        is_ollama = self.conf_page_model_type_int == 2
+        if is_ollama:
+            self.conf_page_api_key = "Ollama"
         if not is_ollama and len(self.conf_page_api_key) < 1:
             QMessageBox.warning(self, "错误", f"❌ API Key密匙为空")
             return False

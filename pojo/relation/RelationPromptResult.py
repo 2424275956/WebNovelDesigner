@@ -31,14 +31,6 @@ class CharacterResult(BaseModel):
     阴茎粗细: str | None = Field(description="男性阴茎粗细")
     最近动作: str | None = Field(description="角色最近的动作")
 
-class RoleOptionalResult(BaseModel):
-    """
-    角色态度信息
-    """
-    态度: str = Field(description="态度如何，如：冷淡、关系、仇恨等")
-    简述: str = Field(description="一句话总结关系")
-
-
 class RelationResult(BaseModel):
     """
     角色关联关系信息

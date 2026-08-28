@@ -1,5 +1,6 @@
 from typing import Callable, Optional
 
+from stream.LlmRejectTemplate import is_refusal
 from stream.LlmStreamValidator import StreamingValidator
 
 
@@ -31,11 +32,14 @@ class RetryableStreamChain:
         last_error = ""
 
         is_next_polish = True
+        before_refusal_check = True
         for attempt in range(self.max_retries):
             validator = self.validator_factory()
 
+            a_stream = self.chain.astream(inputs)
             try:
-                async for chunk in self.chain.astream(inputs):
+
+                async for chunk in a_stream:
                     text = chunk if isinstance(chunk, str) else str(chunk)
 
                     # 实时校验
@@ -52,6 +56,16 @@ class RetryableStreamChain:
                             is_next_polish = False
                         inputs['wait_polish_text'] = self.get_this_text(validator)
                         break  # 跳出 for chunk，进入下一次重试
+
+                    # 模型拒绝判断
+                    if before_refusal_check:
+                        if text is not None and len(text) > 0:
+                            if len(validator.total_valid_text) > 30:
+                                if is_refusal(validator.total_valid_text):
+                                    break
+                                self.on_retry(f"伦理拒绝 {attempt + 1}/3", "对话请求被模型伦理拒绝")
+                                before_refusal_check = False
+
 
                     if result and self.on_chunk:
                         self.on_chunk(result)
@@ -74,6 +88,12 @@ class RetryableStreamChain:
                 if self.on_retry:
                     self.on_retry(f"异常 {attempt + 1}/3", last_error)
                 continue
+            finally:
+                if a_stream is not None:
+                    try:
+                        await a_stream.aclose()
+                    except:
+                        pass
 
         # 重试耗尽
         raise RuntimeError(f"流式生成失败，已重试 {self.max_retries} 次。最后错误: {last_error}")

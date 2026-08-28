@@ -6,6 +6,7 @@ from typing import List
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda
 from pydantic import Field, BaseModel
+from json_repair import repair_json
 
 from config.GlobalMap import APP_STOP_EVENT
 from pojo.relation import RelationPromptResult
@@ -123,7 +124,8 @@ def relation_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
         print("关系分析-LangChain链构建")
         relation_chain = (
             RunnableLambda(get_relation_prompt_template) |
-            transmit.relation_llm.with_structured_output(RelationPromptResult.RelationPromptResult)
+            transmit.relation_llm |
+            StrOutputParser()
         )
         # 查询角色信息
         relation_json = get_current_role_relation(chapter_model)
@@ -132,12 +134,19 @@ def relation_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
         relation = relation_chain.invoke({
             "relation_prompt_system": transmit.relation_system,
             "relation_prompt_user": transmit.relation_user,
-            "reference_text": chapter_model.before_content,
-            "original_text": chapter_model.new_content,
+            "reference_text": "",
+            "original_text": chapter_model.old_content,
             "db_role_json": str(relation_json)
         })
         print(2.22)
-        relation_data = RelationPromptResult.RelationPromptResult.model_validate(relation)
+        raw_text = relation.content if hasattr(relation, 'content') else str(relation)
+        raw_text = raw_text.replace("```json", "").replace("```", "")
+        try:
+            relation_data = RelationPromptResult.RelationPromptResult.model_validate_json(raw_text)
+        except Exception as e:
+            # 手动尝试解析
+            raw_text = repair_json(raw_text)
+            relation_data = RelationPromptResult.RelationPromptResult.model_validate_json(raw_text)
         print(relation_data)
         # 更新角色关联信息
         if relation_data.角色数组:
@@ -358,7 +367,7 @@ def original_scene_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1)
         else:
             return original_scene_chapter_polish(chapter_model, transmit, for_num + 1)
 
-async def generate_stream_polish(chain, inputs, msg):
+async def generate_stream_polish(chain, inputs, old_len, msg):
     print(f"{msg}-流式链启动")
     stream_chain = RetryableStreamChain(
         chain=chain,
@@ -371,7 +380,7 @@ async def generate_stream_polish(chain, inputs, msg):
         on_retry=lambda attempt, reason: print(f"\n{msg}【{attempt}] {reason}\n")
     )
     try:
-        result = await stream_chain.ainvoke_with_retry(inputs)
+        result = await stream_chain.ainvoke_with_retry(inputs, old_len=old_len)
         print(f"\n生成完成，总长度: {len(result)} 字")
         return result
 
@@ -414,7 +423,8 @@ def original_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_nu
             "wait_polish_text": ""
         }
         print(5.06)
-        raw_text = asyncio.run(generate_stream_polish(original_framework_chain, inputs, "原文改写-脉络改写"))
+        old_len = len(chapter_model.old_content) if chapter_model.old_content is not None else 0
+        raw_text = asyncio.run(generate_stream_polish(original_framework_chain, inputs, old_len, "原文改写-脉络改写"))
         # 英文含量校验
         print(5.07)
         framework_str = json_parse(raw_text)
@@ -567,7 +577,8 @@ def extra_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1
             "wait_polish_text": ""
         }
         print(5.06)
-        raw_text = asyncio.run(generate_stream_polish(extra_framework_chain, inputs, "番外章节-脉络生成"))
+        old_len = len(chapter_model.old_content) if chapter_model.old_content is not None else 0
+        raw_text = asyncio.run(generate_stream_polish(extra_framework_chain, inputs, old_len, "番外章节-脉络生成"))
         print(322)
         framework_str = json_parse(raw_text)
         print(f"番外章节-脉络生成-推理结果转换完成")
@@ -625,7 +636,8 @@ def polish_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
             "wait_polish_text": ""
         }
         print(5.06)
-        raw_text = asyncio.run(generate_stream_polish(polish_chain, inputs, "结果润色"))
+        old_len = len(chapter_model.old_content) if chapter_model.old_content is not None else 0
+        raw_text = asyncio.run(generate_stream_polish(polish_chain, inputs, old_len, "结果润色"))
         is_valid, english_ratio = is_valid_chinese_text(raw_text)
         if not is_valid:
             print(f"结果润色-英文占比校验失败：{for_num}, 英文占比：{english_ratio * 100}%")

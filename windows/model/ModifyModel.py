@@ -230,6 +230,8 @@ class ModifyModel(QDialog):
 
             # 是否 ollama
             is_ollama = "ollama" in self.type_combo.currentText().lower()
+            if is_ollama:
+                self.api_key.setText("Ollama")
             if not is_ollama and len(self.api_key.text()) < 1:
                 QMessageBox.warning(self, "错误", f"❌ API Key密匙为空")
                 return False

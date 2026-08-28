@@ -53,10 +53,13 @@ def model_connection_check(self, model_id, title, model_map):
     if model['type'] is None:
         QMessageBox.warning(self, "", f"项目{title}模型类型为空")
         return False
+    api_key = model['api_key']
     if 1 == model['type'] or 3 == model['type']:
         if len(model['api_key']) < 1:
             QMessageBox.warning(self, "", f"项目{title}模型ApiKey为空")
             return False
+    else:
+        api_key = "Ollama"
     if model['temperature'] is None:
         QMessageBox.warning(self, "", f"项目{title}模型温度(Temperature)为空")
         return False
@@ -80,7 +83,7 @@ def model_connection_check(self, model_id, title, model_map):
     try:
         client = OpenAI(
             base_url = model['url'],
-            api_key= model['api_key']
+            api_key= api_key
         )
         # 发送一个极短的请求来测试连通性
         models = client.models.list()
@@ -301,7 +304,7 @@ def start(self):
     role_model = model_map[self.project_info['role_model_id']]
     transmit.role_llm = ChatOpenAI(
         model=role_model['model_id'],
-        api_key=role_model['api_key'],
+        api_key=role_model['api_key'] if role_model['api_key'] else "Ollama",
         base_url=role_model['url'],
         temperature=role_model['temperature'],
         max_tokens=role_model['max_token'],
@@ -313,7 +316,7 @@ def start(self):
     process_model = model_map[self.project_info['process_model_id']]
     transmit.process_llm = ChatOpenAI(
         model=process_model['model_id'],
-        api_key=process_model['api_key'],
+        api_key=process_model['api_key'] if process_model['api_key'] else "Ollama",
         base_url=process_model['url'],
         temperature=process_model['temperature'],
         max_tokens=process_model['max_token'],
@@ -325,7 +328,7 @@ def start(self):
     original_scene_model = model_map[self.project_info['scene_model_id']]
     transmit.original_scene_llm = ChatOpenAI(
         model=original_scene_model['model_id'],
-        api_key=original_scene_model['api_key'],
+        api_key=original_scene_model['api_key'] if original_scene_model['api_key'] else "Ollama",
         base_url=original_scene_model['url'],
         temperature=original_scene_model['temperature'],
         max_tokens=original_scene_model['max_token'],
@@ -347,7 +350,7 @@ def start(self):
     original_framework_model = model_map[self.project_info['framework_model_id']]
     transmit.original_framework_llm = ChatOpenAI(
         model=original_framework_model['model_id'],
-        api_key=original_framework_model['api_key'],
+        api_key=original_framework_model['api_key'] if original_framework_model['api_key'] else "Ollama",
         base_url=original_framework_model['url'],
         temperature=original_framework_model['temperature'],
         max_tokens=original_framework_model['max_token'],
@@ -365,7 +368,7 @@ def start(self):
     extra_scene_model = model_map[self.project_info['extra_scene_model_id']]
     transmit.extra_scene_llm = ChatOpenAI(
         model=extra_scene_model['model_id'],
-        api_key=extra_scene_model['api_key'],
+        api_key=extra_scene_model['api_key'] if extra_scene_model['api_key'] else "Ollama",
         base_url=extra_scene_model['url'],
         temperature=extra_scene_model['temperature'],
         max_tokens=extra_scene_model['max_token'],
@@ -377,7 +380,7 @@ def start(self):
     extra_framework_model = model_map[self.project_info['extra_framework_model_id']]
     transmit.extra_framework_llm = ChatOpenAI(
         model=extra_framework_model['model_id'],
-        api_key=extra_framework_model['api_key'],
+        api_key=extra_framework_model['api_key'] if extra_framework_model['api_key'] else "Ollama",
         base_url=extra_framework_model['url'],
         temperature=extra_framework_model['temperature'],
         max_tokens=extra_framework_model['max_token'],
@@ -395,7 +398,7 @@ def start(self):
     polish_model = model_map[self.project_info['polish_model_id']]
     transmit.polish_llm = ChatOpenAI(
         model=polish_model['model_id'],
-        api_key=polish_model['api_key'],
+        api_key=polish_model['api_key'] if polish_model['api_key'] else "Ollama",
         base_url=polish_model['url'],
         temperature=polish_model['temperature'],
         max_tokens=polish_model['max_token'],
