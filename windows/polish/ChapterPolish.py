@@ -14,7 +14,7 @@ from pojo.role import RolePromptResult
 from pojo.table.Chapter import ChapterBO, ChapterPoint, ChapterStatus, ChapterType
 from sqlite.ChapterDB import update_chapter_role, update_chapter_status, update_chapter_relation, \
     update_chapter_process, update_chapter_scene, update_chapter_framework, update_chapter_polish, \
-    update_chapter_relation_and_point
+    update_chapter_relation_and_point, update_chapter_success
 from sqlite.RoleRelationDB import query_role_model, \
     query_role_relation, remove_old_role_model, insert_role_model, remove_old_role_relation, insert_role_relation, \
     query_family_role, query_family_relation_name_a, query_family_relation_name_b
@@ -120,6 +120,13 @@ def role_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
 def relation_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
     """关系分析处理"""
     try:
+        # 番外章节无需进行分析
+        if chapter_model.type == ChapterType.EXTRA_GENERATE.value:
+            update_chapter_success(chapter_model.id)
+            chapter_model.point = ChapterPoint.SUCCESS.value
+            chapter_model.status = ChapterStatus.SUCCESS.value
+            return
+
         # 关系分析
         print("关系分析-LangChain链构建")
         relation_chain = (
@@ -134,20 +141,19 @@ def relation_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
         relation = relation_chain.invoke({
             "relation_prompt_system": transmit.relation_system,
             "relation_prompt_user": transmit.relation_user,
-            "reference_text": "",
             "original_text": chapter_model.old_content,
             "db_role_json": str(relation_json)
         })
         print(2.22)
         raw_text = relation.content if hasattr(relation, 'content') else str(relation)
         raw_text = raw_text.replace("```json", "").replace("```", "")
+        print(raw_text)
         try:
             relation_data = RelationPromptResult.RelationPromptResult.model_validate_json(raw_text)
-        except Exception as e:
+        except:
             # 手动尝试解析
             raw_text = repair_json(raw_text)
             relation_data = RelationPromptResult.RelationPromptResult.model_validate_json(raw_text)
-        print(relation_data)
         # 更新角色关联信息
         if relation_data.角色数组:
             for role in relation_data.角色数组:

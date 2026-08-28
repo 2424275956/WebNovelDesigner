@@ -60,7 +60,6 @@ def get_role_prompt_template(inputs) -> ChatPromptTemplate:
 
 def get_relation_prompt_template(inputs) -> ChatPromptTemplate:
     """获取关系分析提示词模版"""
-    reference_text = (inputs['reference_text'])
     original_text = (inputs['original_text'])
     db_role_json = (inputs['db_role_json'])
     # 系统提示词
@@ -174,7 +173,6 @@ def get_relation_prompt_template(inputs) -> ChatPromptTemplate:
     {db_role_json}
     """
     user_template = (user_template
-                        .replace("{reference_text}", reference_text)
                         .replace("{original_text}", original_text)
                         .replace("{db_role_json}", db_role_json))
     user_template = special_chars_parse(user_template)

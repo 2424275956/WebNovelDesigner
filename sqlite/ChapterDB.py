@@ -46,6 +46,10 @@ def update_chapter_relation(relation_text, chapter_id):
 def update_chapter_relation_and_point(relation_text, chapter_id):
     SqliteDB.execute("UPDATE chapter SET relation_content = ?, status = 3, point = 700 WHERE id = ?", (relation_text, chapter_id))
 
+# 更新章节-关系分析内容
+def update_chapter_success(chapter_id):
+    SqliteDB.execute("UPDATE chapter SET status = 3, point = 700 WHERE id = ?", (chapter_id,))
+
 # 更新章节-状态
 def update_chapter_status(status, chapter_id):
     SqliteDB.execute("UPDATE chapter SET status = ? WHERE id = ?", (status, chapter_id))
