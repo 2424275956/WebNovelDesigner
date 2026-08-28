@@ -23,12 +23,10 @@ def get_novel_resume_template(inputs) -> ChatPromptTemplate:
     - 语言简洁扼要，整体脉络通畅，保留关键细节（女性穿着、身体特征）。将原文压缩至**原文约30%-40%**的篇幅。
     """
     print(111.02)
-    user_template = """
+    user_template = f"""
     【文本片段】
-    {reference_text}
+    {inputs['reference_text']}
     """
-    print(111.03)
-    user_template.replace("{reference_text}", str(inputs['reference_text']))
     print(111.04)
     template = ChatPromptTemplate.from_messages([
         ("system", system_template),
@@ -39,18 +37,15 @@ def get_novel_resume_template(inputs) -> ChatPromptTemplate:
 
 def get_role_prompt_template(inputs) -> ChatPromptTemplate:
     """获取用户分析提示词模版"""
-    # 占位数据
-    original_text = (inputs['original_text'])
     # 系统提示词
     system_template = str(inputs['role_prompt_system'])
     system_template = special_chars_parse(system_template)
     # 用户提示词
     user_template = str(inputs['role_prompt_user'])
-    user_template += """
+    user_template += f"""
     【原文片段】：
-    {original_text}
+    {inputs['original_text']}
     """
-    user_template = user_template.replace("{original_text}", original_text)
     user_template = special_chars_parse(user_template)
     template = ChatPromptTemplate.from_messages([
         ("system", system_template),
@@ -60,8 +55,6 @@ def get_role_prompt_template(inputs) -> ChatPromptTemplate:
 
 def get_relation_prompt_template(inputs) -> ChatPromptTemplate:
     """获取关系分析提示词模版"""
-    original_text = (inputs['original_text'])
-    db_role_json = (inputs['db_role_json'])
     # 系统提示词
     system_template = str(inputs['relation_prompt_system'])
     system_template = system_template + """
@@ -164,17 +157,12 @@ def get_relation_prompt_template(inputs) -> ChatPromptTemplate:
     system_template = special_chars_parse(system_template)
     # 用户提示词
     user_template = str(inputs['relation_prompt_user'])
-    user_template += """
-    【参考片段】:
-    {reference_text}
+    user_template += f"""
     【原文片段】：
-    {original_text}
+    {inputs['original_text']}
     【存储的角色档案】:
-    {db_role_json}
+    {inputs['db_role_json']}
     """
-    user_template = (user_template
-                        .replace("{original_text}", original_text)
-                        .replace("{db_role_json}", db_role_json))
     user_template = special_chars_parse(user_template)
     template = ChatPromptTemplate.from_messages([
         ("system", system_template),
@@ -185,10 +173,6 @@ def get_relation_prompt_template(inputs) -> ChatPromptTemplate:
 def get_process_prompt_template(inputs) -> ChatPromptTemplate:
     """获取关系分析提示词模版"""
     # 数据准备
-    relation_analysis = (inputs['relation_analysis'])
-    reference_before_text = (inputs['reference_before_text'])
-    original_text = (inputs['original_text'])
-    reference_after_text = (inputs['reference_after_text'])
     # 系统提示词
     system_template = str(inputs['process_prompt_system'])
     system_template = system_template + """
@@ -209,21 +193,16 @@ def get_process_prompt_template(inputs) -> ChatPromptTemplate:
     system_template = special_chars_parse(system_template)
     # 用户提示词
     user_template = str(inputs['process_prompt_user'])
-    user_template += """
+    user_template += f"""
     【参考片段-前述剧情】:
-    {reference_before_text}
+    {inputs['reference_before_text']}
     【原文片段】：
-    {original_text}
+    {inputs['original_text']}
     【参考片段-后续剧情】:
-    {reference_after_text}
+    {inputs['reference_after_text']}
     【角色档案】：
-    {relation_analysis}
+    {inputs['relation_analysis']}
     """
-    user_template = (user_template
-                     .replace("{relation_analysis}", relation_analysis)
-                     .replace("{reference_before_text}", reference_before_text)
-                     .replace("{original_text}", original_text)
-                     .replace("{reference_after_text}", reference_after_text))
     user_template = special_chars_parse(user_template)
     template = ChatPromptTemplate.from_messages([
         ("system", system_template),
@@ -233,11 +212,6 @@ def get_process_prompt_template(inputs) -> ChatPromptTemplate:
 
 def get_original_scene_prompt_template(inputs) -> ChatPromptTemplate:
     """获取关系分析提示词模版"""
-    relation_analysis = (inputs['relation_analysis'])
-    reference_before_text = (inputs['reference_before_text'])
-    original_text = (inputs['original_text'])
-    reference_after_text = (inputs['reference_after_text'])
-    scene_list = (inputs['scene_list'])
     # 系统提示词
     system_template = str(inputs['original_scene_prompt_system'])
     system_template = system_template + """
@@ -247,24 +221,18 @@ def get_original_scene_prompt_template(inputs) -> ChatPromptTemplate:
     system_template = special_chars_parse(system_template)
     # 用户提示词
     user_template = str(inputs['original_scene_prompt_user'])
-    user_template += """
+    user_template += f"""
     【参考片段-前述剧情】
-    {reference_before_text}
+    {inputs['reference_before_text']}
     【原文片段】
-    {original_text}
+    {inputs['original_text']}
     【参考片段-后续剧情】
-    {reference_after_text}
+    {inputs['reference_after_text']}
     【角色分析与关系分析】
-    {relation_analysis}
+    {inputs['relation_analysis']}
     【场景库】
-    {scene_list}
+    {inputs['scene_list']}
     """
-    user_template = (user_template
-                     .replace("{relation_analysis}", relation_analysis)
-                     .replace("{reference_before_text}", reference_before_text)
-                     .replace("{original_text}", original_text)
-                     .replace("{reference_after_text}", reference_after_text)
-                     .replace("{scene_list}", str(scene_list)))
     user_template = special_chars_parse(user_template)
     template = ChatPromptTemplate.from_messages([
         ("system", system_template),
@@ -274,12 +242,6 @@ def get_original_scene_prompt_template(inputs) -> ChatPromptTemplate:
 
 def get_original_framework_prompt_template(inputs) -> ChatPromptTemplate:
     """获取关系分析提示词模版"""
-    framework_analysis = (inputs['framework_analysis'])
-    relation_analysis = (inputs['relation_analysis'])
-    reference_before_text = (inputs['reference_before_text'])
-    original_text = (inputs['original_text'])
-    reference_after_text = (inputs['reference_after_text'])
-    wait_polish_text = (inputs['wait_polish_text'])
     # 系统提示词
     system_template = str(inputs['system_prompt'])
     system_template += """
@@ -289,25 +251,19 @@ def get_original_framework_prompt_template(inputs) -> ChatPromptTemplate:
     system_template = special_chars_parse(system_template)
     # 用户提示词
     user_template = str(inputs['user_prompt'])
-    user_template = user_template + """
+    user_template = user_template + f"""
     【角色档案】
-    {relation_analysis}
+    {inputs['relation_analysis']}
     【场景规则】
-    {framework_analysis}
+    {inputs['framework_analysis']}
     【参看片段-前述剧情】
-    {reference_before_text}
+    {inputs['reference_before_text']}
     【待改写段落】
-    {original_text}
+    {inputs['original_text']}
     【参考片段-后续剧情】
-    {reference_after_text}
+    {inputs['reference_after_text']}
     """
-    user_template = (user_template
-                     .replace("{relation_analysis}", str(relation_analysis))
-                     .replace("{reference_before_text}", str(reference_before_text))
-                     .replace("{original_text}", str(original_text))
-                     .replace("{reference_after_text}", str(reference_after_text))
-                     .replace("{framework_analysis}", str(framework_analysis))
-                     .replace("{wait_polish_text}", str(wait_polish_text)))
+    user_template = user_template.replace("{wait_polish_text}", str(inputs['wait_polish_text']))
     user_template = special_chars_parse(user_template)
     template = ChatPromptTemplate.from_messages([
         ("system", system_template),
@@ -317,8 +273,6 @@ def get_original_framework_prompt_template(inputs) -> ChatPromptTemplate:
 
 def get_polish_prompt_template(inputs) -> ChatPromptTemplate:
     """获取关系分析提示词模版"""
-    original_framework_text = (inputs['original_framework_text'])
-    wait_polish_text = (inputs['wait_polish_text'])
     # 系统提示词
     system_template = str(inputs['system_prompt'])
     system_template += """
@@ -328,13 +282,11 @@ def get_polish_prompt_template(inputs) -> ChatPromptTemplate:
     system_template = special_chars_parse(system_template)
     # 用户提示词
     user_template = str(inputs['user_prompt'])
-    user_template = user_template + """
+    user_template = user_template + f"""
     【待润色段落】
-    {original_framework_text}
+    {inputs['original_framework_text']}
     """
-    user_template = (user_template
-                     .replace("{original_framework_text}", str(original_framework_text))
-                     .replace("{wait_polish_text}", wait_polish_text))
+    user_template = user_template.replace("{wait_polish_text}", str(inputs['wait_polish_text']))
     user_template = special_chars_parse(user_template)
     template = ChatPromptTemplate.from_messages([
         ("system", system_template),
@@ -344,11 +296,6 @@ def get_polish_prompt_template(inputs) -> ChatPromptTemplate:
 
 def get_extra_scene_prompt_template(inputs) -> ChatPromptTemplate:
     """获取关系分析提示词模版"""
-    reference_before_text = (inputs['reference_before_text'])
-    reference_after_text = (inputs['reference_after_text'])
-    relation_analysis = (inputs['relation_analysis'])
-    process_analysis = (inputs['process_analysis'])
-    scene_list = (inputs['scene_list'])
     # 系统提示词
     system_template = str(inputs['extra_scene_prompt_system'])
     system_template += """
@@ -358,24 +305,18 @@ def get_extra_scene_prompt_template(inputs) -> ChatPromptTemplate:
     system_template = special_chars_parse(system_template)
     # 用户提示词
     user_template = str(inputs['extra_scene_prompt_user'])
-    user_template = user_template + """
+    user_template = user_template + f"""
    【参考片段-前述剧情】
-    {reference_before_text}
+    {inputs['reference_before_text']}
     【参考片段-后续剧情】
-    {reference_after_text}
+    {inputs['reference_after_text']}
     【角色分析与关系分析】
-    {relation_analysis}
+    {inputs['relation_analysis']}
     【角色行为信息】
-    {process_analysis}
+    {inputs['process_analysis']}
     【场景库】
-    {scene_list} 
+    {inputs['scene_list']} 
     """
-    user_template = (user_template
-                     .replace("{reference_before_text}", reference_before_text)
-                     .replace("{reference_after_text}", reference_after_text)
-                     .replace("{relation_analysis}", relation_analysis)
-                     .replace("{process_analysis}", process_analysis)
-                     .replace("{scene_list}", scene_list))
     user_template = special_chars_parse(user_template)
     template = ChatPromptTemplate.from_messages([
         ("system", system_template),
@@ -385,13 +326,6 @@ def get_extra_scene_prompt_template(inputs) -> ChatPromptTemplate:
 
 def get_extra_framework_prompt_template(inputs) -> ChatPromptTemplate:
     """获取关系分析提示词模版"""
-    framework_analysis = (inputs['framework_analysis'])
-    reference_before_text = (inputs['reference_before_text'])
-    original_text = (inputs['original_text'])
-    reference_after_text = (inputs['reference_after_text'])
-    relation_analysis = (inputs['relation_analysis'])
-    create_framework_text = (inputs['create_framework_text'])
-    wait_polish_text = (inputs['wait_polish_text'])
     # 系统提示词
     system_template = str(inputs['system_prompt'])
     system_template += """
@@ -401,27 +335,19 @@ def get_extra_framework_prompt_template(inputs) -> ChatPromptTemplate:
     system_template = special_chars_parse(system_template)
     # 用户提示词
     user_template = str(inputs['user_prompt'])
-    user_template = user_template + """
+    user_template = user_template + f"""
    【角色档案】
-    {relation_analysis}
+    {inputs['relation_analysis']}
     【场景规则】
-    {framework_analysis}
+    {inputs['framework_analysis']}
     【前述剧情】
-    {reference_before_text}
+    {inputs['reference_before_text']}
     【后续剧情】
-    {original_text}
-    {reference_after_text}
+    {inputs['reference_after_text']}
     【参考角色】
-    {create_framework_text} 
+    {inputs['create_framework_text']} 
     """
-    user_template = (user_template
-                     .replace("{reference_before_text}", str(reference_before_text))
-                     .replace("{original_text}", str(original_text))
-                     .replace("{reference_after_text}", str(reference_after_text))
-                     .replace("{relation_analysis}", str(relation_analysis))
-                     .replace("{create_framework_text}", str(create_framework_text))
-                     .replace("{framework_analysis}", str(framework_analysis))
-                     .replace("{wait_polish_text}", str(wait_polish_text)))
+    user_template = user_template.replace("{wait_polish_text}", str(inputs['wait_polish_text']))
     user_template = special_chars_parse(user_template)
     template = ChatPromptTemplate.from_messages([
         ("system", system_template),

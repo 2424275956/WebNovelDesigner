@@ -275,10 +275,12 @@ class ImportDialog(QDialog):
                                                              "old_len": len(context),
                                                              "old_content": context,
                                                              "sort": sort})
+
+                        # 排序累加
+                        if chapter_title is not None and len(chapter_title) > 0:
+                            sort = sort + 1
                         # 记录章节名称
                         chapter_title = line.strip()
-                        # 排序累加
-                        sort = sort + 1
                         # 正文内容置空
                         context = ""
                     else:

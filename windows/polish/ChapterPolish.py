@@ -576,7 +576,6 @@ def extra_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1
             "user_prompt": transmit.extra_framework_user,
             "framework_analysis": str(extra_analysis_text),
             "reference_before_text": chapter_model.before_content,
-            "original_text": chapter_model.old_content,
             "reference_after_text": chapter_model.after_content,
             "relation_analysis": chapter_model.relation_content,
             "create_framework_text": chapter_model.process_content,
