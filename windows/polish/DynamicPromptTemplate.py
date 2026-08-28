@@ -188,8 +188,8 @@ def get_original_scene_prompt_template(inputs) -> ChatPromptTemplate:
 
 def get_original_framework_prompt_template(inputs) -> ChatPromptTemplate:
     """获取关系分析提示词模版"""
-    system_template = str(inputs['original_framework_prompt_system'])
-    user_template = str(inputs['original_framework_prompt_user'])
+    system_template = str(inputs['system_prompt'])
+    user_template = str(inputs['user_prompt'])
     user_template = user_template + """
             【输出内容】:只输出脉络内容，禁止携带与内容无关输出
             [脉络改写完成后的内容]
@@ -199,13 +199,15 @@ def get_original_framework_prompt_template(inputs) -> ChatPromptTemplate:
     reference_before_text = (inputs['reference_before_text'])
     original_text = (inputs['original_text'])
     reference_after_text = (inputs['reference_after_text'])
+    wait_polish_text = (inputs['wait_polish_text'])
     # 系统提示词
     system_template = (system_template
                        .replace("{relation_analysis}", str(relation_analysis))
                        .replace("{reference_before_text}", str(reference_before_text))
                        .replace("{original_text}", str(original_text))
                        .replace("{reference_after_text}", str(reference_after_text))
-                       .replace("{framework_analysis}", str(framework_analysis)))
+                       .replace("{framework_analysis}", str(framework_analysis))
+                       .replace("{wait_polish_text}", str(wait_polish_text)))
     system_template = special_chars_parse(system_template)
     # 用户提示词
     user_template = (user_template
@@ -213,7 +215,8 @@ def get_original_framework_prompt_template(inputs) -> ChatPromptTemplate:
                      .replace("{reference_before_text}", str(reference_before_text))
                      .replace("{original_text}", str(original_text))
                      .replace("{reference_after_text}", str(reference_after_text))
-                     .replace("{framework_analysis}", str(framework_analysis)))
+                     .replace("{framework_analysis}", str(framework_analysis))
+                     .replace("{wait_polish_text}", str(wait_polish_text)))
     user_template = special_chars_parse(user_template)
     template = ChatPromptTemplate.from_messages([
         ("system", system_template),
@@ -223,20 +226,23 @@ def get_original_framework_prompt_template(inputs) -> ChatPromptTemplate:
 
 def get_polish_prompt_template(inputs) -> ChatPromptTemplate:
     """获取关系分析提示词模版"""
-    system_template = str(inputs['polish_prompt_system'])
-    user_template = str(inputs['polish_prompt_user'])
+    system_template = str(inputs['system_prompt'])
+    user_template = str(inputs['user_prompt'])
     user_template = user_template + """
             【输出内容】: 只输出润色后的内容，禁止携带无关内容。
             "润色完成后的内容"
     """
     original_framework_text = (inputs['original_framework_text'])
+    wait_polish_text = (inputs['wait_polish_text'])
     # 系统提示词
     system_template = (system_template
-                       .replace("{original_framework_text}", str(original_framework_text)))
+                       .replace("{original_framework_text}", str(original_framework_text))
+                       .replace("{wait_polish_text}", wait_polish_text))
     system_template = special_chars_parse(system_template)
     # 用户提示词
     user_template = (user_template
-                     .replace("{original_framework_text}", str(original_framework_text)))
+                     .replace("{original_framework_text}", str(original_framework_text))
+                     .replace("{wait_polish_text}", wait_polish_text))
     user_template = special_chars_parse(user_template)
     template = ChatPromptTemplate.from_messages([
         ("system", system_template),
@@ -281,8 +287,8 @@ def get_extra_scene_prompt_template(inputs) -> ChatPromptTemplate:
 
 def get_extra_framework_prompt_template(inputs) -> ChatPromptTemplate:
     """获取关系分析提示词模版"""
-    system_template = str(inputs['extra_framework_prompt_system'])
-    user_template = str(inputs['extra_framework_prompt_user'])
+    system_template = str(inputs['system_prompt'])
+    user_template = str(inputs['user_prompt'])
     user_template = user_template + """
             【输出内容】: 只输出脉络内容，禁止携带与内容无关输出
             [脉络生成的内容]
@@ -293,6 +299,7 @@ def get_extra_framework_prompt_template(inputs) -> ChatPromptTemplate:
     reference_after_text = (inputs['reference_after_text'])
     relation_analysis = (inputs['relation_analysis'])
     create_framework_text = (inputs['create_framework_text'])
+    wait_polish_text = (inputs['wait_polish_text'])
     # 系统提示词
     system_template = (system_template
                        .replace("{reference_before_text}", str(reference_before_text))
@@ -300,7 +307,8 @@ def get_extra_framework_prompt_template(inputs) -> ChatPromptTemplate:
                        .replace("{reference_after_text}", str(reference_after_text))
                        .replace("{relation_analysis}", str(relation_analysis))
                        .replace("{create_framework_text}", str(create_framework_text))
-                       .replace("{framework_analysis}", str(framework_analysis)))
+                       .replace("{framework_analysis}", str(framework_analysis))
+                       .replace("{wait_polish_text}", str(wait_polish_text)))
     system_template = special_chars_parse(system_template)
     # 用户提示词
     user_template = (user_template
@@ -309,7 +317,8 @@ def get_extra_framework_prompt_template(inputs) -> ChatPromptTemplate:
                      .replace("{reference_after_text}", str(reference_after_text))
                      .replace("{relation_analysis}", str(relation_analysis))
                      .replace("{create_framework_text}", str(create_framework_text))
-                     .replace("{framework_analysis}", str(framework_analysis)))
+                     .replace("{framework_analysis}", str(framework_analysis))
+                     .replace("{wait_polish_text}", str(wait_polish_text)))
     user_template = special_chars_parse(user_template)
     template = ChatPromptTemplate.from_messages([
         ("system", system_template),

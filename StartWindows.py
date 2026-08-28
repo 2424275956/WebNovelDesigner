@@ -1,10 +1,13 @@
+import os.path
 import sys
+import traceback
 
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QFrame, QPushButton, QApplication, \
     QButtonGroup
 
+from utils.paths import resource_path
 from windows.model.ModelWindows import model_open_windows
 from windows.project.ProjectWindows import project_open_windows, review_page
 from windows.prompt.PromptWindows import prompt_open_windows
@@ -53,7 +56,6 @@ def create_button(text, icon_path):
             background-color: #FFFFE0;   /* 背景颜色：浅黄色 */
             border: 1px solid #CCCCCC;   /* 边框 */
             border-radius: 4px;          /* 圆角 */
-            font-family: "Microsoft YaHei";
             font-size: 12px;
             font-weight: normal;
             padding: 4px 8px;
@@ -92,15 +94,15 @@ class MainWindows(QMainWindow):
 
         """创建左侧按钮"""
         """项目管理按钮"""
-        self.project_btn = create_button("项目管理", "resources/pics/项目管理.jpeg")
+        self.project_btn = create_button("项目管理", resource_path(os.path.join("resources", "pics", "项目管理.jpeg")))
         self.left_layout.addWidget(self.project_btn)
 
         """模型管理按钮"""
-        self.chat_btn = create_button("模型管理", "resources/pics/AI图标.png")
+        self.chat_btn = create_button("模型管理", resource_path(os.path.join("resources", "pics", "AI图标.png")))
         self.left_layout.addWidget(self.chat_btn)
 
         """提示词管理按钮"""
-        self.prompt_btn = create_button("提示词管理", "resources/pics/提示词图标.png")
+        self.prompt_btn = create_button("提示词管理", resource_path(os.path.join("resources", "pics", "提示词图标.png")))
         self.left_layout.addWidget(self.prompt_btn)
 
         """把按钮顶上去"""
@@ -183,17 +185,30 @@ class MainWindows(QMainWindow):
         current_btn.setChecked(True)
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    app.setStyleSheet("""
-        QWidget {
-            background-color: #ffffff;
-            color: #333333;
-        }
-        QLineEdit, QTextEdit {
-            border: 1px solid #cccccc;
-            padding: 4px;
-        }
-    """)
-    window = MainWindows()
-    window.show()
-    sys.exit(app.exec())
+    try:
+        app = QApplication(sys.argv)
+        app.setStyleSheet("""
+            QWidget {
+                background-color: #ffffff;
+                color: #333333;
+            }
+            QLineEdit, QTextEdit {
+                border: 1px solid #cccccc;
+                padding: 4px;
+            }
+        """)
+        window = MainWindows()
+        window.show()
+        sys.exit(app.exec())
+    except Exception as e:
+        # 1. 在终端打印错误
+        print("!!! [FATAL ERROR] 程序发生未捕获异常:")
+        traceback.print_exc()
+
+        # 2. 将错误写入日志文件（防止终端闪退太快看不到）
+        with open('crash_log.txt', 'w', encoding='utf-8') as f:
+            f.write(traceback.format_exc())
+        print(">>> 错误已保存到 crash_log.txt")
+
+        # 3. 暂停程序，防止窗口瞬间关闭
+        input("按回车键退出...")

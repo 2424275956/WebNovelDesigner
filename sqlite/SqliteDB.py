@@ -2,7 +2,9 @@ import os
 import sys
 from contextlib import closing
 from pathlib import Path
-import sqlite_vss
+
+from utils.paths import user_data_path
+
 try:
     import pysqlite3
     sys.modules['sqlite3'] = pysqlite3
@@ -14,7 +16,7 @@ class SqliteDB:
 
     # 获取SQLite连接
     @classmethod  # 使用类方法装饰器，表示这是一个类方法，可以通过类名直接调用
-    def get_conn(cls, db_path="resources/db/app.db"):  # 定义一个获取数据库连接的类方法，默认数据库路径为"resources/db/app.db"
+    def get_conn(cls, db_path=user_data_path("resources/db/app.db")):  # 定义一个获取数据库连接的类方法，默认数据库路径为"resources/db/app.db"
         # 检查文件是否存在  # 单行注释：检查指定路径的数据库文件是否存在
         db_exists = os.path.exists(db_path)
 
@@ -22,18 +24,6 @@ class SqliteDB:
         Path(db_path).parent.mkdir(parents=True, exist_ok=True)  # 创建数据库文件所需的目录结构，如果已存在则不创建
         _conn = sqlite3.connect(db_path, timeout=10.0)  # 连接数据库，设置超时时间为10秒
         _conn.row_factory = sqlite3.Row
-
-        # 开启向量数据库扩展
-        # 开启扩展加载权限
-        _conn.enable_load_extension(True)
-        ## 1. 首先加载底层的 vector0 扩展
-        _conn.load_extension(sqlite_vss.vector_loadable_path())
-        ## 2. 然后再加载上层的 vss0 扩展
-        _conn.load_extension(sqlite_vss.vss_loadable_path())
-        ## 加载 sqlite-vss 扩展
-        _conn.load_extension(sqlite_vss.vss_loadable_path())
-        ## 关闭扩展加载权限（出于安全考虑）
-        _conn.enable_load_extension(False)
 
         # 表结构校验  # 单行注释：对数据库表结构进行校验
         cls._db_table_init(db_exists, _conn)

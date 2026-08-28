@@ -106,54 +106,42 @@ def polish(transmit, bridge: PolishBridge):
 def after_chapter_polish(chapter_model: ChapterBO, transmit, bridge: PolishBridge):
     """剩余流程章节处理"""
     # 原文改写-场景分析
-    print(10.10)
     if ChapterPoint.ORIGINAL_SCENE.value == chapter_model.point and ChapterStatus.FAIL.value != chapter_model.status:
-        print(10.12)
         original_scene_chapter_polish(chapter_model, transmit)
         print(f"原文改写-场景分析-处理完成")
         # 更新列表
         bridge.progress.emit(chapter_model.project_id)
 
     # 原文改写-脉络改写
-    print(10.13)
     if ChapterPoint.ORIGINAL_FRAMEWORK.value == chapter_model.point and ChapterStatus.FAIL.value != chapter_model.status:
-        print(10.15)
         original_framework_chapter_polish(chapter_model, transmit)
         print(f"原文改写-脉络改写-处理完成")
         # 更新列表
         bridge.progress.emit(chapter_model.project_id)
 
     # 番外章节-场景分析
-    print(10.16)
     if ChapterPoint.EXTRA_SCENE.value == chapter_model.point and ChapterStatus.FAIL.value != chapter_model.status:
-        print(10.18)
         extra_scene_chapter_plish(chapter_model, transmit)
         print(f"番外章节-场景分析-处理完成")
         # 更新列表
         bridge.progress.emit(chapter_model.project_id)
 
     # 番外章节-脉络生成
-    print(10.19)
     if ChapterPoint.EXTRA_FRAMEWORK.value == chapter_model.point and ChapterStatus.FAIL.value != chapter_model.status:
-        print(10.21)
         extra_framework_chapter_polish(chapter_model, transmit)
         print(f"番外章节-脉络生成-处理完成")
         # 更新列表
         bridge.progress.emit(chapter_model.project_id)
 
     # 润色章节
-    print(10.22)
     if ChapterPoint.POLISH_CONTENT.value == chapter_model.point and ChapterStatus.FAIL.value != chapter_model.status:
-        print(10.24)
         polish_chapter_polish(chapter_model, transmit)
         print(f"润色章节-处理完成")
         # 更新列表
         bridge.progress.emit(chapter_model.project_id)
 
     ## 关系分析
-    print(10.04)
     if ChapterPoint.RELATION_ANALYSIS.value == chapter_model.point and ChapterStatus.FAIL.value != chapter_model.status:
-        print(10.06)
         relation_chapter_polish(chapter_model, transmit)
         print(f"关系分析-处理完成")
 

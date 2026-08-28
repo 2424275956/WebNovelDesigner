@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushBu
 
 from resources.style.StyleSheet import button_style_sheet
 from sqlite.ProjectDB import query_all_project
+from utils.paths import resource_path
 from windows.project import ImportNovel
 from windows.project import RemoveNovel
 from windows.project import ProjectPolish
@@ -124,7 +125,7 @@ def create_project_card(self, name, project_id):
     cover_area.setFixedHeight(180)
     cover_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
     # 加载图标
-    pixmap = QPixmap("resources/pics/书籍图标.png")
+    pixmap = QPixmap(resource_path(os.path.join("resources", "pics", "书籍图标.png")))
     # 如果图标很大，可以限制它的大小，防止撑破布局
     pixmap = pixmap.scaled(80, 120, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
     cover_area.setPixmap(pixmap)

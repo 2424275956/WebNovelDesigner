@@ -1,3 +1,4 @@
+import asyncio
 import re
 from itertools import combinations
 from typing import List
@@ -20,6 +21,8 @@ from windows.polish.DynamicPromptTemplate import get_role_prompt_template, get_r
     get_process_prompt_template, get_original_scene_prompt_template, get_original_framework_prompt_template, \
     get_polish_prompt_template, get_extra_scene_prompt_template, get_extra_framework_prompt_template, \
     get_novel_resume_template
+from stream.LlmStreamRetryable import RetryableStreamChain
+from stream.LlmStreamValidator import StreamingValidator
 import json
 
 def json_parse(raw_text):
@@ -239,6 +242,12 @@ class ProcessPromptResult(BaseModel):
 def process_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
     try:
         """流程控制处理"""
+        # 若小于流程直接跳到原文改写
+        if chapter_model.sort <= transmit.extra_start_num:
+            update_chapter_process("{}", ChapterPoint.ORIGINAL_SCENE.value, chapter_model.id)
+            chapter_model.point = ChapterPoint.ORIGINAL_SCENE.value
+            chapter_model.process_content = "{}"
+            return False
         relation_json = get_current_role_relation(chapter_model)
         # 更新关联关系
         update_chapter_relation(relation_json, chapter_model.id)
@@ -349,6 +358,28 @@ def original_scene_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1)
         else:
             return original_scene_chapter_polish(chapter_model, transmit, for_num + 1)
 
+async def generate_stream_polish(chain, inputs, msg):
+    print(f"{msg}-流式链启动")
+    stream_chain = RetryableStreamChain(
+        chain=chain,
+        validator_factory=lambda : StreamingValidator(
+            window_size=20,
+            similarity_threshold=0.75,
+            max_repeat_streak=2
+        ),
+        on_chunk=lambda text: print(text, end="", flush=True), # 实时打印
+        on_retry=lambda attempt, reason: print(f"\n{msg}【{attempt}] {reason}\n")
+    )
+    try:
+        result = await stream_chain.ainvoke_with_retry(inputs)
+        print(f"\n生成完成，总长度: {len(result)} 字")
+        return result
+
+    except RuntimeError as e:
+        print(f"生成最终失败: {e}")
+        # 兜底：返回空或返回最后一次的有效部分
+        return ""
+
 def original_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
     try:
         """原文改写-脉络改写"""
@@ -372,18 +403,19 @@ def original_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_nu
             StrOutputParser()
         )
         print(f"原文改写-脉络改写-LangChain链Invoke数据填充")
-        original_framework = original_framework_chain.invoke({
-                "relation_analysis": chapter_model.relation_content,
-                "framework_analysis": str(original_analysis_text),
-                "original_framework_prompt_system": transmit.original_framework_system,
-                "original_framework_prompt_user": transmit.original_framework_user,
-                "reference_before_text": chapter_model.before_content,
-                "original_text": chapter_model.old_content,
-                "reference_after_text": chapter_model.after_content
-        })
-        # 英文含量校验
+        inputs = {
+            "relation_analysis": chapter_model.relation_content,
+            "framework_analysis": str(original_analysis_text),
+            "system_prompt": transmit.original_framework_system,
+            "user_prompt": transmit.original_framework_user,
+            "reference_before_text": chapter_model.before_content,
+            "original_text": chapter_model.old_content,
+            "reference_after_text": chapter_model.after_content,
+            "wait_polish_text": ""
+        }
         print(5.06)
-        raw_text = original_framework.content if hasattr(original_framework, 'content') else str(original_framework)
+        raw_text = asyncio.run(generate_stream_polish(original_framework_chain, inputs, "原文改写-脉络改写"))
+        # 英文含量校验
         print(5.07)
         framework_str = json_parse(raw_text)
         print(f"原文改写-脉络改写-推理结果转换完成")
@@ -522,19 +554,20 @@ def extra_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1
                 StrOutputParser()
         )
         print(f"番外章节-脉络生成-LangChain链Invoke数据填充")
-        extra_framework = extra_framework_chain.invoke({
-            "extra_framework_prompt_system": transmit.extra_framework_system,
-            "extra_framework_prompt_user": transmit.extra_framework_user,
+        # 英文含量校验
+        inputs = {
+            "system_prompt": transmit.extra_framework_system,
+            "user_prompt": transmit.extra_framework_user,
             "framework_analysis": str(extra_analysis_text),
             "reference_before_text": chapter_model.before_content,
             "original_text": chapter_model.old_content,
             "reference_after_text": chapter_model.after_content,
             "relation_analysis": chapter_model.relation_content,
-            "create_framework_text": chapter_model.process_content
-        })
-        # 英文含量校验
-        print(321)
-        raw_text = extra_framework.content if hasattr(extra_framework, 'content') else str(extra_framework)
+            "create_framework_text": chapter_model.process_content,
+            "wait_polish_text": ""
+        }
+        print(5.06)
+        raw_text = asyncio.run(generate_stream_polish(extra_framework_chain, inputs, "番外章节-脉络生成"))
         print(322)
         framework_str = json_parse(raw_text)
         print(f"番外章节-脉络生成-推理结果转换完成")
@@ -584,13 +617,15 @@ def polish_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
             StrOutputParser()
         )
         print(f"结果润色-LangChain链Invoke数据填充")
-        polish = polish_chain.invoke({
-                    "polish_prompt_system": transmit.polish_system,
-                    "polish_prompt_user": transmit.polish_user,
-                    "original_framework_text": chapter_model.framework_content
-        })
         # 英文含量校验
-        raw_text = polish.content if hasattr(polish, 'content') else str(polish)
+        inputs = {
+            "system_prompt": transmit.polish_system,
+            "user_prompt": transmit.polish_user,
+            "original_framework_text": chapter_model.framework_content,
+            "wait_polish_text": ""
+        }
+        print(5.06)
+        raw_text = asyncio.run(generate_stream_polish(polish_chain, inputs, "结果润色"))
         is_valid, english_ratio = is_valid_chinese_text(raw_text)
         if not is_valid:
             print(f"结果润色-英文占比校验失败：{for_num}, 英文占比：{english_ratio * 100}%")
