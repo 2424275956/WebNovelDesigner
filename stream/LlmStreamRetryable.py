@@ -16,7 +16,7 @@ class RetryableStreamChain:
             chain,
             validator_factory: Callable[[], StreamingValidator],
             project_id,
-            max_retries: int = 3,
+            max_retries: int = 5,
             on_chunk: Optional[Callable[[str], None]] = None,  # 实时回调（如更新 UI）
             on_retry: Optional[Callable[[str, str], None]] = None  # 重试通知
     ):
