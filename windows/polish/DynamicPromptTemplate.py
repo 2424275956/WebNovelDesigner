@@ -250,7 +250,7 @@ def get_original_framework_prompt_template(inputs) -> ChatPromptTemplate:
     # 系统提示词
     system_template = str(inputs['system_prompt'])
     system_template += """
-    【绝对规则】：以‘待改写段落’内容为核心，保留完整剧情对话并融入其他设定，必须新增大量的性交互动作与对话。禁止将参考片段内容添加其中。
+    【绝对规则】：以‘待改写段落’内容为核心，保留完整剧情对话并融入其他设定，必须新增大量的性交互动作与对话。'前述剧情'与'后续剧情'仅供参考并作为时间轴，禁止改写内容跨越时间轴。
     【输出内容】:只输出脉络内容，禁止携带与内容无关输出
     [脉络改写完成后的内容]
     """
@@ -262,11 +262,11 @@ def get_original_framework_prompt_template(inputs) -> ChatPromptTemplate:
     {inputs['relation_analysis']}
     【场景规则】
     {inputs['framework_analysis']}
-    【参看片段-前述剧情】
+    【前述剧情】
     {inputs['reference_before_text']}
     【待改写段落】
     {inputs['original_text']}
-    【参考片段-后续剧情】
+    【后续剧情】
     {inputs['reference_after_text']}
     """
     user_template = user_template.replace("{wait_polish_text}", str(inputs['wait_polish_text']))

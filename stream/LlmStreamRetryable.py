@@ -33,11 +33,17 @@ class RetryableStreamChain:
         返回最终有效文本。
         """
         last_error = ""
-
+        # 是否续写
         is_next_polish = True
+        # 是否首次续写检测
         before_refusal_check = True
+        # 结果对象
+        result_validator = self.validator_factory()
         for attempt in range(self.max_retries):
+            # 循环内对象
             validator = self.validator_factory()
+            # 将已有内容放入
+            validator.total_valid_text = result_validator.total_valid_text
 
             a_stream = self.chain.astream(inputs)
             try:
@@ -61,6 +67,7 @@ class RetryableStreamChain:
                             self.next_polish_inputs(inputs)
                             is_next_polish = False
                         inputs['wait_polish_text'] = self.get_this_text(validator)
+                        result_validator.total_valid_text = validator.total_valid_text
                         break  # 跳出 for chunk，进入下一次重试
 
                     # 模型拒绝判断
@@ -78,7 +85,10 @@ class RetryableStreamChain:
                         self.on_chunk(result)
 
                 else:
+                    # 正常结束，获取全部内容
                     res_str = self.get_this_text(validator)
+                    # 传递给返回校验组
+                    result_validator.total_valid_text = res_str
                     # 判断文本长度是否满足
                     if len(res_str) <= target_len or len(res_str) <= old_len:
                         # 是否需要拼接提示词
@@ -88,7 +98,7 @@ class RetryableStreamChain:
                         self.on_retry(f"阈值未达标 {attempt + 1}/3", f"输出内容长度为：{len(res_str)}")
                         break
                     # 正常完成（没有 break）
-                    return res_str
+                    return result_validator.total_valid_text
 
             except Exception as e:
                 last_error = str(e)

@@ -380,7 +380,7 @@ async def generate_stream_polish(chain, inputs, old_len, project_id, msg):
     stream_chain = RetryableStreamChain(
         chain=chain,
         validator_factory=lambda : StreamingValidator(
-            cycle_window=20,
+            window_size=20,
             similarity_threshold=0.75,
             max_repeat_streak=2
         ),
