@@ -6,7 +6,7 @@ from sqlite.ProjectDB import edit_project_status
 from utils.PolishBridge import PolishBridge
 from windows.polish.ChapterPolish import role_chapter_polish, relation_chapter_polish, process_chapter_polish, \
     original_scene_chapter_polish, original_framework_chapter_polish, extra_scene_chapter_plish, polish_chapter_polish, \
-    extra_framework_chapter_polish, chapter_novel_resume
+    extra_framework_chapter_polish, chapter_novel_resume, polish_chapter_repetition
 
 
 def polish(transmit, bridge: PolishBridge):
@@ -137,6 +137,13 @@ def after_chapter_polish(chapter_model: ChapterBO, transmit, bridge: PolishBridg
     if ChapterPoint.POLISH_CONTENT.value == chapter_model.point and ChapterStatus.FAIL.value != chapter_model.status:
         polish_chapter_polish(chapter_model, transmit)
         print(f"润色章节-处理完成")
+        # 更新列表
+        bridge.progress.emit(chapter_model.project_id)
+
+    # 内容重复整理
+    if ChapterPoint.REPETITION_ORGANIZE.value == chapter_model.point and ChapterStatus.FAIL.value != chapter_model.status:
+        polish_chapter_repetition(chapter_model, transmit)
+        print(f"去重整理-处理完成")
         # 更新列表
         bridge.progress.emit(chapter_model.project_id)
 

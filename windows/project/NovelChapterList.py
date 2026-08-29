@@ -123,6 +123,8 @@ def novel_chapter(self, project_id):
                     word_label = QLabel(f"脉络内容润色中···")
                 elif ChapterPoint.RELATION_ANALYSIS.value == chapter['point']:
                     word_label = QLabel(f"更新角色档案中···")
+                elif ChapterPoint.REPETITION_ORGANIZE.value == chapter['point']:
+                    word_label = QLabel(f"润色结果检测处理中...")
                 else:
                     word_label = QLabel(f"{word_count}字 -> {new_word_count}字")
             else:

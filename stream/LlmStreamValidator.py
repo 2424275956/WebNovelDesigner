@@ -69,8 +69,6 @@ class StreamingValidator:
         self.buffer += chunk
 
         if "\n" not in self.buffer:
-            # 行未完成，先放行（避免截断正常词）
-            self.total_valid_text += chunk
             return chunk
 
         parts = self.buffer.split("\n")

@@ -16,7 +16,7 @@ class RetryableStreamChain:
             chain,
             validator_factory: Callable[[], StreamingValidator],
             project_id,
-            max_retries: int = 5,
+            max_retries: int = 3,
             on_chunk: Optional[Callable[[str], None]] = None,  # 实时回调（如更新 UI）
             on_retry: Optional[Callable[[str, str], None]] = None  # 重试通知
     ):
@@ -33,21 +33,25 @@ class RetryableStreamChain:
         返回最终有效文本。
         """
         last_error = ""
-        # 是否续写
-        is_next_polish = True
-        # 是否首次续写检测
-        before_refusal_check = True
-        # 结果对象
-        result_validator = self.validator_factory()
-        for attempt in range(self.max_retries):
-            # 循环内对象
-            validator = self.validator_factory()
-            # 将已有内容放入
-            validator.total_valid_text = result_validator.total_valid_text
+        # 循环次数
+        attempt = 1
+        # 拒绝次数,超过5次循环次数+1
+        refusal_num = 1
+        while True:
+            # 超过限制
+            if attempt > self.max_retries:
+                return ""
 
+            # 是否首次续写检测
+            before_refusal_check = True
+
+            # 校验对象
+            validator = self.validator_factory()
+
+            # 流式对象
             a_stream = self.chain.astream(inputs)
             try:
-
+                # 循环处理
                 async for chunk in a_stream:
                     if 1 == APP_STATE.get(self.project_id):
                         return ""
@@ -60,24 +64,35 @@ class RetryableStreamChain:
                     if result is None:
                         # 检测到循环，需要重试
                         last_error = f"检测到重复内容（循环模式或行级复读）"
+
+                        # 报错打印
                         if self.on_retry:
-                            self.on_retry(f"重复 {attempt + 1}/3", last_error)
-                        # 判断是否首次进入
-                        if is_next_polish:
-                            self.next_polish_inputs(inputs)
-                            is_next_polish = False
-                        inputs['wait_polish_text'] = self.get_this_text(validator)
-                        result_validator.total_valid_text = validator.total_valid_text
-                        break  # 跳出 for chunk，进入下一次重试
+                            self.on_retry(f"重复 {attempt}/3", last_error)
+
+                        # 循环次数+1
+                        attempt += 1
+                        # 跳出 for chunk，进入下一次重试
+                        break
 
                     # 模型拒绝判断
                     if before_refusal_check:
+                        # 本次输出chunk内容大于0
                         if text is not None and len(text) > 0:
+                            # 已输出内容大于30
                             if len(validator.total_valid_text) > 30:
+                                # 是否拒绝
                                 refusal, reason_str = is_refusal(validator.total_valid_text)
+                                # 拒绝执行
                                 if refusal:
-                                    self.on_retry(f"伦理拒绝 {attempt + 1}/3", f"对话请求被模型伦理拒绝,{reason_str}")
+                                    self.on_retry(f"伦理拒绝 {refusal_num}/5", f"对话请求被模型伦理拒绝,{reason_str}")
+                                    # 拒绝次数超过5次
+                                    if refusal_num > 5:
+                                        # 循环次数+1
+                                        attempt += 1
+                                        # 拒绝次数重置
+                                        refusal_num = 1
                                     break
+                                # 一次循环只校验一次
                                 before_refusal_check = False
 
 
@@ -87,23 +102,20 @@ class RetryableStreamChain:
                 else:
                     # 正常结束，获取全部内容
                     res_str = self.get_this_text(validator)
-                    # 传递给返回校验组
-                    result_validator.total_valid_text = res_str
                     # 判断文本长度是否满足
                     if len(res_str) <= target_len or len(res_str) <= old_len:
                         # 是否需要拼接提示词
-                        if is_next_polish:
-                            self.next_polish_inputs(inputs)
-                        inputs['wait_polish_text'] = res_str
-                        self.on_retry(f"阈值未达标 {attempt + 1}/3", f"输出内容长度为：{len(res_str)}")
+                        self.on_retry(f"阈值未达标 {attempt}/3", f"输出内容长度为：{len(res_str)}")
+                        attempt += 1
                         break
                     # 正常完成（没有 break）
-                    return result_validator.total_valid_text
+                    return res_str
 
             except Exception as e:
                 last_error = str(e)
                 if self.on_retry:
-                    self.on_retry(f"异常 {attempt + 1}/3", last_error)
+                    self.on_retry(f"异常 {attempt}/3", last_error)
+                attempt += 1
                 continue
             finally:
                 if a_stream is not None:
@@ -114,18 +126,6 @@ class RetryableStreamChain:
 
         # 重试耗尽
         raise RuntimeError(f"流式生成失败，已重试 {self.max_retries} 次。最后错误: {last_error}")
-
-    def next_polish_inputs(self, inputs):
-        inputs['system_prompt'] += """
-                            【续写任务】
-                            上文已完成，请从断点处继续往下写。
-                            1. 绝对禁止重复上文已出现过的任何句子、段落、情节。
-                            2. 不要从头重写，不要复述前文，直接接着写后续内容。
-                            3. 继续扩写原文脉络。
-                            4. 时间线严格向前，禁止回溯。
-                            5. 禁止输出"接下来""上文提到""如前所述"等过渡性元评论。
-                            """
-        inputs['user_prompt'] += "\n【待续写内容】\n{wait_polish_text}"
 
     def get_this_text(self, validator):
         """

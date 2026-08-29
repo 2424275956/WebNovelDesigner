@@ -66,6 +66,8 @@ class ChapterPoint(Enum):
     EXTRA_FRAMEWORK = 410
     # 润色输出内容
     POLISH_CONTENT = 500
+    # 去重整理
+    REPETITION_ORGANIZE = 550
     # 分析角色关系
     RELATION_ANALYSIS = 600
     # 已完成

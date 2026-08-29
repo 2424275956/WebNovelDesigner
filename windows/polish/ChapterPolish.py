@@ -14,14 +14,14 @@ from pojo.role import RolePromptResult
 from pojo.table.Chapter import ChapterBO, ChapterPoint, ChapterStatus, ChapterType
 from sqlite.ChapterDB import update_chapter_role, update_chapter_status, update_chapter_relation, \
     update_chapter_process, update_chapter_scene, update_chapter_framework, update_chapter_polish, \
-    update_chapter_relation_and_point, update_chapter_success
+    update_chapter_relation_and_point, update_chapter_success, update_chapter_repetition
 from sqlite.RoleRelationDB import query_role_model, \
     query_role_relation, remove_old_role_model, insert_role_model, remove_old_role_relation, insert_role_relation, \
     query_family_role, query_family_relation_name_a, query_family_relation_name_b
 from windows.polish.DynamicPromptTemplate import get_role_prompt_template, get_relation_prompt_template, \
     get_process_prompt_template, get_original_scene_prompt_template, get_original_framework_prompt_template, \
     get_polish_prompt_template, get_extra_scene_prompt_template, get_extra_framework_prompt_template, \
-    get_novel_resume_template
+    get_novel_resume_template, get_repetition_prompt_template
 from stream.LlmStreamRetryable import RetryableStreamChain
 from stream.LlmStreamValidator import StreamingValidator
 import json
@@ -428,17 +428,14 @@ def original_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_nu
             "user_prompt": transmit.original_framework_user,
             "reference_before_text": chapter_model.before_content,
             "original_text": chapter_model.old_content,
-            "reference_after_text": chapter_model.after_content,
-            "wait_polish_text": ""
+            "reference_after_text": chapter_model.after_content
         }
         print(5.06)
         old_len = len(chapter_model.old_content) if chapter_model.old_content is not None else 0
         raw_text = asyncio.run(generate_stream_polish(original_framework_chain, inputs, old_len, chapter_model.project_id, "原文改写-脉络改写"))
         # 英文含量校验
-        print(5.07)
-        framework_str = json_parse(raw_text)
         print(f"原文改写-脉络改写-推理结果转换完成")
-        is_valid, english_ratio = is_valid_chinese_text(framework_str)
+        is_valid, english_ratio = is_valid_chinese_text(raw_text)
         print(5.08)
         if not is_valid:
             print(f"原文改写-脉络改写-英文占比校验失败：{for_num}, 英文占比：{english_ratio * 100}%")
@@ -448,9 +445,9 @@ def original_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_nu
             else:
                 original_framework_chapter_polish(chapter_model, transmit, for_num + 1)
             return
-        print(f"原文改写-脉络改写-推理结果完成：{framework_str}")
+        print(f"原文改写-脉络改写-推理结果完成：{raw_text}")
         # 长度判断
-        if len(framework_str) < 3500 or (ChapterType.ORIGINAL_POLISH.value == chapter_model.type and len(raw_text) < len(chapter_model.old_content)):
+        if len(raw_text) < 3500 or (ChapterType.ORIGINAL_POLISH.value == chapter_model.type and len(raw_text) < len(chapter_model.old_content)):
             print(f"原文改写-脉络改写-长度低于阈值")
             if 3 == for_num:
                 update_chapter_status(ChapterStatus.FAIL.value, chapter_model.id)
@@ -459,9 +456,9 @@ def original_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_nu
                 original_framework_chapter_polish(chapter_model, transmit, for_num + 1)
             return
         # 更新状态
-        update_chapter_framework(framework_str, ChapterPoint.POLISH_CONTENT.value, chapter_model.id)
+        update_chapter_framework(raw_text, ChapterPoint.POLISH_CONTENT.value, chapter_model.id)
         chapter_model.point = ChapterPoint.POLISH_CONTENT.value
-        chapter_model.framework_content = framework_str
+        chapter_model.framework_content = raw_text
         print(f"原文改写-脉络改写-章节信息更新完成")
     except Exception as e:
         print(e)
@@ -581,8 +578,7 @@ def extra_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1
             "reference_before_text": chapter_model.before_content,
             "reference_after_text": chapter_model.after_content,
             "relation_analysis": chapter_model.relation_content,
-            "create_framework_text": chapter_model.process_content,
-            "wait_polish_text": ""
+            "create_framework_text": chapter_model.process_content
         }
         print(5.06)
         old_len = len(chapter_model.old_content) if chapter_model.old_content is not None else 0
@@ -640,8 +636,7 @@ def polish_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
         inputs = {
             "system_prompt": transmit.polish_system,
             "user_prompt": transmit.polish_user,
-            "original_framework_text": chapter_model.framework_content,
-            "wait_polish_text": ""
+            "original_framework_text": chapter_model.framework_content
         }
         print(5.06)
         old_len = len(chapter_model.old_content) if chapter_model.old_content is not None else 0
@@ -667,7 +662,7 @@ def polish_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
             return
         # 更新状态
         update_chapter_polish(raw_text, chapter_model.id)
-        chapter_model.point = ChapterPoint.RELATION_ANALYSIS.value
+        chapter_model.point = ChapterPoint.REPETITION_ORGANIZE.value
         chapter_model.new_content = raw_text
         print(f"结果润色-章节信息更新完成")
     except Exception as e:
@@ -682,6 +677,52 @@ def polish_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
             chapter_model.status = ChapterStatus.FAIL.value
         else:
             polish_chapter_polish(chapter_model, transmit, for_num + 1)
+
+def polish_chapter_repetition(chapter_model: ChapterBO, transmit, for_num=1):
+    """去重整理"""
+    try:
+        print("去重整理-LangChain链构建")
+        repetition_chain = (
+            RunnableLambda(get_repetition_prompt_template) |
+            transmit.relation_llm |
+            StrOutputParser()
+        )
+        print("去重整理-LangChain链Invoke数据填充")
+        repetition = repetition_chain.invoke({
+            "polish_text": chapter_model.new_content
+        })
+        print(str(repetition))
+        raw_text = repetition.content if hasattr(repetition, 'content') else str(repetition)
+        is_valid, english_ratio = is_valid_chinese_text(raw_text)
+        if not is_valid:
+            print(f"结果润色-英文占比校验失败：{for_num}, 英文占比：{english_ratio * 100}%")
+            if 3 == for_num:
+                update_chapter_status(ChapterStatus.FAIL.value, chapter_model.id)
+                chapter_model.status = ChapterStatus.FAIL.value
+            else:
+                polish_chapter_repetition(chapter_model, transmit, for_num + 1)
+            return
+        print(f"结果润色-推理结果完成：{raw_text}")
+        # 长度判断
+        if ChapterType.ORIGINAL_POLISH.value == chapter_model.type and len(raw_text) < len(chapter_model.old_content):
+            print(f"结果润色-长度低于阈值")
+            if 3 == for_num:
+                update_chapter_status(ChapterStatus.FAIL.value, chapter_model.id)
+                chapter_model.status = ChapterStatus.FAIL.value
+            else:
+                polish_chapter_repetition(chapter_model, transmit, for_num + 1)
+            return
+        # 结果处理
+        update_chapter_repetition(raw_text, chapter_model.id)
+        chapter_model.new_content = raw_text
+        chapter_model.point = ChapterPoint.RELATION_ANALYSIS.value
+    except Exception as e:
+        if 3 == for_num:
+            update_chapter_status(ChapterStatus.FAIL.value, chapter_model.id)
+            chapter_model.status = ChapterStatus.FAIL.value
+        else:
+            polish_chapter_repetition(chapter_model, transmit, for_num + 1)
+
 
 
 def chapter_novel_resume(chapter_model: ChapterBO, novel_content, transmit, for_num=1):
