@@ -51,6 +51,8 @@ class SqliteDB:
                         polish_before_num INTEGER DEFAULT 5,            -- 附带前n章节
                         polish_after_num INTEGER DEFAULT 1,             -- 附带后n章节
                         extra_start_num INTEGER DEFAULT 5,              -- 番外插入开始章节
+                        male_lead TEXT DEFAULT NULL,                    -- 男主角团队
+                        heroine TEXT DEFAULT NULL,                      -- 女主角团队
                         word_count REAL NOT NULL,                       -- 字数（单位万）
                         status INTEGER NOT NULL DEFAULT 1               -- 状态（1：未开始，2：进行中，3：已完成）
                     );

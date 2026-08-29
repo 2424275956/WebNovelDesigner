@@ -15,7 +15,8 @@ from sqlite.ModelDB import query_all_model
 from sqlite.ProjectDB import edit_project_prompt_id, edit_project_role_model_id, edit_polish_before_num, \
     edit_polish_after_num, edit_project_relation_model_id, edit_project_process_model_id, edit_project_scene_model_id, \
     edit_project_extra_scene_model_id, edit_project_framework_model_id, edit_project_extra_framework_model_id, \
-    edit_project_polish_model_id, query_project_by_id, edit_project_status, edit_extra_start_num
+    edit_project_polish_model_id, query_project_by_id, edit_project_status, edit_extra_start_num, \
+    edit_project_male_lead, edit_project_heroine
 from sqlite.PromptDB import query_prompt_template, query_all_prompt
 from utils.ClearLayoutRecursive import clear_layout
 from utils.StatusDot import StatusDot
@@ -128,6 +129,18 @@ def update_project_prompt_id(self, text):
     prompt_id = self.prompt_combo.currentData()
     if prompt_id:
         edit_project_prompt_id(prompt_id, self.project_info['id'])
+
+def update_project_male_lead(self, male_lead):
+    """更新男主角团队"""
+    male_lead_str = male_lead.text()
+    if male_lead_str:
+        edit_project_male_lead(male_lead_str, self.project_info['id'])
+
+def update_project_heroine(self, heroine):
+    """更新女主角团队"""
+    heroine_str = heroine.text()
+    if heroine_str:
+        edit_project_heroine(heroine_str, self.project_info['id'])
 
 def update_project_role_id(self, combo, text):
     """更新索引"""
@@ -881,10 +894,10 @@ def polist_page(self, project_id):
     polish_prompt_conf_layout.addWidget(polish_prompt_btn_user)
 
     # 分割线
-    frame11 = QFrame()
-    frame11.setFrameShape(QFrame.Shape.HLine)
-    frame11.setFrameShadow(QFrame.Shadow.Sunken)
-    center_right_layout.addWidget(frame11)
+    frame13 = QFrame()
+    frame13.setFrameShape(QFrame.Shape.HLine)
+    frame13.setFrameShadow(QFrame.Shadow.Sunken)
+    center_right_layout.addWidget(frame13)
 
     # 关系分析提示词-配置
     ## 关系分析提示词-配置-布局
@@ -923,13 +936,53 @@ def polist_page(self, project_id):
     tool2_user.clicked.connect(lambda : on_prompt_item_clicked(self, 2, 2))
     relation_prompt_conf_layout.addWidget(tool2_user)
 
-    """弹开"""
-    center_right_layout.addStretch()
+    # 分割线
+    frame14 = QFrame()
+    frame14.setFrameShape(QFrame.Shape.HLine)
+    frame14.setFrameShadow(QFrame.Shadow.Sunken)
+    center_right_layout.addWidget(frame14)
 
-    """开始按钮"""
+    """底部区域"""
     start_stop_layout = QHBoxLayout()
     start_stop_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     center_right_layout.addLayout(start_stop_layout)
+
+    """男主角团队"""
+    man_layout = QVBoxLayout()
+    man_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    start_stop_layout.addLayout(man_layout)
+    # 男主角团队-标题
+    man_title = QLabel("男主角团队")
+    man_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    man_title.setStyleSheet(label_style_sheet())
+    man_layout.addWidget(man_title)
+    # 男主角团队-输入框
+    man_edit = QLineEdit()
+    man_edit.setText(self.project_info['male_lead'])
+    man_edit.setFixedSize(220, 40)
+    man_edit.setStyleSheet(line_edit_style_sheet())
+    man_edit.setAlignment(Qt.AlignmentFlag.AlignLeft)
+    man_edit.textChanged.connect(lambda : update_project_male_lead(self, man_edit))
+    man_layout.addWidget(man_edit)
+
+    """女主角团队"""
+    women_layout = QVBoxLayout()
+    women_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    start_stop_layout.addLayout(women_layout)
+    # 女主角团队-标题
+    women_title = QLabel("女主角团队")
+    women_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    women_title.setStyleSheet(label_style_sheet())
+    women_layout.addWidget(women_title)
+    # 女主角团队-输入框
+    women_edit = QLineEdit()
+    women_edit.setText(self.project_info['heroine'])
+    women_edit.setFixedSize(220, 40)
+    women_edit.setStyleSheet(line_edit_style_sheet())
+    women_edit.setAlignment(Qt.AlignmentFlag.AlignLeft)
+    women_edit.textChanged.connect(lambda : update_project_heroine(self, women_edit))
+    women_layout.addWidget(women_edit)
+
     # 弹开
     start_stop_layout.addStretch()
     # 按钮
@@ -947,7 +1000,9 @@ def polist_page(self, project_id):
                                                                     polish_prompt_conf_model,
                                                                     chapter_before_num,
                                                                     chapter_after_num,
-                                                                    extra_insert_num))
+                                                                    extra_insert_num,
+                                                                    man_edit,
+                                                                    women_edit))
     start_stop_layout.addWidget(self.start_stop_btn)
     """开始按钮控制"""
     if 1 == project_status:
@@ -974,7 +1029,9 @@ def polist_page(self, project_id):
                                      polish_prompt_conf_model,
                                      chapter_before_num,
                                      chapter_after_num,
-                                     extra_insert_num)
+                                     extra_insert_num,
+                                     man_edit,
+                                     women_edit)
 
 def start_stop_clicked(self,
                        role_prompt_conf_model,
@@ -987,7 +1044,9 @@ def start_stop_clicked(self,
                        polish_prompt_conf_model,
                        chapter_before_num,
                        chapter_after_num,
-                       extra_insert_num):
+                       extra_insert_num,
+                       man_edit,
+                       women_edit):
     # 获取状态
     old_project_status = APP_STATE.get(self.project_info['id'])
     if 1 == old_project_status:
@@ -1058,7 +1117,9 @@ def start_stop_clicked(self,
                                      polish_prompt_conf_model,
                                      chapter_before_num,
                                      chapter_after_num,
-                                     extra_insert_num)
+                                     extra_insert_num,
+                                     man_edit,
+                                     women_edit)
     return True
 
 
@@ -1075,7 +1136,9 @@ def disable_enable_prompt_model_conf(project_id,
                                      polish_prompt_conf_model,
                                      chapter_before_num,
                                      chapter_after_num,
-                                     extra_insert_num):
+                                     extra_insert_num,
+                                     man_edit,
+                                     women_edit):
     # 获取状态
     project_status = APP_STATE.get(project_id)
     if 1 == project_status:
@@ -1092,6 +1155,8 @@ def disable_enable_prompt_model_conf(project_id,
         chapter_before_num.setEnabled(True)
         chapter_after_num.setEnabled(True)
         extra_insert_num.setEnabled(True)
+        man_edit.setEnabled(True)
+        women_edit.setEnabled(True)
     else:
         # 不可选
         prompt_combo.setEnabled(False)
@@ -1106,3 +1171,5 @@ def disable_enable_prompt_model_conf(project_id,
         chapter_before_num.setEnabled(False)
         chapter_after_num.setEnabled(False)
         extra_insert_num.setEnabled(False)
+        man_edit.setEnabled(False)
+        women_edit.setEnabled(False)

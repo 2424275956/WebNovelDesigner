@@ -39,6 +39,9 @@ class Transmit(BaseModel):
     polish_after_num : int = Field(default=None, description="附带后n章片段")
     extra_start_num : int = Field(default=None, description="番外插入开始章节")
 
+    male_lead : str = Field(default=None, description="男主角团队")
+    heroine : str = Field(default=None, description="女主角团队")
+
     role_llm : ChatOpenAI = Field(default=None, description="角色分析llm")
     relation_llm : ChatOpenAI = Field(default=None, description="角色关系llm")
     process_llm : ChatOpenAI = Field(default=None, description="流程控制llm")

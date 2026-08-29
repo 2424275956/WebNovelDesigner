@@ -12,6 +12,12 @@ def query_project_by_id(project_id):
 def edit_project_prompt_id(prompt_id, project_id):
     SqliteDB.execute("UPDATE project SET prompt_id = ? WHERE id = ?", (prompt_id, project_id))
 
+def edit_project_male_lead(male_lead, project_id):
+    SqliteDB.execute("UPDATE project SET male_lead = ? WHERE id = ?", (male_lead, project_id))
+
+def edit_project_heroine(heroine, project_id):
+    SqliteDB.execute("UPDATE project SET heroine = ? WHERE id = ?", (heroine, project_id))
+
 def edit_project_role_model_id(role_model_id, project_id):
     SqliteDB.execute("UPDATE project SET role_model_id = ? WHERE id = ?", (role_model_id, project_id))
 

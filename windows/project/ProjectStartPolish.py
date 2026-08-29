@@ -270,6 +270,18 @@ def start(self):
         QMessageBox.warning(self, "", "番外剧情插入章节数为空")
         return False
 
+    """主角团队"""
+    # 男主角
+    transmit.male_lead = self.project_info['male_lead']
+    if transmit.male_lead is None:
+        QMessageBox.warning(self, "", "男主角团队信息为空")
+        return False
+    # 女主角
+    transmit.heroine = self.project_info['heroine']
+    if transmit.heroine is None:
+        QMessageBox.warning(self, "", "女主角团队信息为空")
+        return False
+
     """模型配置"""
     model_map = {}
     # 获取角色分析模型配置信息

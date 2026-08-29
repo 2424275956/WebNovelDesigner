@@ -142,7 +142,9 @@ def relation_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
             "relation_prompt_system": transmit.relation_system,
             "relation_prompt_user": transmit.relation_user,
             "original_text": chapter_model.old_content,
-            "db_role_json": str(relation_json)
+            "db_role_json": str(relation_json),
+            "male_lead": str(transmit.male_lead),
+            "heroine": str(transmit.heroine)
         })
         print(2.22)
         raw_text = relation.content if hasattr(relation, 'content') else str(relation)
