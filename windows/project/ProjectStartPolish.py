@@ -312,6 +312,16 @@ def start(self):
         return False
 
     """模型llm创建"""
+    # 终止符
+    stop_list = [
+        # 格式终止符
+        "\n\n\n",                    # 三个换行
+
+        # 防止过度标点
+        "！！！！",          # 三个感叹号
+        "？？？？",          # 三个问号
+        "，，，，",
+    ]
     # 角色分析
     role_model = model_map[self.project_info['role_model_id']]
     transmit.role_llm = ChatOpenAI(
@@ -322,6 +332,7 @@ def start(self):
         max_tokens=role_model['max_token'],
         top_p=role_model['top_p'],
         streaming=True,
+        stop=stop_list,
         http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )
     # 流程控制
@@ -334,6 +345,7 @@ def start(self):
         max_tokens=process_model['max_token'],
         top_p=process_model['top_p'],
         streaming=True,
+        stop=stop_list,
         http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )
     # 原文改写-场景分析
@@ -346,18 +358,9 @@ def start(self):
         max_tokens=original_scene_model['max_token'],
         top_p=original_scene_model['top_p'],
         streaming=True,
+        stop=stop_list,
         http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )
-    # 终止符
-    stop_list = [
-        # 格式终止符
-        "\n\n\n",                    # 三个换行
-
-        # 防止过度标点
-        "！！！！",          # 三个感叹号
-        "？？？？",          # 三个问号
-        "，，，，",
-    ]
     # 原文改写-脉络改写
     original_framework_model = model_map[self.project_info['framework_model_id']]
     transmit.original_framework_llm = ChatOpenAI(
@@ -386,6 +389,7 @@ def start(self):
         max_tokens=extra_scene_model['max_token'],
         top_p=extra_scene_model['top_p'],
         streaming=True,
+        stop=stop_list,
         http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )
     # 番外生成-脉络生成
@@ -434,6 +438,7 @@ def start(self):
         max_tokens=relation_model['max_token'],
         top_p=relation_model['top_p'],
         streaming=True,
+        stop=stop_list,
         http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )
 
