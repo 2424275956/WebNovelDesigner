@@ -403,7 +403,7 @@ def original_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_nu
             return
         print(f"原文改写-脉络改写-推理结果完成：{raw_text}")
         # 长度判断
-        if len(raw_text) < 3500 or (ChapterType.ORIGINAL_POLISH.value == chapter_model.type and len(raw_text) < len(chapter_model.old_content)):
+        if ChapterType.ORIGINAL_POLISH.value == chapter_model.type and len(raw_text) < len(chapter_model.old_content):
             print(f"原文改写-脉络改写-长度低于阈值")
             if 3 == for_num:
                 update_chapter_status(ChapterStatus.FAIL.value, chapter_model.id)
@@ -541,7 +541,7 @@ def extra_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1
             return
         print(f"番外章节-脉络生成-推理结果完成：{raw_text}")
         # 长度判断
-        if len(raw_text) < 3500 or (ChapterType.ORIGINAL_POLISH.value == chapter_model.type and len(raw_text) < len(chapter_model.old_content)):
+        if ChapterType.ORIGINAL_POLISH.value == chapter_model.type and len(raw_text) < len(chapter_model.old_content):
             print(f"番外章节-脉络生成-长度低于阈值")
             if 3 == for_num:
                 update_chapter_status(ChapterStatus.FAIL.value, chapter_model.id)
@@ -598,7 +598,7 @@ def polish_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
             return
         print(f"结果润色-推理结果完成：{raw_text}")
         # 长度判断
-        if len(raw_text) < 3500 or (ChapterType.ORIGINAL_POLISH.value == chapter_model.type and len(raw_text) < len(chapter_model.old_content)):
+        if ChapterType.ORIGINAL_POLISH.value == chapter_model.type and len(raw_text) < len(chapter_model.old_content):
             print(f"结果润色-长度低于阈值")
             if 3 == for_num:
                 update_chapter_status(ChapterStatus.FAIL.value, chapter_model.id)

@@ -103,7 +103,7 @@ class RetryableStreamChain:
                     # 正常结束，获取全部内容
                     res_str = self.get_this_text(validator)
                     # 判断文本长度是否满足
-                    if len(res_str) <= target_len or len(res_str) <= old_len:
+                    if len(res_str) < old_len:
                         # 是否需要拼接提示词
                         self.on_retry(f"阈值未达标 {attempt}/3", f"输出内容长度为：{len(res_str)}")
                         attempt += 1
