@@ -72,7 +72,7 @@ class RetryableStreamChain:
                         # 循环次数+1
                         attempt += 1
                         # 跳出 for chunk，进入下一次重试
-                        break
+                        continue
 
                     # 模型拒绝判断
                     if before_refusal_check:
@@ -107,7 +107,7 @@ class RetryableStreamChain:
                         # 是否需要拼接提示词
                         self.on_retry(f"阈值未达标 {attempt}/3", f"输出内容长度为：{len(res_str)}")
                         attempt += 1
-                        break
+                        continue
                     # 正常完成（没有 break）
                     return res_str
 

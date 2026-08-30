@@ -282,7 +282,9 @@ def get_original_framework_prompt_template(inputs) -> ChatPromptTemplate:
     """获取关系分析提示词模版"""
     # 系统提示词
     system_template = str(inputs['system_prompt'])
-    system_template += """
+    system_template += f"""
+    【男主角】：{inputs['male_lead']}
+    【女主角】：{inputs['heroine']}
     【绝对铁律】
     1. 【只改写，不续写】你只能对【待改写片段】进行语言与动作层面的扩写（性交互、语言、动作），必须保留完整剧情、对话与谢姐，禁止新增任何推动剧情发展的情节节点。
     2. 【禁止输出前文】禁止在改写结果开头重复、复述、概括【前文衔接】的内容。改写结果的第一个字必须是【待改写片段】的改写正文。
@@ -321,7 +323,9 @@ def get_polish_prompt_template(inputs) -> ChatPromptTemplate:
     """获取关系分析提示词模版"""
     # 系统提示词
     system_template = str(inputs['system_prompt'])
-    system_template += """
+    system_template += f"""
+    【男主角】：{inputs['male_lead']}
+    【女主角】：{inputs['heroine']}
     【核心任务】对提供的文本片段进行纯文笔层面的润色优化。**你的唯一目标是提升语言的质感与流畅度，绝不改变原文的任何实质内容。**
     【绝对禁区】（违反即失败）
     1. **禁止改动剧情**：不得增删情节、调整事件顺序、改变因果关系或人物动机。
@@ -386,7 +390,9 @@ def get_extra_framework_prompt_template(inputs) -> ChatPromptTemplate:
     """获取关系分析提示词模版"""
     # 系统提示词
     system_template = str(inputs['system_prompt'])
-    system_template += """
+    system_template += f"""
+    【男主角】：{inputs['male_lead']}
+    【女主角】：{inputs['heroine']}
     【时间线权限分级】
     - 【前文终点】（只读）：故事已推进至此，人物状态、关系、持有物品以此为准。
     - 【创作区间】（完全权限）：你只能在此区间内创作，这是你的画布。

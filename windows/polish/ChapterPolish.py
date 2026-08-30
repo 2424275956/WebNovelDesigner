@@ -382,7 +382,9 @@ def original_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_nu
             "user_prompt": transmit.original_framework_user,
             "reference_before_text": chapter_model.before_content,
             "original_text": chapter_model.old_content,
-            "reference_after_text": chapter_model.after_content
+            "reference_after_text": chapter_model.after_content,
+            "male_lead": transmit.male_lead,
+            "heroine": transmit.heroine
         }
         print(5.06)
         old_len = len(chapter_model.old_content) if chapter_model.old_content is not None else 0
@@ -520,7 +522,9 @@ def extra_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1
             "reference_before_text": chapter_model.before_content,
             "reference_after_text": chapter_model.after_content,
             "relation_analysis": chapter_model.relation_content,
-            "create_framework_text": chapter_model.process_content
+            "create_framework_text": chapter_model.process_content,
+            "male_lead": transmit.male_lead,
+            "heroine": transmit.heroine
         }
         print(5.06)
         old_len = len(chapter_model.old_content) if chapter_model.old_content is not None else 0
@@ -576,7 +580,9 @@ def polish_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
         inputs = {
             "system_prompt": transmit.polish_system,
             "user_prompt": transmit.polish_user,
-            "original_framework_text": chapter_model.framework_content
+            "original_framework_text": chapter_model.framework_content,
+            "male_lead": transmit.male_lead,
+            "heroine": transmit.heroine
         }
         print(5.06)
         old_len = len(chapter_model.old_content) if chapter_model.old_content is not None else 0
