@@ -684,7 +684,7 @@ def polish_chapter_repetition(chapter_model: ChapterBO, transmit, for_num=1):
         print("去重整理-LangChain链构建")
         repetition_chain = (
             RunnableLambda(get_repetition_prompt_template) |
-            transmit.relation_llm |
+            transmit.polish_llm |
             StrOutputParser()
         )
         print("去重整理-LangChain链Invoke数据填充")
