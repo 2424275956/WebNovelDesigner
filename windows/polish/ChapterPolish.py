@@ -9,8 +9,10 @@ from pydantic import Field, BaseModel
 from json_repair import repair_json
 
 from config.GlobalMap import APP_STOP_EVENT
+from pojo.process.ProcessPromptResult import ProcessPromptResult
 from pojo.relation import RelationPromptResult
 from pojo.role import RolePromptResult
+from pojo.scene.ScenePromptResult import ScenePromptResult
 from pojo.table.Chapter import ChapterBO, ChapterPoint, ChapterStatus, ChapterType
 from sqlite.ChapterDB import update_chapter_role, update_chapter_status, update_chapter_relation, \
     update_chapter_process, update_chapter_scene, update_chapter_framework, update_chapter_polish, \
@@ -25,33 +27,6 @@ from windows.polish.DynamicPromptTemplate import get_role_prompt_template, get_r
 from stream.LlmStreamRetryable import RetryableStreamChain
 from stream.LlmStreamValidator import StreamingValidator
 import json
-
-def json_parse(raw_text):
-    cleaned_json = re.sub(r'^\s*```(?:json)?\s*', '', raw_text, flags=re.IGNORECASE)
-    cleaned_json = re.sub(r'\s*```\s*$', '', cleaned_json)
-    return cleaned_json
-
-def is_valid_json(json_str, is_json=True):
-    """
-    校验字符串是否为有效的 JSON 格式
-    """
-    # 直接尝试解析，用解析结果来判断是否合法
-    try:
-        parsed_data = json.loads(json_str)
-
-        # 3. 【可选】进一步校验解析出来的是不是字典
-        if is_json:
-            if not isinstance(parsed_data, dict):
-                raise ValueError(f"期望返回字典，但实际返回了 {type(parsed_data)}")
-        else:
-            # 校验是否为数组（Python中的列表）
-            if not isinstance(parsed_data, list):
-                raise ValueError(f"期望返回数组(list)，但实际返回了 {type(parsed_data)}")
-
-        return True
-    except (json.JSONDecodeError, TypeError, ValueError) as e:
-        print(f"角色分析-json格式校验失败，原因: {e}")
-        return False
 
 def is_valid_chinese_text(text: str, max_english_ratio: float = 0.3) -> tuple[bool, float]:
     """
@@ -248,14 +223,6 @@ def get_current_role_relation(chapter_model: ChapterBO):
                     print(321.21)
     return relation_data.model_dump_json()
 
-class RoleOptionalResult(BaseModel):
-    role_name: str = Field(description="角色的标准名称")
-    role_action: str = Field(description="角色的事件，可以进行番外扩写的点,一句话总结。如出差、前往目的地过程中、在房间的一段时间")
-
-class ProcessPromptResult(BaseModel):
-    extra: bool = Field(description="是否可以插入番外(True/False)")
-    optional_roles: List[RoleOptionalResult] = Field(description="可以选择的角色")
-
 def process_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
     try:
         """流程控制处理"""
@@ -326,8 +293,7 @@ def original_scene_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1)
         print("原文改写-场景分析-LangChain链构建")
         original_chain = (
             RunnableLambda(get_original_scene_prompt_template) |
-            transmit.original_scene_llm |
-            StrOutputParser()
+            transmit.original_scene_llm.with_structured_output(ScenePromptResult)
         )
         print(4.01)
         print(f"原文改写-场景分析-LangChain链Invoke数据填充")
@@ -342,23 +308,12 @@ def original_scene_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1)
         })
         print(4.02)
         # 格式校验
-        raw_text = original_scene.content if hasattr(original_scene, 'content') else str(original_scene)
-        print(4.03)
-        scene_str = json_parse(raw_text)
-        print(f"原文改写-场景分析-推理结果转换完成")
-        if not is_valid_json(scene_str, is_json=False):
-            print(f"原文改写-场景分析-json格式校验失败：{for_num}")
-            if 3 == for_num:
-                update_chapter_status(ChapterStatus.FAIL.value, chapter_model.id)
-                chapter_model.status = ChapterStatus.FAIL.value
-                return False
-            else:
-                return original_scene_chapter_polish(chapter_model, transmit, for_num + 1)
-        print(f"原文改写-场景分析-推理结果完成：{scene_str}")
+        scene = ScenePromptResult.model_validate(original_scene)
+        print(f"原文改写-场景分析-推理结果完成：{scene.model_dump_json()}")
         # 更新状态
-        update_chapter_scene(scene_str, ChapterPoint.ORIGINAL_FRAMEWORK.value, chapter_model.id)
+        update_chapter_scene(scene.model_dump_json(), ChapterPoint.ORIGINAL_FRAMEWORK.value, chapter_model.id)
         chapter_model.point = ChapterPoint.ORIGINAL_FRAMEWORK.value
-        chapter_model.scene_content = scene_str
+        chapter_model.scene_content = scene.model_dump_json()
         print(f"原文改写-场景分析-章节信息更新完成")
         return True
     except Exception as e:
@@ -402,12 +357,11 @@ def original_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_nu
     try:
         """原文改写-脉络改写"""
         print(5.01)
-        original_analysis_json = json.loads(chapter_model.scene_content)
-        print(str(original_analysis_json))
+        scene = ScenePromptResult.model_validate_json(chapter_model.scene_content)
         # 获取场景map
         print(5.02)
         original_analysis_text = {}
-        for analysis in original_analysis_json:
+        for analysis in scene.scene_list:
             print(5.03)
             scene = transmit.original_scene_polish.get(analysis)
             print(5.04)
@@ -507,8 +461,7 @@ def extra_scene_chapter_plish(chapter_model: ChapterBO, transmit, for_num=1):
         print("番外章节-场景分析-LangChain链构建")
         extra_scene_chain = (
             RunnableLambda(get_extra_scene_prompt_template) |
-            transmit.extra_scene_llm |
-            StrOutputParser()
+            transmit.extra_scene_llm.with_structured_output(ScenePromptResult)
         )
         print(f"番外章节-场景分析-LangChain链Invoke数据填充")
         extra_scene = extra_scene_chain.invoke({
@@ -522,22 +475,11 @@ def extra_scene_chapter_plish(chapter_model: ChapterBO, transmit, for_num=1):
         })
         # 格式校验
         print(234)
-        raw_text = extra_scene.content if hasattr(extra_scene, 'content') else str(extra_scene)
-        print(235)
-        scene_str = json_parse(raw_text)
-        print(f"番外章节-场景分析-推理结果转换完成")
-        if not is_valid_json(scene_str, is_json=False):
-            print(f"番外章节-场景分析-json格式校验失败：{for_num}")
-            if 3 == for_num:
-                update_chapter_status(ChapterStatus.FAIL.value, chapter_model.id)
-                chapter_model.status = ChapterStatus.FAIL.value
-            else:
-                extra_scene_chapter_plish(chapter_model, transmit, for_num + 1)
-            return
-        print(f"番外章节-场景分析-推理结果完成：{scene_str}")
+        scene = ScenePromptResult.model_validate(extra_scene)
+        print(f"番外章节-场景分析-推理结果完成：{scene.model_dump_json()}")
         # 更新信息
-        update_chapter_scene(scene_str, ChapterPoint.EXTRA_FRAMEWORK.value, chapter_model.id)
-        chapter_model.scene_content = scene_str
+        update_chapter_scene(scene.model_dump_json(), ChapterPoint.EXTRA_FRAMEWORK.value, chapter_model.id)
+        chapter_model.scene_content = scene.model_dump_json()
         chapter_model.point = ChapterPoint.EXTRA_FRAMEWORK.value
         print(f"番外章节-场景分析-章节信息更新完成")
     except Exception as e:
@@ -556,10 +498,10 @@ def extra_scene_chapter_plish(chapter_model: ChapterBO, transmit, for_num=1):
 def extra_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
     try:
         """番外章节-脉络生成"""
-        extra_scene_list = json.loads(chapter_model.scene_content)
+        scene = ScenePromptResult.model_validate_json(chapter_model.scene_content)
         # 获取场景map
         extra_analysis_text = {}
-        for extra_scene in extra_scene_list:
+        for extra_scene in scene.scene_list:
             scene = transmit.extra_scene_polish.get(extra_scene)
             extra_analysis_text[extra_scene] = scene
 
@@ -583,10 +525,8 @@ def extra_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1
         print(5.06)
         old_len = len(chapter_model.old_content) if chapter_model.old_content is not None else 0
         raw_text = asyncio.run(generate_stream_polish(extra_framework_chain, inputs, old_len, chapter_model.project_id, "番外章节-脉络生成"))
-        print(322)
-        framework_str = json_parse(raw_text)
         print(f"番外章节-脉络生成-推理结果转换完成")
-        is_valid, english_ratio = is_valid_chinese_text(framework_str)
+        is_valid, english_ratio = is_valid_chinese_text(raw_text)
         if not is_valid:
             print(f"番外章节-脉络生成-英文占比校验失败：{for_num}, 英文占比：{english_ratio * 100}%")
             if 3 == for_num:
@@ -595,9 +535,9 @@ def extra_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1
             else:
                 extra_framework_chapter_polish(chapter_model, transmit, for_num + 1)
             return
-        print(f"番外章节-脉络生成-推理结果完成：{framework_str}")
+        print(f"番外章节-脉络生成-推理结果完成：{raw_text}")
         # 长度判断
-        if len(framework_str) < 3500 or (ChapterType.ORIGINAL_POLISH.value == chapter_model.type and len(raw_text) < len(chapter_model.old_content)):
+        if len(raw_text) < 3500 or (ChapterType.ORIGINAL_POLISH.value == chapter_model.type and len(raw_text) < len(chapter_model.old_content)):
             print(f"番外章节-脉络生成-长度低于阈值")
             if 3 == for_num:
                 update_chapter_status(ChapterStatus.FAIL.value, chapter_model.id)
@@ -606,8 +546,8 @@ def extra_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1
                 extra_framework_chapter_polish(chapter_model, transmit, for_num + 1)
             return
         # 更新状态
-        update_chapter_framework(framework_str, ChapterPoint.POLISH_CONTENT.value, chapter_model.id)
-        chapter_model.framework_content = framework_str
+        update_chapter_framework(raw_text, ChapterPoint.POLISH_CONTENT.value, chapter_model.id)
+        chapter_model.framework_content = raw_text
         chapter_model.point = ChapterPoint.POLISH_CONTENT.value
         print(f"番外章节-脉络生成-章节信息更新完成")
     except Exception as e:

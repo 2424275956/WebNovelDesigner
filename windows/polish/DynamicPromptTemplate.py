@@ -239,8 +239,7 @@ def get_original_scene_prompt_template(inputs) -> ChatPromptTemplate:
     # 系统提示词
     system_template = str(inputs['original_scene_prompt_system'])
     system_template = system_template + """
-            【输出格式】：必须按照下述数据格式生成为有效的数组格式输出，禁止携带无关内容,根据匹配度排序选出最匹配的3个场景。
-             ["场景名称","场景名称"]
+            【输出规则】：根据匹配度排序选出最匹配的3个场景,禁止携带无关内容。
     """
     system_template = special_chars_parse(system_template)
     # 用户提示词
@@ -323,8 +322,7 @@ def get_extra_scene_prompt_template(inputs) -> ChatPromptTemplate:
     # 系统提示词
     system_template = str(inputs['extra_scene_prompt_system'])
     system_template += """
-    【输出格式】：严格按照下述格式输出数组数据，禁止携带无关内容,根据匹配度排序选出最匹配的3个场景。
-    ["场景名称","场景名称"]
+    【输出规则】：根据匹配度排序选出最匹配的3个场景,禁止携带无关内容。
     """
     system_template = special_chars_parse(system_template)
     # 用户提示词

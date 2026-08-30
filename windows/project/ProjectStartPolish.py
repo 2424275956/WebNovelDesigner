@@ -319,8 +319,11 @@ def start(self):
 
         # 防止过度标点
         "！！！！",          # 三个感叹号
+        "!!!!",
         "？？？？",          # 三个问号
+        "????",
         "，，，，",
+        ",,,,",
     ]
     # 角色分析
     role_model = model_map[self.project_info['role_model_id']]
