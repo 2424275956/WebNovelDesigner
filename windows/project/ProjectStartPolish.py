@@ -374,12 +374,7 @@ def start(self):
         max_tokens=original_framework_model['max_token'],
         top_p=original_framework_model['top_p'],
         streaming=True,
-        presence_penalty=-0.1,      # 全局重复惩罚，防止车轱辘话
-        frequency_penalty=0.25,     # 频率惩罚，抑制高频词
         stop=stop_list,
-        extra_body={
-            "repetition_penalty": 0.99  #
-        },
         http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )
     # 番外生成-场景分析
@@ -405,12 +400,7 @@ def start(self):
         max_tokens=extra_framework_model['max_token'],
         top_p=extra_framework_model['top_p'],
         streaming=True,
-        presence_penalty=0.1,      # 全局重复惩罚，防止车轱辘话
-        frequency_penalty=0.0,     # 频率惩罚，抑制高频词
         stop=stop_list,
-        extra_body={
-            "repetition_penalty": 1.01
-        },
         http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )
     # 结果润色
@@ -423,12 +413,7 @@ def start(self):
         max_tokens=polish_model['max_token'],
         top_p=polish_model['top_p'],
         streaming=True,
-        presence_penalty=0.0,      # 全局重复惩罚，防止车轱辘话
-        frequency_penalty=0.0,     # 频率惩罚，抑制高频词
         stop=stop_list,
-        extra_body={
-            "repetition_penalty": 1.00
-        },
         http_client=GlobalHttpClient.get_or_create_http_client(transmit.project_id)
     )
     # 关系分析
