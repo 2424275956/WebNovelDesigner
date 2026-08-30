@@ -71,7 +71,7 @@ def insert_extra_chapter(chapter_model: ChapterBO):
                                    chapter_model.relation_content,
                                    chapter_model.process_content,
                                    ChapterType.EXTRA_GENERATE.value,
-                                   ChapterStatus.WAIT.value,
+                                   ChapterStatus.RUNNING.value,
                                    ChapterPoint.EXTRA_SCENE.value,
                                    chapter_model.sort))
 
