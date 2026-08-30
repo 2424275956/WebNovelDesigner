@@ -695,17 +695,16 @@ def polish_chapter_repetition(chapter_model: ChapterBO, transmit, for_num=1):
         raw_text = repetition.content if hasattr(repetition, 'content') else str(repetition)
         is_valid, english_ratio = is_valid_chinese_text(raw_text)
         if not is_valid:
-            print(f"结果润色-英文占比校验失败：{for_num}, 英文占比：{english_ratio * 100}%")
+            print(f"去重整理-英文占比校验失败：{for_num}, 英文占比：{english_ratio * 100}%")
             if 3 == for_num:
                 update_chapter_status(ChapterStatus.FAIL.value, chapter_model.id)
                 chapter_model.status = ChapterStatus.FAIL.value
             else:
                 polish_chapter_repetition(chapter_model, transmit, for_num + 1)
             return
-        print(f"结果润色-推理结果完成：{raw_text}")
         # 长度判断
         if ChapterType.ORIGINAL_POLISH.value == chapter_model.type and len(raw_text) < len(chapter_model.old_content):
-            print(f"结果润色-长度低于阈值")
+            print(f"去重整理-长度低于阈值")
             if 3 == for_num:
                 update_chapter_status(ChapterStatus.FAIL.value, chapter_model.id)
                 chapter_model.status = ChapterStatus.FAIL.value
