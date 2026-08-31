@@ -85,7 +85,7 @@ def update_chapter_framework(framework_content, point, chapter_id):
 
 # 更新章节-完成润色
 def update_chapter_polish(polish_text, chapter_id):
-    SqliteDB.execute("UPDATE chapter SET new_len = ?, new_content = ?, point = 550 WHERE id = ?", (len(polish_text), polish_text, chapter_id))
+    SqliteDB.execute("UPDATE chapter SET new_len = ?, new_content = ?, point = 600 WHERE id = ?", (len(polish_text), polish_text, chapter_id))
 
 # 更新章节-去重处理
 def update_chapter_repetition(repetition_text, chapter_id):

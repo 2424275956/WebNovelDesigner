@@ -608,7 +608,7 @@ def polish_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
             return
         # 更新状态
         update_chapter_polish(raw_text, chapter_model.id)
-        chapter_model.point = ChapterPoint.REPETITION_ORGANIZE.value
+        chapter_model.point = ChapterPoint.RELATION_ANALYSIS.value
         chapter_model.new_content = raw_text
         print(f"结果润色-章节信息更新完成")
     except Exception as e:
