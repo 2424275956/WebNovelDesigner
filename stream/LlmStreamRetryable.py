@@ -41,9 +41,14 @@ class RetryableStreamChain:
             # 超过限制
             if attempt > self.max_retries:
                 return ""
+            print(555555)
 
             # 是否首次续写检测
             before_refusal_check = True
+
+            # 重复次数（允许重复次数，后续会进行处理去重）
+            # 减少重复请求次数，节省token消耗。次数限制可以保证不会无限循环推理。
+            repetition_num = 0
 
             # 校验对象
             validator = self.validator_factory()
@@ -62,6 +67,9 @@ class RetryableStreamChain:
                     result = validator.feed(text)
 
                     if result is None:
+                        repetition_num += 1
+
+                    if repetition_num >= 3:
                         # 检测到循环，需要重试
                         last_error = f"检测到重复内容（循环模式或行级复读）"
 
@@ -72,7 +80,7 @@ class RetryableStreamChain:
                         # 循环次数+1
                         attempt += 1
                         # 跳出 for chunk，进入下一次重试
-                        continue
+                        break
 
                     # 模型拒绝判断
                     if before_refusal_check:
@@ -121,8 +129,8 @@ class RetryableStreamChain:
                 if a_stream is not None:
                     try:
                         await a_stream.aclose()
-                    except:
-                        pass
+                    except Exception as e:
+                        print(f"Stream流关闭失败:{e}")
 
         # 重试耗尽
         raise RuntimeError(f"流式生成失败，已重试 {self.max_retries} 次。最后错误: {last_error}")
