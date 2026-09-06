@@ -1,15 +1,14 @@
+import json as std_json
 import os
 
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QListWidget, \
     QListWidgetItem, QDialog, QPlainTextEdit, QScrollArea, QLineEdit, QFileDialog, QMessageBox
-import json as std_json
 
 from resources.style.StyleSheet import button_style_sheet, title_style_sheet, line_edit_style_sheet
 from sqlite.PromptDB import query_prompt_template, remove_prompt, import_prompt_template, save_prompt_info, \
     query_prompt_info_by_id, query_all_prompt
 from windows.prompt.InsertPrompt import InsertModel
-
 
 """触发事件"""
 def on_item_clicked(self, item: QListWidgetItem):

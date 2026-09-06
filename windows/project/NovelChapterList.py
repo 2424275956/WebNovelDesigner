@@ -3,9 +3,9 @@ from PySide6.QtWidgets import QListWidgetItem, QWidget, QHBoxLayout, QFrame, QVB
 
 from config.GlobalMap import APP_STATE
 from pojo.table.Chapter import ChapterPoint
+from resources.style.StyleSheet import label_style_sheet
 from sqlite.ChapterDB import query_project_chapter_by_id, count_all_chapter_num, count_success_chapter_num, \
     count_fail_chapter_num, count_extra_chapter_num
-from resources.style.StyleSheet import label_style_sheet
 from utils.StatusDot import StatusDot
 
 

@@ -1,6 +1,7 @@
-import sys
 import os
+import sys
 from pathlib import Path
+
 
 def is_frozen() -> bool:
     """判断是否处于 PyInstaller 打包环境"""

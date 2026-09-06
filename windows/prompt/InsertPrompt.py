@@ -1,5 +1,6 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
+
 from resources.style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet
 from sqlite.PromptDB import insert_prompt_conf
 

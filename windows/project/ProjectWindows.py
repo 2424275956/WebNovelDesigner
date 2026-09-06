@@ -8,13 +8,12 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushBu
 
 from resources.style.StyleSheet import button_style_sheet
 from sqlite.ProjectDB import query_all_project
-from utils.paths import resource_path
-from windows.project import ImportNovel
-from windows.project import RemoveNovel
-from windows.project import ProjectPolish
-from windows.project import ClickableFrame
 from utils.ClearLayoutRecursive import clear_layout
-
+from utils.paths import resource_path
+from windows.project import ClickableFrame
+from windows.project import ImportNovel
+from windows.project import ProjectPolish
+from windows.project import RemoveNovel
 
 """添加项目根目录到路径"""
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))

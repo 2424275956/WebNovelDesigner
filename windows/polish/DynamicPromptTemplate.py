@@ -2,6 +2,7 @@ import re
 
 from langchain_core.prompts import ChatPromptTemplate
 
+
 def special_chars_parse(text):
     """检查文本中的特殊字符"""
     text = str(text)
@@ -53,7 +54,10 @@ def get_novel_resume_template(inputs) -> ChatPromptTemplate:
     【任务目标】：请对以下提供的[文本片段]进行精简，输出一份**精简版文本片段**。
     【核心要求】：
     - 必须对‘文本片段’内容进行精简，如：今天是个明朗的清晨，我早上吃的包子 -> 今天清晨吃的包子。
+    - 必须输出简述完成后的内容，禁止输出思考过程与草稿内容。
     - 语言简洁扼要，整体脉络通畅，保留关键细节（女性穿着、身体特征）。将原文压缩至**原文约30%-40%**的篇幅。
+    【输出内容】：
+    "简述完成后的内容"
     """
     print(111.02)
     user_template = f"""
@@ -299,8 +303,9 @@ def get_original_framework_prompt_template(inputs) -> ChatPromptTemplate:
     2. 【禁止输出前文】禁止在改写结果开头重复、复述、概括【前文衔接】的内容。改写结果的第一个字必须是【待改写片段】的改写正文。
     3. 【禁止剧透前置】改写后的片段中，人物不能提前知道后文才揭示的信息，不能提前出现后文才出现的道具、地点、人物关系变化。
     4. 【禁止元评论】禁止输出"改写如下：""以下是修改后的片段"等前缀，禁止输出修改说明。
-    5. 小说的男主是：{inputs['male_lead']}
-    6. 小说的女主是：{inputs['heroine']}
+    5. 【禁止遗漏剧情】只允许对原文内容进行扩写，必须保证改写内容长度不低于原始长度、扩写完成后不会丢失任何剧情与对话。
+    6. 小说的男主是：{inputs['male_lead']}
+    7. 小说的女主是：{inputs['heroine']}
     【边界检测标准】
     - 如果删除【待改写片段】原文，把改写结果嵌入【前文衔接】和【后文衔接】之间，整个文档是否通顺？
     - 改写结果是否只覆盖了原文片段的字数范围，没有向前吞噬前文，也没有向后侵占后文？
@@ -337,6 +342,7 @@ def get_polish_prompt_template(inputs) -> ChatPromptTemplate:
     【核心任务】
     1. 对提供的文本片段进行纯文笔层面的润色优化。**你的唯一目标是提升语言的质感与流畅度，绝不改变原文的任何实质内容。**
     2. 对润色后的内容进行逐字扫描，找出所有重复内容并输出整理后的干净文本。
+    3. 对比【待润色段落】判断是否缺失了剧情内容。
     【绝对禁区】（违反即失败）
     1. **禁止改动剧情**：不得增删情节、调整事件顺序、改变因果关系或人物动机。
     2. **禁止改动对话**：所有引号内的台词必须保持原样，不得替换措辞、调整语气或重新组织句式。
@@ -371,7 +377,7 @@ def get_polish_prompt_template(inputs) -> ChatPromptTemplate:
     # 用户提示词
     user_template = str(inputs['user_prompt'])
     user_template = user_template + f"""
-    【待润色段落】
+    【待润色段落】（需要进行润色的内容）
     {inputs['original_framework_text']}
     """
     user_template = special_chars_parse(user_template)
@@ -447,6 +453,7 @@ def get_extra_framework_prompt_template(inputs) -> ChatPromptTemplate:
     【强制边界】
     - 第一个字必须是正文，禁止复述前文情节作为开头。
     - 禁止任何角色提前知道【后文起点】中才揭示的信息。
+    - 长度必须大于3500中文字段。
     - 小说的男主是：{inputs['male_lead']}
     - 小说的女主是：{inputs['heroine']}
     【输出】直接输出正文。。

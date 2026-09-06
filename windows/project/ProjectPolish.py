@@ -6,9 +6,9 @@ from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame, QListWidget, QPushButton, QPlainTextEdit, \
     QComboBox, QListWidgetItem, QLineEdit, QMessageBox, QFileDialog
 
+from config.GlobalMap import APP_STATE
 from resources.style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet, label_style_sheet, \
     list_widget_style_sheet
-from config.GlobalMap import APP_STATE
 from sqlite.ChapterDB import count_all_chapter_num, count_success_chapter_num, count_fail_chapter_num, \
     count_extra_chapter_num, query_all_polish_chapter, query_chapter_by_id
 from sqlite.ModelDB import query_all_model
@@ -22,6 +22,7 @@ from utils.ClearLayoutRecursive import clear_layout
 from utils.StatusDot import StatusDot
 from windows.project import NovelChapterList
 from windows.project import ProjectStartPolish
+
 
 def on_prompt_item_clicked(self, point_type, prompt_type):
     choose_project_id = self.prompt_combo.currentData()

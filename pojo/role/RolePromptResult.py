@@ -2,6 +2,7 @@ from typing import Optional, List
 
 from pydantic import BaseModel, Field
 
+
 class CharacterResult(BaseModel):
     """
     角色标准信息

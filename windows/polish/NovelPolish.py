@@ -24,7 +24,6 @@ def polish(transmit, bridge: PolishBridge):
         update_chapter_status(ChapterStatus.RUNNING.value, chapter['id'])
         ## 获取最新章节信息
         temp_chapter = query_chapter_by_id(chapter['id'])
-        print(f"最新章节信息：{str(temp_chapter)}")
         chapter_model = sqliteToChapter(temp_chapter)
         # 更新列表
         bridge.progress.emit(chapter_model.project_id)
