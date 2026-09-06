@@ -41,7 +41,7 @@ class RetryableStreamChain:
             # 超过限制
             if attempt > self.max_retries:
                 return ""
-            print(555555)
+            print(f"进行流式生成；循环次数：{attempt}；拒绝次数：{refusal_num}")
 
             # 是否首次续写检测
             before_refusal_check = True
