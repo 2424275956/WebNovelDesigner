@@ -1,11 +1,9 @@
 import asyncio
 import re
 from itertools import combinations
-from typing import List
 
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda
-from pydantic import Field, BaseModel
 from json_repair import repair_json
 
 from config.GlobalMap import APP_STOP_EVENT
@@ -26,7 +24,6 @@ from windows.polish.DynamicPromptTemplate import get_role_prompt_template, get_r
     get_novel_resume_template, get_repetition_prompt_template
 from stream.LlmStreamRetryable import RetryableStreamChain
 from stream.LlmStreamValidator import StreamingValidator
-import json
 
 def is_valid_chinese_text(text: str, max_english_ratio: float = 0.3) -> tuple[bool, float]:
     """
@@ -253,6 +250,7 @@ def process_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
         })
         print(str(process))
         raw_text = process.content if hasattr(process, 'content') else str(process)
+        raw_text = raw_text.replace("```json", "").replace("```", "")
         process_data = ProcessPromptResult.model_validate_json(raw_text)
         # 判断
         if process_data is None:
@@ -301,9 +299,7 @@ def original_scene_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1)
             "relation_analysis": chapter_model.relation_content,
             "original_scene_prompt_system": transmit.original_scene_system,
             "original_scene_prompt_user": transmit.original_scene_user,
-            "reference_before_text": chapter_model.before_content,
             "original_text": chapter_model.old_content,
-            "reference_after_text": chapter_model.after_content,
             "scene_list": str(transmit.original_scene_identity)
         })
         print(4.02)

@@ -76,7 +76,7 @@ def get_role_prompt_template(inputs) -> ChatPromptTemplate:
     # 用户提示词
     user_template = str(inputs['role_prompt_user'])
     user_template += f"""
-    【原文片段】：
+    【原文片段】（待分析的小说片段内容）
     {inputs['original_text']}
     """
     user_template = special_chars_parse(user_template)
@@ -91,7 +91,22 @@ def get_relation_prompt_template(inputs) -> ChatPromptTemplate:
     # 系统提示词
     system_template = str(inputs['relation_prompt_system'])
     system_template += f"""
-    【主角团队】
+    【角色合并策略】
+    1. **检测存储的角色档案**
+    	- 检查是否有已有的角色档案
+    	- 如果有，则使用“存储的角色档案”作为基础
+    	- 如果没有，则新建一个空白角色
+    2. **信息整合**
+    	- 将最新片段中的角色信息与存储的角色档案进行合并
+    	- 保留所有已知的基本属性
+    	- 补充新的技能、背景、身体特征与行为特征
+    3. **优先级顺序**
+        - 优先使用“存储的角色档案”中的信息
+        - 只在必要时添加最新片段中的新信息
+        - 避免重复信息（如同一属性被多次提及）
+    4. **输出结果**
+        - 最终合并后的完整角色档案'
+    【主角团队】（小说整体剧情中的主要核心角色）
     - 男主角：{inputs['male_lead']}
     - 女主角：{inputs['heroine']}
     """
@@ -166,10 +181,10 @@ def get_relation_prompt_template(inputs) -> ChatPromptTemplate:
     }
     【输出约束规则】
     1. 角色信息规则：
-    - *名称*：角色的标准名称或不清楚其真名时的称呼，如：李莫愁、王语嫣等。 
-    - *代称*：大多数人或陌生人对其的代称或尊称，如：李律师、王城主、陛下、云公主等。
-    - *性别*：角色的性别，如：男性、女性、双性、未知。
-    - *身份*：角色的身份，如：主角、女主角、城主、公主、剑阁弟子等。
+    - *名称*：角色的标准称呼或代号，如“李莫愁”、“王语嫣”等。
+    - *代称*：尊严的称呼，如陛下、王城主、李律师。用于分析角色身份和权威性。
+    - *性别*：角色性别，选项包括男性、女性、双性、非二元、无性别、不明确。
+    - *身份*: 角色的身份，如主角、女主角、城主、公主、剑阁弟子等。
     - *种族*：角色的种族，如：人族、虫族、妖族、精灵、野兽等。
     - *身高*：角色的大致或可能身高，如：1米5、2米1、1米75等。
     - *身材*：角色的大体身材，如：梨型、沙漏型、倒三角型、水桶型、苹果型、挺拔、雄壮等。
@@ -254,18 +269,14 @@ def get_original_scene_prompt_template(inputs) -> ChatPromptTemplate:
     # 系统提示词
     system_template = str(inputs['original_scene_prompt_system'])
     system_template = system_template + """
-            【输出规则】：根据匹配度排序选出最匹配的3个场景,禁止携带无关内容。
+    【输出规则】：根据匹配度排序选出最匹配的3个场景,禁止携带无关内容。
     """
     system_template = special_chars_parse(system_template)
     # 用户提示词
     user_template = str(inputs['original_scene_prompt_user'])
     user_template += f"""
-    【参考片段-前述剧情】
-    {inputs['reference_before_text']}
     【原文片段】
     {inputs['original_text']}
-    【参考片段-后续剧情】
-    {inputs['reference_after_text']}
     【角色分析与关系分析】
     {inputs['relation_analysis']}
     【场景库】
@@ -345,7 +356,7 @@ def get_polish_prompt_template(inputs) -> ChatPromptTemplate:
     1.【完全重复】：完全相同的内容出现两次及以上，包括跨段落、跨行出现。
     2.【变体重复】：同一内容因换行、空格、标点差异而分裂或变形。
     3.【自重复】（同行内）：同一行内前后重复，如打字错误导致的重复：昨日清明今日愁...昨日清明今日愁
-    【重复处理铁律】
+    【重复处理铁律】（最后绝对必须处理）
     1.首次出现的内容绝对保留，包括其原始位置、上下文、标点。
     2.重复出现时：
     - 如果是完全相同的独立句子 → 直接删除重复项。
@@ -353,7 +364,7 @@ def get_polish_prompt_template(inputs) -> ChatPromptTemplate:
     3.禁止改动非重复内容，禁止扩写、润色、改写原文风格。
     4.禁止输出"修改如下""去重结果"等元评论，直接输出整理后的正文。
     5.如果文本无重复，原样返回，不要添加"未发现重复"等说明。
-    【输出内容】
+    【输出内容】（去除重复内容后的结果）
     "润色整理完成后的内容"
     """
     system_template = special_chars_parse(system_template)
