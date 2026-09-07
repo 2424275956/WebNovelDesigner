@@ -297,24 +297,17 @@ def get_original_framework_prompt_template(inputs) -> ChatPromptTemplate:
     """获取关系分析提示词模版"""
     # 系统提示词
     system_template = str(inputs['system_prompt'])
-    system_template += f"""
-    【绝对铁律】
-    1. 【扩写内容点】你只能对【待改写片段】进行语言与动作层面的扩写（性交互、语言、动作），必须保留完整剧情、对话与细节，禁止新增任何推动剧情发展的情节节点。
-    2. 【禁止输出前文】禁止在改写结果开头重复、复述、概括【前文衔接】的内容。改写结果的第一个字必须是【待改写片段】的改写正文。
-    3. 【禁止剧透前置】改写后的片段中，人物不能提前知道后文才揭示的信息，不能提前出现后文才出现的道具、地点、人物关系变化。
-    4. 【禁止元评论】禁止输出"改写如下：""以下是修改后的片段"等前缀，禁止输出修改说明。
-    5. 【禁止遗漏剧情】只允许对原文内容进行扩写，必须保证改写内容长度不低于原始长度、扩写完成后不会丢失任何剧情与对话。
-    6. 小说的男主是：{inputs['male_lead']}
-    7. 小说的女主是：{inputs['heroine']}
-    【边界检测标准】
-    - 如果删除【待改写片段】原文，把改写结果嵌入【前文衔接】和【后文衔接】之间，整个文档是否通顺？
-    - 改写结果是否只覆盖了原文片段的字数范围，没有向前吞噬前文，也没有向后侵占后文？
-    - 如果答案为"否"，则输出作废，重新生成。
-    【输出内容】直接输出【待改写片段】的改写正文。不要输出前文内容，不要输出后文内容，不要添加过渡句指向未来。
-    """
+    system_template = (system_template
+                       .replace("{target_num}", str(inputs['target_num']))
+                       .replace("{male_lead}", str(inputs['male_lead']))
+                       .replace("{heroine}", str(inputs['heroine'])))
     system_template = special_chars_parse(system_template)
     # 用户提示词
     user_template = str(inputs['user_prompt'])
+    user_template = (user_template
+                       .replace("{target_num}", str(inputs['target_num']))
+                       .replace("{male_lead}", str(inputs['male_lead']))
+                       .replace("{heroine}", str(inputs['heroine'])))
     user_template = user_template + f"""
     【角色档案】
     {inputs['relation_analysis']}
@@ -338,44 +331,11 @@ def get_polish_prompt_template(inputs) -> ChatPromptTemplate:
     """获取关系分析提示词模版"""
     # 系统提示词
     system_template = str(inputs['system_prompt'])
-    system_template += f"""
-    【核心任务思维链】
-    步骤一：对提供的文本片段进行逐行逐段的纯文笔层面的润色优化。**你的唯一目标是提升语言的质感与流畅度，绝不改变原文的任何实质内容。**
-    步骤二：对润色后的内容进行逐字扫描，找出所有重复内容并输出整理后的干净文本。
-    步骤三：对比【待润色段落】判断是否缺失了剧情内容。
-    【绝对禁区】（违反即失败）
-    1. **禁止改动剧情**：不得增删情节、调整事件顺序、改变因果关系或人物动机。
-    2. **禁止改动对话**：所有引号内的台词必须保持原样，不得替换措辞、调整语气或重新组织句式。
-    3. **禁止改动专有名词**：人名、地名、功法名、物品名等不得替换或缩写。
-    4. **禁止过度发挥**：不得添加原文不存在的新意象、角色、新比喻或新心理活动。
-    5. **禁止总结/概括**：不得将细节描写压缩为概述，也不得将概述扩写为新情节。
-    6. 小说的男主是：{inputs['male_lead']}
-    7. 小说的女主是：{inputs['heroine']}
-    【允许且鼓励的润色方向】
-    1. **词汇升级**：将口语化、重复或平淡的用词替换为更精准、更具表现力的书面表达。
-    2. **句式优化**：调整过长或过短的句子节奏，改善语流韵律，消除翻译腔或病句。
-    3. **感官强化**：在不新增信息的前提下，让现有的视觉、听觉、触觉描写更具沉浸感。
-    4. **衔接自然**：优化段落之间、句子之间的过渡，使行文更连贯丝滑。
-    5. **标点规范**：修正不规范的标点使用，确保符合中文出版标准。
-    6. **填充描绘**：将设定融入其中，大量填充角色细节描述与人物动作对话的性交互的描绘。
-    【重复判定规则】除了拟声词以外，以下情况均视为重复，必须处理：
-    1.【完全重复】：完全相同的内容出现两次及以上，包括跨段落、跨行出现。
-    2.【变体重复】：同一内容因换行、空格、标点差异而分裂或变形。
-    3.【自重复】（同行内）：同一行内前后重复，如打字错误导致的重复：昨日清明今日愁...昨日清明今日愁
-    【重复处理铁律】（最后绝对必须处理）
-    1.首次出现的内容绝对保留，包括其原始位置、上下文、标点。
-    2.重复出现时：
-    - 如果是完全相同的独立句子 → 直接删除重复项。
-    - 如果是同行内自重复 → 保留一份，删除多余。
-    3.禁止改动非重复内容，禁止扩写、润色、改写原文风格。
-    4.禁止输出"修改如下""去重结果"等元评论，直接输出整理后的正文。
-    5.如果文本无重复，原样返回，不要添加"未发现重复"等说明。
-    【输出内容】（去除重复内容后的结果）
-    "润色整理完成后的内容"
-    """
+    system_template = system_template.replace("{target_num}", str(inputs['target_num']))
     system_template = special_chars_parse(system_template)
     # 用户提示词
     user_template = str(inputs['user_prompt'])
+    user_template = user_template.replace("{target_num}", str(inputs['target_num']))
     user_template = user_template + f"""
     【待润色段落】（需要进行润色的内容）
     {inputs['original_framework_text']}
@@ -420,48 +380,17 @@ def get_extra_framework_prompt_template(inputs) -> ChatPromptTemplate:
     """获取关系分析提示词模版"""
     # 系统提示词
     system_template = str(inputs['system_prompt'])
-    system_template += f"""
-    【时间线权限分级】
-    - 【前文终点】（只读）：故事已推进至此，人物状态、关系、持有物品以此为准。
-    - 【创作区间】（完全权限）：你只能在此区间内创作，这是你的画布。
-    - 【后文起点】（绝对禁区）：后续剧情的任何信息对你不可见、不可引用、不可暗示。
-    【绝对铁律】
-    1. 【时间墙】创作区间的剧情必须在【前文终点】结束，必须在【后文起点】之前收束。禁止让创作内容"滑入"后文起点之后的时间。
-    2. 【零剧透】禁止通过以下方式泄露后文：
-       - 角色内心独白提前感知未来事件
-       - 旁白预叙"他不知道这将是最后一次..."
-       - 道具/人物提前出现后文才揭示的功能或身份
-       - 对话中提及后文才发生的地点、组织、死亡、背叛
-       - 环境描写暗示后文灾难（如"乌云压城"暗示后文大战，除非前文已铺垫）
-    3. 【零重复】禁止复述【前文终点】之前已发生的具体情节（可提及结果作为背景，但不得重写场景）。
-    4. 【因果冻结】创作区间内可以发生新事件，但这些事件的果不能改变【后文起点】的既定状态。即：番外必须是"可被删除而不影响主线"的独立篇章，或仅增加细节不改变事实。
-    5. 【角色锁】角色的能力、性格、知识上限以【前文终点】为准。禁止让角色提前获得后文才掌握的技能、信息或关系。
-    6. 【禁止元评论】禁止输出"番外如下""以下是支线剧情"等前缀，禁止输出剧情总结或创作说明。
-    7. 【风格统一】分析【前文终点】和【后文起点】内容来锚定剧情世界观，禁止突兀出现不符合世界观的内容信息（必须、一定、绝对保证世界观风格）。
-    【创作自由度】
-    在以上锁链内，你可以：
-    - 探索主线未描写的侧面（另一角色的同日经历、主角的独处时刻、背景势力的暗线）
-    - 增加情感层次、环境氛围、人物互动细节
-    - 引入全新次要角色，但不得改变主线角色关系
-    - 使用插叙仅限于【前文终点】之前的时间（回忆），且回忆内容必须是前文已揭示的信息
-    【自检标准】
-    输出完成后，检查：如果删除这段番外，读者阅读【后文起点】时是否会有信息缺失？
-    - 如果"是"→ 你剧透了，输出作废。
-    - 如果"否"→ 通过。
-    【创作任务】
-    在【前文终点】与【后文起点】之间，生成一段 （番外剧情/其他角色支线/过渡剧情）。
-    视角为（主角侧写/配角独立视角/群像）
-    【强制边界】
-    - 第一个字必须是正文，禁止复述前文情节作为开头。
-    - 禁止任何角色提前知道【后文起点】中才揭示的信息。
-    - 长度必须大于3500中文字段。
-    - 小说的男主是：{inputs['male_lead']}
-    - 小说的女主是：{inputs['heroine']}
-    【输出】直接输出正文。。
-    """
+    system_template = (system_template
+                       .replace("{target_num}", str(inputs['target_num']))
+                       .replace("{male_lead}", str(inputs['male_lead']))
+                       .replace("{heroine}", str(inputs['heroine'])))
     system_template = special_chars_parse(system_template)
     # 用户提示词
     user_template = str(inputs['user_prompt'])
+    user_template = (user_template
+                       .replace("{target_num}", str(inputs['target_num']))
+                       .replace("{male_lead}", str(inputs['male_lead']))
+                       .replace("{heroine}", str(inputs['heroine'])))
     user_template = user_template + f"""
     【角色档案】（创作依据）
     {inputs['relation_analysis']}

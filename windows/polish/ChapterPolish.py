@@ -379,6 +379,7 @@ def original_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_nu
             StrOutputParser()
         )
         print(f"原文改写-脉络改写-LangChain链Invoke数据填充")
+        old_len = len(chapter_model.old_content) if chapter_model.old_content is not None else 3500
         inputs = {
             "relation_analysis": chapter_model.relation_content,
             "framework_analysis": str(original_analysis_text),
@@ -388,10 +389,10 @@ def original_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_nu
             "original_text": chapter_model.old_content,
             "reference_after_text": chapter_model.after_content,
             "male_lead": transmit.male_lead,
-            "heroine": transmit.heroine
+            "heroine": transmit.heroine,
+            "target_num": old_len
         }
         print(5.06)
-        old_len = len(chapter_model.old_content) if chapter_model.old_content is not None else 3500
         raw_text = asyncio.run(generate_stream_polish(original_framework_chain, inputs, old_len, chapter_model.project_id, "原文改写-脉络改写"))
         # 英文含量校验
         print(f"原文改写-脉络改写-推理结果转换完成")
@@ -518,6 +519,7 @@ def extra_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1
                 StrOutputParser()
         )
         print(f"番外章节-脉络生成-LangChain链Invoke数据填充")
+        old_len = len(chapter_model.old_content) if chapter_model.old_content is not None else 3500
         # 英文含量校验
         inputs = {
             "system_prompt": transmit.extra_framework_system,
@@ -528,10 +530,10 @@ def extra_framework_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1
             "relation_analysis": chapter_model.relation_content,
             "create_framework_text": chapter_model.process_content,
             "male_lead": transmit.male_lead,
-            "heroine": transmit.heroine
+            "heroine": transmit.heroine,
+            "target_num": old_len
         }
         print(5.06)
-        old_len = len(chapter_model.old_content) if chapter_model.old_content is not None else 3500
         raw_text = asyncio.run(generate_stream_polish(extra_framework_chain, inputs, old_len, chapter_model.project_id, "番外章节-脉络生成"))
         print(f"番外章节-脉络生成-推理结果转换完成")
         is_valid, english_ratio = is_valid_chinese_text(raw_text)
@@ -580,16 +582,17 @@ def polish_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1):
             StrOutputParser()
         )
         print(f"结果润色-LangChain链Invoke数据填充")
+        old_len = len(chapter_model.old_content) if chapter_model.old_content is not None else 3500
         # 英文含量校验
         inputs = {
             "system_prompt": transmit.polish_system,
             "user_prompt": transmit.polish_user,
             "original_framework_text": chapter_model.framework_content,
             "male_lead": transmit.male_lead,
-            "heroine": transmit.heroine
+            "heroine": transmit.heroine,
+            "target_num": old_len
         }
         print(5.06)
-        old_len = len(chapter_model.old_content) if chapter_model.old_content is not None else 3500
         raw_text = asyncio.run(generate_stream_polish(polish_chain, inputs, old_len, chapter_model.project_id, "结果润色"))
         is_valid, english_ratio = is_valid_chinese_text(raw_text)
         if not is_valid:
