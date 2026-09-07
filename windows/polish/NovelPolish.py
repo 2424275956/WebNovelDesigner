@@ -1,5 +1,5 @@
 from config.GlobalMap import APP_STOP_EVENT, APP_STATE
-from pojo.table.Chapter import sqliteToChapter, ChapterPoint, ChapterStatus, ChapterBO
+from pojo.table.Chapter import sqliteToChapter, ChapterPoint, ChapterStatus, ChapterBO, ChapterType
 from sqlite.ChapterDB import query_wait_polish_chapter, query_chapter_by_id, query_before_chapter, query_after_chapter, \
     update_chapter_status, update_chapter_sort, insert_extra_chapter, update_original_resume, update_polish_resume
 from sqlite.ProjectDB import edit_project_status
@@ -161,9 +161,24 @@ def get_before_novel(chapter_model: ChapterBO, transmit):
     chapter_model.before_content = ""
     chapter_before_list = query_before_chapter(chapter_model.project_id, chapter_model.sort, transmit.polish_before_num)
     if chapter_before_list:
+        # 附带章节数
+        before_len = len(chapter_before_list)
         for chapter_before in chapter_before_list:
+            # 章节数
+            before_len -= 1
             # 转换
             before_model = sqliteToChapter(chapter_before)
+            # 判断是否最后一个章节
+            if before_len < 1 and ChapterType.EXTRA_GENERATE.value == chapter_model.type:
+                if before_model.new_content is None or len(before_model.new_content) < 1:
+                    ## 不存在原文信息
+                    if before_model.old_content is None or len(before_model.old_content) < 1:
+                        continue
+                    else:
+                        chapter_model.before_content += before_model.old_content
+                else:
+                    chapter_model.before_content += before_model.new_content
+                continue
 
             # 不存在润色结果内容
             if before_model.new_content is None or len(before_model.new_content) < 1:
@@ -212,9 +227,25 @@ def get_after_novel(chapter_model, transmit):
     chapter_model.after_content = ""
     chapter_after_list = query_after_chapter(chapter_model.project_id, chapter_model.sort, transmit.polish_after_num)
     if chapter_after_list:
+        # 是否首条内容，番外章节 首个章节内容不使用简述剧情，否则世界观会出现错误
+        first_chapter = ChapterType.EXTRA_GENERATE.value == chapter_model.type
         for chapter_after in chapter_after_list:
             # 转换
             after_model = sqliteToChapter(chapter_after)
+
+            # 首条处理
+            if first_chapter:
+                # 不存在润色结果内容
+                if after_model.new_content is None or len(after_model.new_content) < 1:
+                    ## 不存在原文信息
+                    if after_model.old_content is None or len(after_model.old_content) < 1:
+                        continue
+                    else:
+                        after_model.after_content += after_model.old_content
+                else:
+                    after_model.after_content += after_model.new_content
+                first_chapter = False
+                continue
 
             # 不存在润色结果内容
             if after_model.new_content is None or len(after_model.new_content) < 1:
