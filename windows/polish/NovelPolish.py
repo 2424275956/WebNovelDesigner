@@ -241,9 +241,9 @@ def get_after_novel(chapter_model, transmit):
                     if after_model.old_content is None or len(after_model.old_content) < 1:
                         continue
                     else:
-                        after_model.after_content += after_model.old_content
+                        chapter_model.after_content += after_model.old_content
                 else:
-                    after_model.after_content += after_model.new_content
+                    chapter_model.after_content += after_model.new_content
                 first_chapter = False
                 continue
 
