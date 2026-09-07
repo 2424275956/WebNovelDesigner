@@ -79,6 +79,10 @@ def insert_extra_chapter(chapter_model: ChapterBO):
 def update_chapter_scene(scene_text, point, chapter_id):
     SqliteDB.execute("UPDATE chapter SET scene_content = ?, point = ? WHERE id = ?", (scene_text, point, chapter_id))
 
+# 更新章节-场景分析（不进行改写润色）
+def update_chapter_scene_not_polish(scene_text, chapter_id):
+    SqliteDB.execute("UPDATE chapter SET scene_content = ?, point = 600, polish_resume = original_resume, new_len = old_len, new_content = old_content WHERE id = ?", (scene_text, chapter_id))
+
 # 更新章节-脉络改写
 def update_chapter_framework(framework_content, point, chapter_id):
     SqliteDB.execute("UPDATE chapter SET framework_content = ?, point = ? WHERE id = ?", (framework_content, point, chapter_id))

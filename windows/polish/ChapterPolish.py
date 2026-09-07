@@ -14,7 +14,8 @@ from pojo.scene.ScenePromptResult import ScenePromptResult
 from pojo.table.Chapter import ChapterBO, ChapterPoint, ChapterStatus, ChapterType
 from sqlite.ChapterDB import update_chapter_role, update_chapter_status, update_chapter_relation, \
     update_chapter_process, update_chapter_scene, update_chapter_framework, update_chapter_polish, \
-    update_chapter_relation_and_point, update_chapter_success, update_chapter_repetition
+    update_chapter_relation_and_point, update_chapter_success, update_chapter_repetition, \
+    update_chapter_scene_not_polish
 from sqlite.RoleRelationDB import query_role_model, \
     query_role_relation, remove_old_role_model, insert_role_model, remove_old_role_relation, insert_role_relation, \
     query_family_role, query_family_relation_name_a, query_family_relation_name_b
@@ -308,9 +309,15 @@ def original_scene_chapter_polish(chapter_model: ChapterBO, transmit, for_num=1)
         scene = ScenePromptResult.model_validate(original_scene)
         print(f"原文改写-场景分析-推理结果完成：{scene.model_dump_json()}")
         # 更新状态
-        update_chapter_scene(scene.model_dump_json(), ChapterPoint.ORIGINAL_FRAMEWORK.value, chapter_model.id)
-        chapter_model.point = ChapterPoint.ORIGINAL_FRAMEWORK.value
-        chapter_model.scene_content = scene.model_dump_json()
+        if scene.is_polish:
+            update_chapter_scene(scene.model_dump_json(), ChapterPoint.ORIGINAL_FRAMEWORK.value, chapter_model.id)
+            chapter_model.point = ChapterPoint.ORIGINAL_FRAMEWORK.value
+            chapter_model.scene_content = scene.model_dump_json()
+        else:
+            update_chapter_scene_not_polish(scene.model_dump_json(), chapter_model.id)
+            chapter_model.point = ChapterPoint.RELATION_ANALYSIS.value
+            chapter_model.scene_content = scene.model_dump_json()
+            chapter_model.polish_resume = chapter_model.original_resume
         print(f"原文改写-场景分析-章节信息更新完成")
         return True
     except Exception as e:
