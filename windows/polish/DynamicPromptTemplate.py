@@ -61,7 +61,7 @@ def get_novel_resume_template(inputs) -> ChatPromptTemplate:
     """
     print(111.02)
     user_template = f"""
-    【文本片段】
+    【文本片段】：
     {inputs['reference_text']}
     """
     print(111.04)
@@ -80,7 +80,7 @@ def get_role_prompt_template(inputs) -> ChatPromptTemplate:
     # 用户提示词
     user_template = str(inputs['role_prompt_user'])
     user_template += f"""
-    【原文片段】（待分析的小说片段内容）
+    【原文片段】（待分析的小说片段内容）：
     {inputs['original_text']}
     """
     user_template = special_chars_parse(user_template)
@@ -95,22 +95,22 @@ def get_relation_prompt_template(inputs) -> ChatPromptTemplate:
     # 系统提示词
     system_template = str(inputs['relation_prompt_system'])
     system_template += f"""
-    【角色合并策略】
-    1. **检测存储的角色档案**
+    【角色合并策略】：
+    1. **检测存储的角色档案**：
     	- 检查是否有已有的角色档案
     	- 如果有，则使用“存储的角色档案”作为基础
     	- 如果没有，则新建一个空白角色
-    2. **信息整合**
+    2. **信息整合**：
     	- 将最新片段中的角色信息与存储的角色档案进行合并
     	- 保留所有已知的基本属性
     	- 补充新的技能、背景、身体特征与行为特征
-    3. **优先级顺序**
+    3. **优先级顺序**：
         - 优先使用“存储的角色档案”中的信息
         - 只在必要时添加最新片段中的新信息
         - 避免重复信息（如同一属性被多次提及）
-    4. **输出结果**
+    4. **输出结果**：
         - 最终合并后的完整角色档案'
-    【主角团队】（小说整体剧情中的主要核心角色）
+    【主角团队】（小说整体剧情中的主要核心角色）：
     - 男主角：{inputs['male_lead']}
     - 女主角：{inputs['heroine']}
     """
@@ -218,7 +218,7 @@ def get_relation_prompt_template(inputs) -> ChatPromptTemplate:
     user_template += f"""
     【原文片段】：
     {inputs['original_text']}
-    【存储的角色档案】:
+    【存储的角色档案】：
     {inputs['db_role_json']}
     """
     user_template = special_chars_parse(user_template)
@@ -252,11 +252,11 @@ def get_process_prompt_template(inputs) -> ChatPromptTemplate:
     # 用户提示词
     user_template = str(inputs['process_prompt_user'])
     user_template += f"""
-    【参考片段-前述剧情】:
+    【参考片段-前述剧情】：
     {inputs['reference_before_text']}
     【原文片段】：
     {inputs['original_text']}
-    【参考片段-后续剧情】:
+    【参考片段-后续剧情】：
     {inputs['reference_after_text']}
     【角色档案】：
     {inputs['relation_analysis']}
@@ -279,11 +279,11 @@ def get_original_scene_prompt_template(inputs) -> ChatPromptTemplate:
     # 用户提示词
     user_template = str(inputs['original_scene_prompt_user'])
     user_template += f"""
-    【原文片段】
+    【原文片段】：
     {inputs['original_text']}
-    【角色分析与关系分析】
+    【角色分析与关系分析】：
     {inputs['relation_analysis']}
-    【场景库】
+    【场景库】：
     {inputs['scene_list']}
     """
     user_template = special_chars_parse(user_template)
@@ -309,15 +309,15 @@ def get_original_framework_prompt_template(inputs) -> ChatPromptTemplate:
                        .replace("{male_lead}", str(inputs['male_lead']))
                        .replace("{heroine}", str(inputs['heroine'])))
     user_template = user_template + f"""
-    【角色档案】
+    【角色档案】：
     {inputs['relation_analysis']}
-    【场景规则】
+    【场景规则】：
     {inputs['framework_analysis']}
-    【前文衔接】（仅作语气与人设参考，禁止输出）
+    【前文衔接】（仅作语气与人设参考，禁止输出）：
     {inputs['reference_before_text']}
-    【待改写片段】（唯一允许改写的部分，必须完整输出改写后版本）
+    【待改写片段】（唯一允许改写的部分，必须完整输出改写后版本）：
     {inputs['original_text']}
-    【后文衔接】（仅作伏笔一致性参考，禁止输出、禁止提前泄露）
+    【后文衔接】（仅作伏笔一致性参考，禁止输出、禁止提前泄露）：
     {inputs['reference_after_text']}
     """
     user_template = special_chars_parse(user_template)
@@ -337,7 +337,7 @@ def get_polish_prompt_template(inputs) -> ChatPromptTemplate:
     user_template = str(inputs['user_prompt'])
     user_template = user_template.replace("{target_num}", str(inputs['target_num']))
     user_template = user_template + f"""
-    【待润色段落】（需要进行润色的内容）
+    【待润色段落】（需要进行润色的内容）：
     {inputs['original_framework_text']}
     """
     user_template = special_chars_parse(user_template)
@@ -358,15 +358,15 @@ def get_extra_scene_prompt_template(inputs) -> ChatPromptTemplate:
     # 用户提示词
     user_template = str(inputs['extra_scene_prompt_user'])
     user_template = user_template + f"""
-   【参考片段-前述剧情】
+   【参考片段-前述剧情】：
     {inputs['reference_before_text']}
-    【参考片段-后续剧情】
+    【参考片段-后续剧情】：
     {inputs['reference_after_text']}
-    【角色分析与关系分析】
+    【角色分析与关系分析】：
     {inputs['relation_analysis']}
-    【角色行为信息】
+    【角色行为信息】：
     {inputs['process_analysis']}
-    【场景库】
+    【场景库】：
     {inputs['scene_list']} 
     """
     user_template = special_chars_parse(user_template)
@@ -392,14 +392,14 @@ def get_extra_framework_prompt_template(inputs) -> ChatPromptTemplate:
                        .replace("{male_lead}", str(inputs['male_lead']))
                        .replace("{heroine}", str(inputs['heroine'])))
     user_template = user_template + f"""
-    【角色档案】（创作依据）
+    【角色档案】（创作依据）：
     {inputs['relation_analysis']}
     {inputs['create_framework_text']} 
-    【场景规则】（世界设定约束）
+    【场景规则】（世界设定约束）：
     {inputs['framework_analysis']}
-    【前文终点】（时间线起点，已发生）
+    【前文终点】（时间线起点，已发生）：
     {inputs['reference_before_text']}
-    【后文起点】（时间线禁区，绝对禁止触碰）
+    【后文起点】（时间线禁区，绝对禁止触碰）：
     {inputs['reference_after_text']}
     """
     user_template = special_chars_parse(user_template)
