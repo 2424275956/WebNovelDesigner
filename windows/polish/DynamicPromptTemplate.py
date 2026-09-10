@@ -395,7 +395,7 @@ def get_extra_framework_prompt_template(inputs) -> ChatPromptTemplate:
     【角色档案】（创作依据）：
     {inputs['relation_analysis']}
     {inputs['create_framework_text']} 
-    【场景规则】（世界设定约束）：
+    【场景规则】（场景元素设定）：
     {inputs['framework_analysis']}
     【前文终点】（时间线起点，已发生）：
     {inputs['reference_before_text']}
