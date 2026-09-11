@@ -39,7 +39,7 @@ class ImportDialog(QDialog):
         # 章节统计与记数
         self.chapter_review_size = QLabel("暂无章节文本信息")
         # 章节正则
-        self.chapter_regex = QLineEdit("^\\s*(序言|序卷|序\\d*|序曲|楔子|前言|后记|尾声|番外|最终章|第([一二三四五六七八九十百千万亿\\d]+)[章回卷节集部])")
+        self.chapter_regex = QLineEdit("^\\s*(序言|序卷|序\\d*|序曲|楔子|前言|后记|尾声|番外|最终章|第([零一二三四五六七八九十百千万亿\\d]+)[章回卷节集部])")
         # ui处理
         self.setup_ui()
 
