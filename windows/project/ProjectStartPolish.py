@@ -2,16 +2,19 @@ import threading
 import time
 
 import shiboken6
+from PySide6.QtCore import QTimer
+from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QMessageBox
 from langchain_openai import ChatOpenAI
 from openai import OpenAI
 
 from config import GlobalHttpClient
-from config.GlobalMap import APP_STATE, APP_FUTURE, APP_STOP_EVENT
+from config.GlobalMap import APP_STATE, APP_FUTURE, APP_STOP_EVENT, APP_STREAM_OUT
 from pojo.polish import PolishTransmit
 from sqlite.ModelDB import query_model_by_id
 from sqlite.ProjectDB import query_project_by_id
 from sqlite.PromptDB import query_prompt_template, query_prompt_info_by_id
+from utils import paths
 from utils.PolishBridge import PolishBridge
 from windows.polish.NovelPolish import polish
 from windows.project.NovelChapterList import novel_chapter, update_chapter_num, update_chapter_title
@@ -460,7 +463,10 @@ def start(self):
     self.pending_updates = []  # 存储待处理的更新
     bridge = PolishBridge()
     bridge.progress.connect(lambda project_id: update_progress(self, project_id))
-    future = self.executor.submit(polish, transmit, bridge)
+    bridge.running_log.connect(lambda project_id, log: update_running_log(project_id, log))
+    bridge.stream_out.connect(lambda project_id, chunk, one_chunk: update_stream_out(self, project_id, chunk, one_chunk))
+    transmit.project_bridge = bridge
+    future = self.executor.submit(polish, transmit)
     # 放入全局
     APP_FUTURE[transmit.project_id] = future
     return True
@@ -490,3 +496,36 @@ def update_progress(self, project_id):
         novel_chapter(self, self.project_info['id'])
         update_chapter_num(self, self.project_info['id'])
         update_chapter_title(self, self.project_info['id'])
+
+def update_running_log(project_id, log):
+    """在主线程中执行"""
+    path = paths.user_data_path(f"logs/project-{project_id}.log")
+    with open(path, 'a', encoding='utf-8', buffering=1) as f:
+        print(f"{time.strftime('%Y-%m-%d %H:%M:%S')} {log}", file=f, flush=True)
+
+def update_stream_out(self, project_id, chunk, one_chunk):
+    """在主线程中执行"""
+    if one_chunk:
+        APP_STREAM_OUT[project_id] = "" + chunk
+    else:
+        APP_STREAM_OUT[project_id] += chunk
+
+    if self.project_info['id'] == project_id:
+        if one_chunk:
+            self.text_content.setPlainText(APP_STREAM_OUT[project_id])
+            return
+        if not self.is_stream_btn:
+            return
+
+        # 判断是否在底部
+        sb = self.text_content.verticalScrollBar()
+        at_bottom = sb.value() >= sb.maximum() - 4
+
+        # 用一个临时 cursor 定位到文档末尾，不动全局 textCursor
+        cursor = QTextCursor(self.text_content.document())
+        cursor.movePosition(QTextCursor.MoveOperation.End)
+        cursor.insertText(chunk)
+
+        # 3. 只有原本在底部，才把视图滚到底
+        if at_bottom:
+            sb.setValue(sb.maximum())

@@ -2,11 +2,11 @@ import json
 import os
 
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QIntValidator
+from PySide6.QtGui import QIntValidator, QTextCursor
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame, QListWidget, QPushButton, QPlainTextEdit, \
     QComboBox, QListWidgetItem, QLineEdit, QMessageBox, QFileDialog
 
-from config.GlobalMap import APP_STATE
+from config.GlobalMap import APP_STATE, APP_STREAM_OUT
 from resources.style.StyleSheet import title_style_sheet, line_edit_style_sheet, button_style_sheet, label_style_sheet, \
     list_widget_style_sheet
 from sqlite.ChapterDB import count_all_chapter_num, count_success_chapter_num, count_fail_chapter_num, \
@@ -18,6 +18,7 @@ from sqlite.ProjectDB import edit_project_prompt_id, edit_project_role_model_id,
     edit_project_polish_model_id, query_project_by_id, edit_project_status, edit_extra_start_num, \
     edit_project_male_lead, edit_project_heroine
 from sqlite.PromptDB import query_prompt_template, query_all_prompt
+from utils import paths, LogOut
 from utils.ClearLayoutRecursive import clear_layout
 from utils.StatusDot import StatusDot
 from windows.project import NovelChapterList
@@ -46,6 +47,7 @@ def on_prompt_item_clicked(self, point_type, prompt_type):
 
     self.text_content.setPlainText(prompt_text)
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
+    self.is_stream_btn = False
 
 def text_json_formatted(content: str):
     if content is None or len(content) < 1:
@@ -73,6 +75,7 @@ def polish_btn_clicked(self):
     chapter = query_chapter_by_id(self.chapter_list_choose_id)
     self.text_content.setPlainText(chapter['new_content'])
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
+    self.is_stream_btn = False
 
 def framework_btn_clicked(self):
     """脉络内容按钮触发"""
@@ -81,6 +84,7 @@ def framework_btn_clicked(self):
     chapter = query_chapter_by_id(self.chapter_list_choose_id)
     self.text_content.setPlainText(chapter['framework_content'])
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
+    self.is_stream_btn = False
 
 def scene_btn_clicked(self):
     """场景规则按钮触发"""
@@ -89,6 +93,7 @@ def scene_btn_clicked(self):
     chapter = query_chapter_by_id(self.chapter_list_choose_id)
     self.text_content.setPlainText(chapter['scene_content'])
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
+    self.is_stream_btn = False
 
 def relation_btn_clicked(self):
     """关系分析按钮触发"""
@@ -97,6 +102,7 @@ def relation_btn_clicked(self):
     chapter = query_chapter_by_id(self.chapter_list_choose_id)
     self.text_content.setPlainText(text_json_formatted(chapter['relation_content']))
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
+    self.is_stream_btn = False
 
 def process_btn_clicked(self):
     """流程控制按钮触发"""
@@ -105,6 +111,7 @@ def process_btn_clicked(self):
     chapter = query_chapter_by_id(self.chapter_list_choose_id)
     self.text_content.setPlainText(text_json_formatted(chapter['process_content']))
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
+    self.is_stream_btn = False
 
 def role_btn_clicked(self):
     """角色分析按钮触发"""
@@ -113,6 +120,16 @@ def role_btn_clicked(self):
     chapter = query_chapter_by_id(self.chapter_list_choose_id)
     self.text_content.setPlainText(text_json_formatted(chapter['role_content']))
     QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
+    self.is_stream_btn = False
+
+def stream_btn_clicked(self):
+    stream_str = APP_STREAM_OUT.get(self.project_info['id'], None)
+    if stream_str:
+        self.text_content.setPlainText(stream_str)
+    else:
+        self.text_content.setPlainText("")
+    self.text_content.moveCursor(QTextCursor.MoveOperation.End)
+    self.is_stream_btn = True
 
 def original_btn_clicked(self):
     """原文按钮触发"""
@@ -124,6 +141,7 @@ def original_btn_clicked(self):
         for line in chapter['old_content'].split('\\n'):
             self.text_content.appendPlainText(f"        {line}")
         QTimer.singleShot(0, lambda: self.text_content.verticalScrollBar().setValue(0))
+    self.is_stream_btn = False
 
 def update_project_prompt_id(self, text):
     """更新索引"""
@@ -336,11 +354,27 @@ def polist_page(self, project_id):
     text_layout = QVBoxLayout()
     text_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     center_layout.addLayout(text_layout)
+
+    # 文本框layout
+    text_title_layout = QHBoxLayout()
+    text_title_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    text_layout.addLayout(text_title_layout)
+
     # 文本框标题
     text_title = QLabel("文本区域（提示词配置 与 阶段内容）")
     text_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
     text_title.setStyleSheet(label_style_sheet(font_size=20))
-    text_layout.addWidget(text_title)
+    text_title_layout.addWidget(text_title)
+    # 弹开
+    text_title_layout.addStretch()
+    # 流式输出
+    self.is_stream_btn = False
+    stream_btn = QPushButton("流式输出")
+    stream_btn.setFixedSize(80, 30)
+    stream_btn.setStyleSheet(button_style_sheet())
+    stream_btn.setToolTip("展示最新脉络改写、脉络生成、结果润色输出")
+    stream_btn.clicked.connect(lambda : stream_btn_clicked(self))
+    text_title_layout.addWidget(stream_btn)
 
     """按钮区域"""
     text_btn_layout = QHBoxLayout()
@@ -397,12 +431,54 @@ def polist_page(self, project_id):
     text_btn_layout.addWidget(polish_btn)
 
     """文本框"""
+    # 文本框索引
     self.text_content = QPlainTextEdit()
-    self.text_content.setFixedSize(590, 780)
+    self.text_content.setFixedSize(590, 450)
     self.text_content.setStyleSheet(line_edit_style_sheet())
     self.text_content.setReadOnly(True)
     text_layout.addWidget(self.text_content)
 
+
+    text_layout.addStretch()
+
+    log_title_layout = QHBoxLayout()
+    log_title_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    text_layout.addLayout(log_title_layout)
+
+    log_title = QLabel("输出日志")
+    log_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    log_title.setStyleSheet(label_style_sheet(font_size=20))
+    log_title_layout.addWidget(log_title)
+
+    log_title_layout.addStretch()
+
+    # 日志清空
+    log_clear_btn = QPushButton("清空日志")
+    log_clear_btn.clicked.connect(lambda : self.polish_log_content.clear())
+    log_title_layout.addWidget(log_clear_btn)
+
+    """日志框"""
+    self.polish_log_content = QPlainTextEdit()
+    self.polish_log_content.setFixedSize(590, 240)
+    self.polish_log_content.setStyleSheet(line_edit_style_sheet())
+    self.polish_log_content.setReadOnly(True)
+    self.polish_log_content.setMaximumBlockCount(3000)
+    text_layout.addWidget(self.polish_log_content)
+
+    # 打开文件
+    log_file_path = paths.user_data_path(f"logs/project-{self.project_info['id']}.log")
+    log_file = LogOut.open_file(log_file_path)
+    # 读取内容
+    self.log_pos = 0
+    LogOut.read_new(self, log_file, log_file_path)
+    # 滑动快
+    self._auto_scroll = True
+    sb = self.polish_log_content.verticalScrollBar()
+    sb.valueChanged.connect(lambda sb_value: LogOut.on_scroll(self, sb_value))
+    # 定时轮询
+    self.log_timer = QTimer()
+    self.log_timer.timeout.connect(lambda : LogOut.read_new(self, log_file, log_file_path))
+    self.log_timer.start(100)
 
     """垂直分割线"""
     frame3 = QFrame()

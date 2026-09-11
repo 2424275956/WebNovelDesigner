@@ -7,3 +7,6 @@ APP_FUTURE = {}
 
 """全局线程停止"""
 APP_STOP_EVENT = {}
+
+"""全局流式输出"""
+APP_STREAM_OUT = {}

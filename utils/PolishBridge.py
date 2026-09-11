@@ -8,3 +8,7 @@ class PolishBridge(QObject):
     """
     # (项目ID, 进度百分比, 状态文本)
     progress = Signal(int)
+    # 流式输出内容(项目ID，输出内容，是否首次输出)
+    stream_out = Signal(int, str, bool)
+    # 状态文本日志(项目ID，日志内容)
+    running_log = Signal(int, str)

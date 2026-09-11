@@ -17,8 +17,9 @@ class RetryableStreamChain:
             validator_factory: Callable[[], StreamingValidator],
             project_id,
             max_retries: int = 3,
-            on_chunk: Optional[Callable[[str], None]] = None,  # 实时回调（如更新 UI）
-            on_retry: Optional[Callable[[str, str], None]] = None  # 重试通知
+            refusal_max: int = 5,
+            on_chunk: Optional[Callable[[str, bool], None]] = None,  # 实时回调（如更新 UI）
+            on_retry: Optional[Callable[[str], None]] = None  # 重试通知
     ):
         self.chain = chain
         self.validator_factory = validator_factory
@@ -26,8 +27,9 @@ class RetryableStreamChain:
         self.on_chunk = on_chunk
         self.on_retry = on_retry
         self.project_id = project_id
+        self.refusal_max = refusal_max
 
-    async def ainvoke_with_retry(self, inputs: dict, old_len: int=0, target_len: int=3500) -> str:
+    async def ainvoke_with_retry(self, inputs: dict, old_len: int=0) -> str:
         """
         带重试的流式调用。
         返回最终有效文本。
@@ -41,7 +43,8 @@ class RetryableStreamChain:
             # 超过限制
             if attempt > self.max_retries:
                 return ""
-            print(f"进行流式生成；循环次数：{attempt}；拒绝次数：{refusal_num}")
+            self.on_chunk("", True)
+            self.on_retry(f"第{attempt}/{self.max_retries}次输出开始，模型伦理拒绝次数：{refusal_num - 1}/{self.refusal_max}")
 
             # 是否首次续写检测
             before_refusal_check = True
@@ -68,19 +71,14 @@ class RetryableStreamChain:
 
                     if result is None:
                         repetition_num += 1
+                        self.on_retry(f"第{attempt}/{self.max_retries}次输出，模型伦理拒绝次数：{refusal_num - 1}/{self.refusal_max}，重复次数：{repetition_num}/3")
 
-                    if repetition_num >= 3:
-                        # 检测到循环，需要重试
-                        last_error = f"检测到重复内容（循环模式或行级复读）"
-
-                        # 报错打印
-                        if self.on_retry:
-                            self.on_retry(f"重复 {attempt}/3", last_error)
-
-                        # 循环次数+1
-                        attempt += 1
-                        # 跳出 for chunk，进入下一次重试
-                        break
+                        # 若第三次重复跳过
+                        if repetition_num >= 3:
+                            # 循环次数+1
+                            attempt += 1
+                            # 跳出 for chunk，进入下一次重试
+                            break
 
                     # 模型拒绝判断
                     if before_refusal_check:
@@ -92,20 +90,22 @@ class RetryableStreamChain:
                                 refusal, reason_str = is_refusal(validator.total_valid_text)
                                 # 拒绝执行
                                 if refusal:
-                                    self.on_retry(f"伦理拒绝 {refusal_num}/5", f"对话请求被模型伦理拒绝,{reason_str}")
+                                    self.on_retry(f"第{attempt}/{self.max_retries}次输出，模型伦理拒绝次数：{refusal_num}/{self.refusal_max}，重复次数：{repetition_num}/3")
                                     # 拒绝次数超过5次
                                     if refusal_num > 5:
                                         # 循环次数+1
                                         attempt += 1
                                         # 拒绝次数重置
                                         refusal_num = 1
-                                    break
+                                        break
+                                    else:
+                                        refusal_num += 1
                                 # 一次循环只校验一次
                                 before_refusal_check = False
 
 
-                    if result and self.on_chunk:
-                        self.on_chunk(result)
+                    if result and self.on_chunk and len(result) > 0:
+                        self.on_chunk(result, False)
 
                 else:
                     # 正常结束，获取全部内容
@@ -113,7 +113,7 @@ class RetryableStreamChain:
                     # 判断文本长度是否满足
                     if len(res_str) < old_len:
                         # 是否需要拼接提示词
-                        self.on_retry(f"阈值未达标 {attempt}/3", f"输出内容长度为：{len(res_str)}")
+                        self.on_retry(f"第{attempt}/{self.max_retries}词输出，阈值未达标，输出内容长度为：{len(res_str)}")
                         attempt += 1
                         continue
                     # 正常完成（没有 break）
@@ -122,7 +122,7 @@ class RetryableStreamChain:
             except Exception as e:
                 last_error = str(e)
                 if self.on_retry:
-                    self.on_retry(f"异常 {attempt}/3", last_error)
+                    self.on_retry(f"第{attempt}/{self.max_retries}词输出，异常：{e}")
                 attempt += 1
                 continue
             finally:
@@ -141,5 +141,5 @@ class RetryableStreamChain:
         """
         tail = validator.flush()
         if tail and self.on_chunk:
-            self.on_chunk(tail)
+            self.on_chunk(tail, False)
         return validator.get_valid_text()
