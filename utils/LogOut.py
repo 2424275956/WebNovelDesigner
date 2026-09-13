@@ -9,6 +9,8 @@ def open_file(file_path):
     # 确保父目录存在
     os.makedirs(os.path.dirname(file_path) or ".", exist_ok=True)
     # 用 rb 打开，seek 定位更准确；稍后 decode
+    with open(file_path, 'a', encoding="utf-8") as f:
+        """打开文件，存在无妨，不存在创建"""
     log_file = open(file_path, "rb")
     log_file.seek(0, os.SEEK_END)  # 从末尾开始（只看新内容）
     return log_file
