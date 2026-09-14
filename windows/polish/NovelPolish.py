@@ -1,7 +1,7 @@
 from config.GlobalMap import APP_STATE
 from pojo.polish.PolishTransmit import Transmit
 from pojo.table.Chapter import sqliteToChapter, ChapterPoint, ChapterStatus, ChapterType
-from sqlite.ChapterDB import query_wait_polish_chapter, query_chapter_by_id, query_before_chapter, query_after_chapter, \
+from sqlite.ChapterDB import query_next_wait_polish_chapter, query_chapter_by_id, query_before_chapter, query_after_chapter, \
     update_chapter_status, update_chapter_sort, insert_extra_chapter, update_original_resume, update_polish_resume
 from sqlite.ProjectDB import edit_project_status
 from windows.polish.ChapterPolish import role_chapter_polish, relation_chapter_polish, process_chapter_polish, \
@@ -11,15 +11,13 @@ from windows.polish.ChapterPolish import role_chapter_polish, relation_chapter_p
 
 def polish(transmit: Transmit):
     """润色小说"""
-    # 获取全部待完成章节
-    chapter_list = query_wait_polish_chapter(transmit.project_id)
-    transmit.runningLog(f"开始处理新的项目，待处理章节数：{len(chapter_list)}")
-    # 没有待处理章节
-    if chapter_list is None or len(chapter_list) <= 0:
-        return
+    # 循环润色章节，按序号获取
+    while True:
+        chapter_list = query_next_wait_polish_chapter(transmit.project_id)
+        if chapter_list is None or len(chapter_list) <= 0:
+            break
 
-    # 循环处理
-    for chapter in chapter_list:
+        chapter = chapter_list[0]
         # 初始化章节状态
         update_chapter_status(ChapterStatus.RUNNING.value, chapter['id'])
         ## 获取最新章节信息

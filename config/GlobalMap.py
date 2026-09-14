@@ -10,3 +10,6 @@ APP_STOP_EVENT = {}
 
 """全局流式输出"""
 APP_STREAM_OUT = {}
+
+"""全局项目章节ID"""
+APP_PROJECT_CHAPTER_ID = {}

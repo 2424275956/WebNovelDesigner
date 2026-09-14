@@ -2,8 +2,8 @@ from pojo.table.Chapter import ChapterBO, ChapterType, ChapterStatus, ChapterPoi
 from sqlite.SqliteDB import SqliteDB
 
 # 获取章节信息
-def query_wait_polish_chapter(project_id):
-    return SqliteDB.query_execute_batch("SELECT * FROM chapter WHERE status in (1, 2, 4) and project_id = ? ORDER BY sort", (project_id,))
+def query_next_wait_polish_chapter(project_id):
+    return SqliteDB.query_execute_batch("SELECT * FROM chapter WHERE status in (1, 2, 4) and project_id = ? ORDER BY sort LIMIT 1", (project_id,))
 
 # 获取全部章节信息
 def query_all_polish_chapter(project_id):

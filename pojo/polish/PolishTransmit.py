@@ -73,7 +73,7 @@ class Transmit(BaseModel):
 
     # 刷新润色项目页面
     def reflushPolishPage(self):
-        self.project_bridge.progress.emit(self.project_id)
+        self.project_bridge.progress.emit(self.project_id, self.chapter_model.id)
 
     # 定义当前章节处理失败
     def chapterParseFail(self):

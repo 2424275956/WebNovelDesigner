@@ -340,7 +340,7 @@ def polist_page(self, project_id):
     self.chapter_list.setItemAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
     self.chapter_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
     # 渲染列表
-    self.all_chapter = NovelChapterList.novel_chapter(self, project_id)
+    NovelChapterList.novel_chapter(self, project_id)
     self.chapter_list.itemClicked.connect(lambda item: on_item_clicked(self, item))
     center_left_layout.addWidget(self.chapter_list)
 

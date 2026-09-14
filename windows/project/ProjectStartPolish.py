@@ -2,14 +2,13 @@ import threading
 import time
 
 import shiboken6
-from PySide6.QtCore import QTimer
 from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QMessageBox
 from langchain_openai import ChatOpenAI
 from openai import OpenAI
 
 from config import GlobalHttpClient
-from config.GlobalMap import APP_STATE, APP_FUTURE, APP_STOP_EVENT, APP_STREAM_OUT
+from config.GlobalMap import APP_STATE, APP_FUTURE, APP_STOP_EVENT, APP_STREAM_OUT, APP_PROJECT_CHAPTER_ID
 from pojo.polish import PolishTransmit
 from sqlite.ModelDB import query_model_by_id
 from sqlite.ProjectDB import query_project_by_id
@@ -122,7 +121,7 @@ def start(self):
         # 停止client
         GlobalHttpClient.emergency_stop(transmit.project_id)
         # 更新ui
-        update_progress(self, transmit.project_id)
+        update_progress(self, transmit.project_id, APP_PROJECT_CHAPTER_ID[transmit.project_id], is_stop=True)
         return True
 
     # 获取最新项目信息
@@ -462,7 +461,7 @@ def start(self):
     # 创建新的任务
     self.pending_updates = []  # 存储待处理的更新
     bridge = PolishBridge()
-    bridge.progress.connect(lambda project_id: update_progress(self, project_id))
+    bridge.progress.connect(lambda project_id, chapter_id: update_progress(self, project_id, chapter_id))
     bridge.running_log.connect(lambda project_id, log: update_running_log(project_id, log))
     bridge.stream_out.connect(lambda project_id, chunk, one_chunk: update_stream_out(self, project_id, chunk, one_chunk))
     transmit.project_bridge = bridge
@@ -472,7 +471,7 @@ def start(self):
     return True
 
 
-def update_progress(self, project_id):
+def update_progress(self, project_id, chapter_id=None, is_stop=False):
     """在主线程中执行"""
     if self.project_info['id'] == project_id:
         # 判断对象是否销毁
@@ -492,8 +491,11 @@ def update_progress(self, project_id):
             return
         if not hasattr(self, 'project_status_title') or not shiboken6.isValid(self.project_status_title):
             return
+        # 记录项目章节ID
+        if chapter_id is not None:
+            APP_PROJECT_CHAPTER_ID[project_id] = chapter_id
         # 更新信息
-        novel_chapter(self, self.project_info['id'])
+        novel_chapter(self, self.project_info['id'], chapter_id=chapter_id, is_stop=is_stop)
         update_chapter_num(self, self.project_info['id'])
         update_chapter_title(self, self.project_info['id'])
 
